@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.toasthub.pm.issue.model;
+package org.toasthub.pm.model;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -41,7 +41,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity
 @Table(name = "issue")
-public class Issue extends BaseEntity implements Serializable{
+public class Defect extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
@@ -75,11 +75,11 @@ public class Issue extends BaseEntity implements Serializable{
 
 
 	//Constructor
-	public Issue() {
+	public Defect() {
 		super();
 	}
 	
-	public Issue(String code, Text title, Boolean defaultLang, String dir){
+	public Defect(String code, Text title, Boolean defaultLang, String dir){
 		this.setActive(true);
 		this.setArchive(false);
 		this.setLocked(false);

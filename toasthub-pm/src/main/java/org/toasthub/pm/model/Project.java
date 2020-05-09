@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.toasthub.pm.issue.model;
+package org.toasthub.pm.model;
 
 import java.io.Serializable;
 import java.time.Instant;

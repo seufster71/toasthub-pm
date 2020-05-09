@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.toasthub.pm.issue.repository;
+package org.toasthub.pm.defect.repository;
 
 
 import java.util.ArrayList;
@@ -36,7 +36,7 @@ import org.toasthub.core.general.model.RestResponse;
 
 @Repository("BugDao")
 @Transactional("TransactionManagerData")
-public class IssueDaoImpl implements IssueDao {
+public class DefectDaoImpl implements DefectDao {
 	
 	@Autowired
 	protected EntityManagerDataSvc entityManagerDataSvc;

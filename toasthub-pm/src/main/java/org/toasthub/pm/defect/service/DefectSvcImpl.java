@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.toasthub.pm.issue.service;
+package org.toasthub.pm.defect.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,15 +29,15 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
-import org.toasthub.pm.issue.repository.IssueDao;
+import org.toasthub.pm.defect.repository.DefectDao;
 import org.toasthub.security.model.UserContext;
 
 @Service("BugSvc")
-public class IssueSvcImpl implements IssueSvc, ServiceProcessor {
+public class DefectSvcImpl implements DefectSvc, ServiceProcessor {
 
 	@Autowired
 	@Qualifier("BugDao")
-	IssueDao bugDao;
+	DefectDao bugDao;
 	
 	@Autowired
 	UtilSvc utilSvc;

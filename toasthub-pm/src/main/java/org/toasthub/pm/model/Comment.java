@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.toasthub.pm.issue.model;
+package org.toasthub.pm.model;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -37,8 +37,8 @@ import org.toasthub.security.model.Application;
 import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity
-@Table(name = "scrum_response")
-public class ScrumResponse extends BaseEntity implements Serializable{
+@Table(name = "comment")
+public class Comment extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
@@ -52,11 +52,11 @@ public class ScrumResponse extends BaseEntity implements Serializable{
 
 
 	//Constructor
-	public ScrumResponse() {
+	public Comment() {
 		super();
 	}
 	
-	public ScrumResponse(String code, Text title, Boolean defaultLang, String dir){
+	public Comment(String code, Text title, Boolean defaultLang, String dir){
 		this.setActive(true);
 		this.setArchive(false);
 		this.setLocked(false);

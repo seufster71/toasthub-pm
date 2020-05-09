@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.toasthub.pm.issue.model;
+package org.toasthub.pm.model;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -37,26 +37,28 @@ import org.toasthub.security.model.Application;
 import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity
-@Table(name = "release")
-public class Release extends BaseEntity implements Serializable{
+@Table(name = "test_scenario")
+public class TestScenario extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
-	private String title;
+	private String summary;
 	private String description;
 	
-	private Application application;
-	private Release project;
+	private String type; // Acceptance, System, Integeration, Unit
+	
+	private Defect issue;
+	private Enhancement enhancement;
 	
 
 
 
 	//Constructor
-	public Release() {
+	public TestScenario() {
 		super();
 	}
 	
-	public Release(String code, Text title, Boolean defaultLang, String dir){
+	public TestScenario(String code, Text title, Boolean defaultLang, String dir){
 		this.setActive(true);
 		this.setArchive(false);
 		this.setLocked(false);
@@ -65,12 +67,26 @@ public class Release extends BaseEntity implements Serializable{
 
 		
 	}
-	
-	
-	
+
+
 	// Methods
-	
-	
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "summary")
+	public String getSummary() {
+		return summary;
+	}
+	public void setSummary(String summary) {
+		this.summary = summary;
+	}
+
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "description")
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String description) {
+		this.description = description;
+	}
 	
 
 	

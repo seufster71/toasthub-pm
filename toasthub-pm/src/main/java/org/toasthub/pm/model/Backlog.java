@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.toasthub.pm.issue.model;
+package org.toasthub.pm.model;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -37,8 +37,8 @@ import org.toasthub.security.model.Application;
 import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity
-@Table(name = "pm_task")
-public class Task extends BaseEntity implements Serializable{
+@Table(name = "backlog")
+public class Backlog extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
@@ -52,11 +52,11 @@ public class Task extends BaseEntity implements Serializable{
 
 
 	//Constructor
-	public Task() {
+	public Backlog() {
 		super();
 	}
 	
-	public Task(String code, Text title, Boolean defaultLang, String dir){
+	public Backlog(String code, Text title, Boolean defaultLang, String dir){
 		this.setActive(true);
 		this.setArchive(false);
 		this.setLocked(false);

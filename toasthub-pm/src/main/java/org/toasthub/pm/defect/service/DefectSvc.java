@@ -1,9 +1,9 @@
-package org.toasthub.pm.issue.service;
+package org.toasthub.pm.defect.service;
 
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 
-public interface IssueSvc {
+public interface DefectSvc {
 
 	public void process(RestRequest request, RestResponse response);
 	public void itemCount(RestRequest request, RestResponse response);
