@@ -18,26 +18,20 @@ package org.toasthub.pm.model;
 
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.Map;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 import org.toasthub.core.general.api.View;
 import org.toasthub.core.general.model.BaseEntity;
-import org.toasthub.core.general.model.Text;
-import org.toasthub.security.model.Application;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity
-@Table(name = "workflow")
+@Table(name = "pm_workflow")
 public class WorkFlow extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
@@ -45,9 +39,8 @@ public class WorkFlow extends BaseEntity implements Serializable{
 	private String title;
 	private String description;
 	
-	private Application application;
 	private Project project;
-	
+	private Product product;
 
 
 
@@ -56,19 +49,57 @@ public class WorkFlow extends BaseEntity implements Serializable{
 		super();
 	}
 	
-	public WorkFlow(String code, Text title, Boolean defaultLang, String dir){
+	public WorkFlow(String title, String description){
 		this.setActive(true);
 		this.setArchive(false);
 		this.setLocked(false);
 		this.setCreated(Instant.now());
-		
+		this.setTitle(title);
+		this.setDescription(description);
+	}
 
-		
+	// Methods
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "title")
+	public String getTitle() {
+		return title;
+	}
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "description")
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@ManyToOne(targetEntity = Project.class)
+	@JoinColumn(name = "project_id")
+	public Project getProject() {
+		return project;
+	}
+	public void setProject(Project project) {
+		this.project = project;
+	}
+
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@ManyToOne(targetEntity = Product.class)
+	@JoinColumn(name = "product_id")
+	public Product getProduct() {
+		return product;
+	}
+	public void setProduct(Product product) {
+		this.product = product;
 	}
 	
 	
 	
-	// Methods
+	
 	
 	
 	

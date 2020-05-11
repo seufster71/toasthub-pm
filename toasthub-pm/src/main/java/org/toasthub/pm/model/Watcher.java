@@ -17,9 +17,7 @@
 package org.toasthub.pm.model;
 
 import java.io.Serializable;
-import java.time.Instant;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -27,68 +25,36 @@ import javax.persistence.Table;
 
 import org.toasthub.core.general.api.View;
 import org.toasthub.core.general.model.BaseEntity;
+import org.toasthub.security.model.User;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity
-@Table(name = "pm_test_scenario")
-public class TestScenario extends BaseEntity implements Serializable{
+@Table(name = "pm_watcher")
+public class Watcher extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
-	private String summary;
-	private String description;
-	
-	private String type; // Acceptance, System, Integeration, Unit
-	
+	private User user;
 	private Defect defect;
 	private Enhancement enhancement;
 	
 
-
-
 	//Constructor
-	public TestScenario() {
+	public Watcher() {
 		super();
 	}
 	
-	public TestScenario(String summary, String description, String type){
-		this.setActive(true);
-		this.setArchive(false);
-		this.setLocked(false);
-		this.setCreated(Instant.now());
-		this.setSummary(summary);
-		this.setDescription(description);
-		this.setType(type);
-	}
-
 
 	// Methods
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "summary")
-	public String getSummary() {
-		return summary;
+	@ManyToOne(targetEntity = User.class)
+	@JoinColumn(name = "user_id")
+	public User getUser() {
+		return user;
 	}
-	public void setSummary(String summary) {
-		this.summary = summary;
-	}
-
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "description")
-	public String getDescription() {
-		return description;
-	}
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "type")
-	public String getType() {
-		return type;
-	}
-	public void setType(String type) {
-		this.type = type;
+	public void setUser(User user) {
+		this.user = user;
 	}
 
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
@@ -111,7 +77,6 @@ public class TestScenario extends BaseEntity implements Serializable{
 		this.enhancement = enhancement;
 	}
 
-	
 	
 
 	

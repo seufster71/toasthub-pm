@@ -18,57 +18,74 @@ package org.toasthub.pm.model;
 
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.Map;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 import org.toasthub.core.general.api.View;
 import org.toasthub.core.general.model.BaseEntity;
-import org.toasthub.core.general.model.Text;
-import org.toasthub.security.model.Application;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity
-@Table(name = "workflow_step")
+@Table(name = "pm_workflow_step")
 public class WorkFlowStep extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
-	private String title;
-	private String description;
+	private String name;
 	
-	private Application application;
-	private Project project;
+	private WorkFlow workFlow;
+	private WorkFlowStep parent;
 	
-
-
 
 	//Constructor
 	public WorkFlowStep() {
 		super();
 	}
 	
-	public WorkFlowStep(String code, Text title, Boolean defaultLang, String dir){
+	public WorkFlowStep(String name){
 		this.setActive(true);
 		this.setArchive(false);
 		this.setLocked(false);
 		this.setCreated(Instant.now());
-		
+		this.setName(name);
+	}
 
-		
+	// Methods
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "name")
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@ManyToOne(targetEntity = WorkFlow.class)
+	@JoinColumn(name = "workflow_id")
+	public WorkFlow getWorkFlow() {
+		return workFlow;
+	}
+	public void setWorkFlow(WorkFlow workFlow) {
+		this.workFlow = workFlow;
+	}
+
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@ManyToOne(targetEntity = WorkFlowStep.class)
+	@JoinColumn(name = "parent_id")
+	public WorkFlowStep getParent() {
+		return parent;
+	}
+	public void setParent(WorkFlowStep parent) {
+		this.parent = parent;
 	}
 	
 	
-	
-	// Methods
 	
 	
 	

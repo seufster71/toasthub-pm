@@ -27,52 +27,58 @@ import javax.persistence.Table;
 
 import org.toasthub.core.general.api.View;
 import org.toasthub.core.general.model.BaseEntity;
+import org.toasthub.core.general.model.Text;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity
-@Table(name = "pm_test_scenario")
-public class TestScenario extends BaseEntity implements Serializable{
+@Table(name = "pm_scrum_request")
+public class ScrumRequest extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
-	private String summary;
+	private String name;
+	private String subject;
 	private String description;
+	private String requestDaysTimes; // json object
+	private String emailTo; // json object
 	
-	private String type; // Acceptance, System, Integeration, Unit
-	
-	private Defect defect;
-	private Enhancement enhancement;
-	
-
-
+	private Scrum scrum;
 
 	//Constructor
-	public TestScenario() {
+	public ScrumRequest() {
 		super();
 	}
 	
-	public TestScenario(String summary, String description, String type){
+	public ScrumRequest(String code, Text title, Boolean defaultLang, String dir){
 		this.setActive(true);
 		this.setArchive(false);
 		this.setLocked(false);
 		this.setCreated(Instant.now());
-		this.setSummary(summary);
-		this.setDescription(description);
-		this.setType(type);
-	}
+		
 
+		
+	}
 
 	// Methods
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "summary")
-	public String getSummary() {
-		return summary;
+	@Column(name = "name")
+	public String getName() {
+		return name;
 	}
-	public void setSummary(String summary) {
-		this.summary = summary;
+	public void setName(String name) {
+		this.name = name;
 	}
-
+	
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "subject")
+	public String getSubject() {
+		return subject;
+	}
+	public void setSubject(String subject) {
+		this.subject = subject;
+	}
+	
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "description")
 	public String getDescription() {
@@ -83,34 +89,41 @@ public class TestScenario extends BaseEntity implements Serializable{
 	}
 
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "type")
-	public String getType() {
-		return type;
+	@Column(name = "request_days_times")
+	public String getRequestDaysTimes() {
+		return requestDaysTimes;
 	}
-	public void setType(String type) {
-		this.type = type;
-	}
-
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@ManyToOne(targetEntity = Defect.class)
-	@JoinColumn(name = "defect_id")
-	public Defect getDefect() {
-		return defect;
-	}
-	public void setDefect(Defect defect) {
-		this.defect = defect;
+	public void setRequestDaysTimes(String requestDaysTimes) {
+		this.requestDaysTimes = requestDaysTimes;
 	}
 
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@ManyToOne(targetEntity = Enhancement.class)
-	@JoinColumn(name = "enhancement_id")
-	public Enhancement getEnhancement() {
-		return enhancement;
+	@Column(name = "email_to")
+	public String getEmailTo() {
+		return emailTo;
 	}
-	public void setEnhancement(Enhancement enhancement) {
-		this.enhancement = enhancement;
+	public void setEmailTo(String emailTo) {
+		this.emailTo = emailTo;
+	}
+	
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@ManyToOne(targetEntity = Scrum.class)
+	@JoinColumn(name = "scrum_id")
+	public Scrum getScrum() {
+		return scrum;
+	}
+	public void setScrum(Scrum scrum) {
+		this.scrum = scrum;
 	}
 
+	
+
+	
+	
+	
+	
+	
+	
 	
 	
 

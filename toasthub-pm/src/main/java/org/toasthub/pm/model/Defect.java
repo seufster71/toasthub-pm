@@ -18,29 +18,22 @@ package org.toasthub.pm.model;
 
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.Map;
-import java.util.Set;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 import org.toasthub.core.general.api.View;
 import org.toasthub.core.general.model.BaseEntity;
-import org.toasthub.core.general.model.MenuItem;
 import org.toasthub.core.general.model.Text;
-import org.toasthub.security.model.Application;
 import org.toasthub.security.model.User;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity
-@Table(name = "issue")
+@Table(name = "pm_defect")
 public class Defect extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
@@ -62,16 +55,17 @@ public class Defect extends BaseEntity implements Serializable{
 	
 	private String status;
 	
-	private String originalEstimate;
-	private String actualDuration;
+	private double developEstimate;
+	private double testEstimate;
 	
-	private Application application;
+	private double developDuration;
+	private double testDuration;
+	
 	private Product product;
-	
 	private Project project;
 	private Release release;
-	
-	private Set<User> watchers;
+	private Backlog backlog;
+	private Sprint sprint;
 
 
 	//Constructor
@@ -218,16 +212,90 @@ public class Defect extends BaseEntity implements Serializable{
 		this.status = status;
 	}
 
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "develop_estimate")
+	public double getDevelopEstimate() {
+		return developEstimate;
+	}
+	public void setDevelopEstimate(double developEstimate) {
+		this.developEstimate = developEstimate;
+	}
 	
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "test_estimate")
+	public double getTestEstimate() {
+		return testEstimate;
+	}
+	public void setTestEstimate(double testEstimate) {
+		this.testEstimate = testEstimate;
+	}
+	
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "develop_duration")
+	public double getDevelopDuration() {
+		return developDuration;
+	}
+	public void setDevelopDuration(double developDuration) {
+		this.developDuration = developDuration;
+	}
 
-	
-	
-	
-	
-	
-	
-	
-	
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "test_duration")
+	public double getTestDuration() {
+		return testDuration;
+	}
+	public void setTestDuration(double testDuration) {
+		this.testDuration = testDuration;
+	}
 
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@ManyToOne(targetEntity = Product.class)
+	@JoinColumn(name = "product_id")
+	public Product getProduct() {
+		return product;
+	}
+	public void setProduct(Product product) {
+		this.product = product;
+	}
+
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@ManyToOne(targetEntity = Project.class)
+	@JoinColumn(name = "project_id")
+	public Project getProject() {
+		return project;
+	}
+	public void setProject(Project project) {
+		this.project = project;
+	}
+
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@ManyToOne(targetEntity = Release.class)
+	@JoinColumn(name = "release_id")
+	public Release getRelease() {
+		return release;
+	}
+	public void setRelease(Release release) {
+		this.release = release;
+	}
+
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@ManyToOne(targetEntity = Backlog.class)
+	@JoinColumn(name = "backlog_id")
+	public Backlog getBacklog() {
+		return backlog;
+	}
+	public void setBacklog(Backlog backlog) {
+		this.backlog = backlog;
+	}
+
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@ManyToOne(targetEntity = Sprint.class)
+	@JoinColumn(name = "sprint_id")
+	public Sprint getSprint() {
+		return sprint;
+	}
+	public void setSprint(Sprint sprint) {
+		this.sprint = sprint;
+	}
 	
 }

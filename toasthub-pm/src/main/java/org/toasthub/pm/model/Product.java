@@ -18,37 +18,25 @@ package org.toasthub.pm.model;
 
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.Map;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 import org.toasthub.core.general.api.View;
 import org.toasthub.core.general.model.BaseEntity;
 import org.toasthub.core.general.model.Text;
-import org.toasthub.security.model.Application;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity
-@Table(name = "product")
+@Table(name = "pm_product")
 public class Product extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
-	private String title;
+	private String name;
 	private String description;
-	
-	private Application application;
-	private Project project;
-	
-
 
 
 	//Constructor
@@ -65,10 +53,30 @@ public class Product extends BaseEntity implements Serializable{
 
 		
 	}
-	
-	
-	
+
 	// Methods
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "name")
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "description")
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	
+	
+	
+	
 	
 	
 	
