@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 The ToastHub Project
+ * Copyright (C) 2020 The ToastHub Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.toasthub.pm.defect.repository;
+package org.toasthub.pm.backlog;
 
 
 import java.util.ArrayList;
@@ -30,13 +30,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.toasthub.core.common.EntityManagerDataSvc;
 import org.toasthub.core.common.UtilSvc;
 import org.toasthub.core.general.model.GlobalConstant;
-import org.toasthub.core.general.model.Language;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
+import org.toasthub.core.preference.model.PrefCacheUtil;
+import org.toasthub.pm.model.Defect;
 
-@Repository("BugDao")
+@Repository("BacklogDao")
 @Transactional("TransactionManagerData")
-public class DefectDaoImpl implements DefectDao {
+public class BacklogDaoImpl implements BacklogDao {
 	
 	@Autowired
 	protected EntityManagerDataSvc entityManagerDataSvc;
@@ -56,10 +57,13 @@ public class DefectDaoImpl implements DefectDao {
 
 	@Override
 	public void items(RestRequest request, RestResponse response) throws Exception {
-		String queryStr = "SELECT DISTINCT l FROM Bug AS l JOIN FETCH l.title AS t JOIN FETCH t.langTexts as lt WHERE lt.lang =:lang";
+		String queryStr = "SELECT DISTINCT x FROM Backlog AS x ";
 		
+		boolean and = false;
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
-			queryStr += "AND r.active =:active ";
+			if (!and) { queryStr += " WHERE "; }
+			queryStr += "x.active =:active ";
+			and = true;
 		}
 		
 		// search
@@ -78,35 +82,39 @@ public class DefectDaoImpl implements DefectDao {
 			String lookupStr = "";
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_LANGUAGE_TABLE_TITLE")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_SUMMARY")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "lt.lang =:lang AND lt.text LIKE :titleValue"; 
+						lookupStr += "x.summary LIKE :summaryValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_LANGUAGE_TABLE_CODE")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_ASSIGNEE")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "l.code LIKE :codeValue"; 
+						lookupStr += "x.assignee.firstname LIKE :assigneeValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_LANGUAGE_TABLE_DIRECTION")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_SEVERITY")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "l.dir LIKE :dirValue"; 
+						lookupStr += "x.severity LIKE :severityValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_LANGUAGE_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_PRIORITY")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "l.active LIKE :statusValue"; 
+						lookupStr += "x.priority LIKE :priorityValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_LANGUAGE_TABLE_DEFAULT")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_STATUS")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "l.defaultLang LIKE :defLangValue"; 
+						lookupStr += "x.status LIKE :statusValue"; 
 						or = true;
 					}
 				}
 			}
 			if (!"".equals(lookupStr)) {
-				queryStr += " AND ( " + lookupStr + " ) ";
+				if (!and) { 
+					queryStr += " WHERE ( " + lookupStr + " ) ";
+				} else {
+					queryStr += " AND ( " + lookupStr + " ) ";
+				}
 			}
 			
 		}
@@ -126,29 +134,29 @@ public class DefectDaoImpl implements DefectDao {
 			
 			for (LinkedHashMap<String,String> item : orderCriteria) {
 				if (item.containsKey(GlobalConstant.ORDERCOLUMN) && item.containsKey(GlobalConstant.ORDERDIR)) {
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("ADMIN_LANGUAGE_TABLE_TITLE")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("BACKLOG_TABLE_SUMMARY")){
 						if (comma) { orderItems.append(","); }
-						orderItems.append("lt.text ").append(item.get(GlobalConstant.ORDERDIR));
+						orderItems.append("x.summary ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("ADMIN_LANGUAGE_TABLE_CODE")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("BACKLOG_TABLE_ASSIGNEE")){
 						if (comma) { orderItems.append(","); }
-						orderItems.append("l.code ").append(item.get(GlobalConstant.ORDERDIR));
+						orderItems.append("x.assignee.firstname ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("ADMIN_LANGUAGE_TABLE_DIRECTION")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("BACKLOG_TABLE_SEVERITY")){
 						if (comma) { orderItems.append(","); }
-						orderItems.append("l.dir ").append(item.get(GlobalConstant.ORDERDIR));
+						orderItems.append("x.severity ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("ADMIN_LANGUAGE_TABLE_STATUS")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("BACKLOG_TABLE_PRIORITY")){
 						if (comma) { orderItems.append(","); }
-						orderItems.append("l.active ").append(item.get(GlobalConstant.ORDERDIR));
+						orderItems.append("x.priority ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("ADMIN_LANGUAGE_TABLE_DEFAULT")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("BACKLOG_TABLE_STATUS")){
 						if (comma) { orderItems.append(","); }
-						orderItems.append("l.defaultLang ").append(item.get(GlobalConstant.ORDERDIR));
+						orderItems.append("x.status ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
 				}
@@ -172,29 +180,20 @@ public class DefectDaoImpl implements DefectDao {
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {  
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_LANGUAGE_TABLE_TITLE")){
-						query.setParameter("titleValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
-						query.setParameter("lang",request.getParam(GlobalConstant.LANG));
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_SUMMARY")){
+						query.setParameter("summaryValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_LANGUAGE_TABLE_CODE")){
-						query.setParameter("codeValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_ASSIGNEE")){
+						query.setParameter("assigneeValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_LANGUAGE_TABLE_DIRECTION")){
-						query.setParameter("dirValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_SEVERITY")){
+						query.setParameter("severityValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_LANGUAGE_TABLE_STATUS")){
-						if ("active".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
-							query.setParameter("statusValue", true);
-						} else if ("disabled".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
-							query.setParameter("statusValue", false);
-						}
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_PRIORITY")){
+						query.setParameter("priorityValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_LANGUAGE_TABLE_DEFAULT")){
-						if ("active".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
-							query.setParameter("defLangValue", true);
-						} else if ("disabled".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
-							query.setParameter("defLangValue", false);
-						}
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_STATUS")){
+						query.setParameter("statusValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
 				}
 			}
@@ -204,19 +203,19 @@ public class DefectDaoImpl implements DefectDao {
 			query.setMaxResults((Integer) request.getParam(GlobalConstant.LISTLIMIT));
 		}
 		@SuppressWarnings("unchecked")
-		List<Language> languages = query.getResultList();
+		List<Defect> defects = query.getResultList();
 
-		response.addParam(GlobalConstant.ITEMS, languages);
+		response.addParam(GlobalConstant.ITEMS, defects);
 		
 	}
 
 	@Override
 	public void itemCount(RestRequest request, RestResponse response) throws Exception {
-		String queryStr = "SELECT COUNT(DISTINCT l) FROM Language as l JOIN l.title AS t JOIN t.langTexts as lt ";
+		String queryStr = "SELECT COUNT(DISTINCT x) FROM Defect as x ";
 		boolean and = false;
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			if (!and) { queryStr += " WHERE "; }
-			queryStr += "l.active =:active ";
+			queryStr += "x.active =:active ";
 			and = true;
 		}
 		
@@ -235,29 +234,29 @@ public class DefectDaoImpl implements DefectDao {
 			String lookupStr = "";
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_LANGUAGE_TABLE_TITLE")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_SUMMARY")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "lt.lang =:lang AND lt.text LIKE :titleValue"; 
+						lookupStr += "x.summary LIKE :summaryValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_LANGUAGE_TABLE_CODE")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_ASSIGNEE")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "l.code LIKE :codeValue"; 
+						lookupStr += "x.assignee.firstname LIKE :assigneeValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_LANGUAGE_TABLE_DIRECTION")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_SEVERITY")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "l.dir LIKE :dirValue"; 
+						lookupStr += "x.severity LIKE :severityValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_LANGUAGE_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_PRIORITY")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "l.active LIKE :statusValue"; 
+						lookupStr += "x.priority LIKE :priorityValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_LANGUAGE_TABLE_DEFAULT")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_STATUS")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "l.defaultLang LIKE :defLangValue"; 
+						lookupStr += "x.status LIKE :statusValue"; 
 						or = true;
 					}
 				}
@@ -281,29 +280,20 @@ public class DefectDaoImpl implements DefectDao {
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {  
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_LANGUAGE_TABLE_TITLE")){
-						query.setParameter("titleValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
-						query.setParameter("lang",request.getParam(GlobalConstant.LANG));
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_SUMMARY")){
+						query.setParameter("summaryValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_LANGUAGE_TABLE_CODE")){
-						query.setParameter("codeValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_ASSIGNEE")){
+						query.setParameter("assigneeValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_LANGUAGE_TABLE_DIRECTION")){
-						query.setParameter("dirValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_SEVERITY")){
+						query.setParameter("severityValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_LANGUAGE_TABLE_STATUS")){
-						if ("active".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
-							query.setParameter("statusValue", true);
-						} else if ("disabled".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
-							query.setParameter("statusValue", false);
-						}
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_PRIORITY")){
+						query.setParameter("priorityValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_LANGUAGE_TABLE_DEFAULT")){
-						if ("active".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
-							query.setParameter("statusValue", true);
-						} else if ("disabled".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
-							query.setParameter("statusValue", false);
-						}
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_STATUS")){
+						query.setParameter("statusValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
 				}
 			}
@@ -320,15 +310,15 @@ public class DefectDaoImpl implements DefectDao {
 	@Override
 	public void item(RestRequest request, RestResponse response) throws Exception {
 		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
-			String queryStr = "SELECT l FROM Language AS l JOIN FETCH l.title AS t JOIN FETCH t.langTexts WHERE l.id =:id";
+			String queryStr = "SELECT x FROM Backlog AS x WHERE x.id =:id";
 			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
 			query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
-			Language language = (Language) query.getSingleResult();
+			Defect defect = (Defect) query.getSingleResult();
 			
-			response.addParam(GlobalConstant.ITEM, language);
+			response.addParam(GlobalConstant.ITEM, defect);
 		} else {
-			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "Missing ID", response);
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID").getValue(), response);
 		}
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 The ToastHub Project
+ * Copyright (C) 2020 The ToastHub Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.toasthub.pm.defect.service;
+package org.toasthub.pm.defect;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,15 +29,13 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
-import org.toasthub.pm.defect.repository.DefectDao;
-import org.toasthub.security.model.UserContext;
 
-@Service("BugSvc")
+@Service("DefectSvc")
 public class DefectSvcImpl implements DefectSvc, ServiceProcessor {
 
 	@Autowired
-	@Qualifier("BugDao")
-	DefectDao bugDao;
+	@Qualifier("DefectDao")
+	DefectDao defectDao;
 	
 	@Autowired
 	UtilSvc utilSvc;
@@ -58,7 +56,6 @@ public class DefectSvcImpl implements DefectSvc, ServiceProcessor {
 			prefCacheUtil.getPrefInfo(request,response);
 			this.itemCount(request, response);
 			count = (Long) response.getParam(GlobalConstant.ITEMCOUNT);
-			this.itemColumns(request, response);
 			if (count != null && count > 0){
 				this.items(request, response);
 			}
@@ -70,7 +67,6 @@ public class DefectSvcImpl implements DefectSvc, ServiceProcessor {
 			prefCacheUtil.getPrefInfo(request,response);
 			this.itemCount(request, response);
 			count = (Long) response.getParam(GlobalConstant.ITEMCOUNT);
-			this.itemColumns(request, response);
 			if (count != null && count > 0){
 				this.items(request, response);
 			}
@@ -86,7 +82,7 @@ public class DefectSvcImpl implements DefectSvc, ServiceProcessor {
 			break;
 		case "SAVE":
 			if (!request.containsParam(PrefCacheUtil.PREFFORMKEYS)) {
-				List<String> forms =  new ArrayList<String>(Arrays.asList("ADMIN_LANGUAGE_PAGE"));
+				List<String> forms =  new ArrayList<String>(Arrays.asList("DEFECT_PAGE"));
 				request.addParam(PrefCacheUtil.PREFFORMKEYS, forms);
 			}
 			request.addParam(PrefCacheUtil.PREFGLOBAL, global);
@@ -94,7 +90,7 @@ public class DefectSvcImpl implements DefectSvc, ServiceProcessor {
 			this.save(request, response);
 			break;
 		default:
-			utilSvc.addStatus(RestResponse.INFO, RestResponse.ACTIONNOTEXIST, "Action not available", response);
+			utilSvc.addStatus(RestResponse.INFO, RestResponse.ACTIONNOTEXIST, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_ACTION_NOT_AVAIL").getValue(), response);
 			break;
 		}
 	}
@@ -102,12 +98,12 @@ public class DefectSvcImpl implements DefectSvc, ServiceProcessor {
 	@Override
 	public void items(RestRequest request, RestResponse response) {
 		try {
-			bugDao.items(request, response);
-			if (response.getParam("acquaintances") == null){
-				utilSvc.addStatus(RestResponse.INFO, RestResponse.EMPTY, "No Items", response);
+			defectDao.items(request, response);
+			if (response.getParam("items") == null){
+				utilSvc.addStatus(RestResponse.INFO, RestResponse.EMPTY, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_NO_ITEMS").getValue(), response);
 			}
 		} catch (Exception e) {
-			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, PrefCacheUtil.getPrefText(request, "BUG_SERVICE", "BUG_SERVICE_FAIL").getValue(), response);
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_EXECUTION_FAIL").getValue(), response);
 			e.printStackTrace();
 		}
 	}
@@ -116,9 +112,9 @@ public class DefectSvcImpl implements DefectSvc, ServiceProcessor {
 	@Override
 	public void itemCount(RestRequest request, RestResponse response) {
 		try {
-			bugDao.itemCount(request, response);
+			defectDao.itemCount(request, response);
 		} catch (Exception e) {
-			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, PrefCacheUtil.getPrefText(request, "BUG_SERVICE", "BUG_SERVICE_FAIL").getValue(), response);
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_EXECUTION_FAIL").getValue(), response);
 			e.printStackTrace();
 		}
 	}
@@ -126,10 +122,10 @@ public class DefectSvcImpl implements DefectSvc, ServiceProcessor {
 	@Override
 	public void delete(RestRequest request, RestResponse response) {
 		try {
-			bugDao.delete(request, response);
-			utilSvc.addStatus(RestResponse.INFO, RestResponse.SUCCESS, "Delete Successful", response);
+			defectDao.delete(request, response);
+			utilSvc.addStatus(RestResponse.INFO, RestResponse.SUCCESS, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_DELETE_SUCCESS").getValue(), response);
 		} catch (Exception e) {
-			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "Unable to complete request", response);
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_DELETE_FAIL").getValue(), response);
 			e.printStackTrace();
 		}
 	}
@@ -137,17 +133,11 @@ public class DefectSvcImpl implements DefectSvc, ServiceProcessor {
 	@Override
 	public void item(RestRequest request, RestResponse response) {
 		try {
-			bugDao.item(request, response);
+			defectDao.item(request, response);
 		} catch (Exception e) {
-			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "Unable to complete request", response);
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_EXECUTION_FAIL").getValue(), response);
 			e.printStackTrace();
 		}
-	}
-
-	@Override
-	public void itemColumns(RestRequest request, RestResponse response) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
