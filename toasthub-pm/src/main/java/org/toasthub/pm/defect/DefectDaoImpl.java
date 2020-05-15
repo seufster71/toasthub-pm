@@ -46,13 +46,20 @@ public class DefectDaoImpl implements DefectDao {
 	
 	@Override
 	public void delete(RestRequest request, RestResponse response) throws Exception {
-		
+		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
+			
+			Defect defect = (Defect) entityManagerDataSvc.getInstance().getReference(Defect.class,  new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			entityManagerDataSvc.getInstance().remove(defect);
+			
+		} else {
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "Missing ID", response);
+		}	
 	}
 
 	@Override
 	public void save(RestRequest request, RestResponse response) throws Exception {
-		// TODO Auto-generated method stub
-		
+		Defect defect = (Defect) request.getParam(GlobalConstant.ITEM);
+		entityManagerDataSvc.getInstance().merge(defect);
 	}
 
 	@Override

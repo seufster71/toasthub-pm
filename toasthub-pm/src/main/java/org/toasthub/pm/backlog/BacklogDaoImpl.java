@@ -33,7 +33,7 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
-import org.toasthub.pm.model.Defect;
+import org.toasthub.pm.model.Backlog;
 
 @Repository("BacklogDao")
 @Transactional("TransactionManagerData")
@@ -46,13 +46,20 @@ public class BacklogDaoImpl implements BacklogDao {
 	
 	@Override
 	public void delete(RestRequest request, RestResponse response) throws Exception {
-		
+		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
+			
+			Backlog backlog = (Backlog) entityManagerDataSvc.getInstance().getReference(Backlog.class,  new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			entityManagerDataSvc.getInstance().remove(backlog);
+			
+		} else {
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "Missing ID", response);
+		}
 	}
 
 	@Override
 	public void save(RestRequest request, RestResponse response) throws Exception {
-		// TODO Auto-generated method stub
-		
+		Backlog backlog = (Backlog) request.getParam(GlobalConstant.ITEM);
+		entityManagerDataSvc.getInstance().merge(backlog);
 	}
 
 	@Override
@@ -82,29 +89,19 @@ public class BacklogDaoImpl implements BacklogDao {
 			String lookupStr = "";
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_SUMMARY")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_NAME")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "x.summary LIKE :summaryValue"; 
+						lookupStr += "x.name LIKE :nameValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_ASSIGNEE")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_PRODUCT")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "x.assignee.firstname LIKE :assigneeValue"; 
+						lookupStr += "x.product.name LIKE :productValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_SEVERITY")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_PROJECT")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "x.severity LIKE :severityValue"; 
-						or = true;
-					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_PRIORITY")){
-						if (or) { lookupStr += " OR "; }
-						lookupStr += "x.priority LIKE :priorityValue"; 
-						or = true;
-					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_STATUS")){
-						if (or) { lookupStr += " OR "; }
-						lookupStr += "x.status LIKE :statusValue"; 
+						lookupStr += "x.project.name LIKE :projectValue"; 
 						or = true;
 					}
 				}
@@ -134,29 +131,19 @@ public class BacklogDaoImpl implements BacklogDao {
 			
 			for (LinkedHashMap<String,String> item : orderCriteria) {
 				if (item.containsKey(GlobalConstant.ORDERCOLUMN) && item.containsKey(GlobalConstant.ORDERDIR)) {
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("BACKLOG_TABLE_SUMMARY")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("BACKLOG_TABLE_NAME")){
 						if (comma) { orderItems.append(","); }
-						orderItems.append("x.summary ").append(item.get(GlobalConstant.ORDERDIR));
+						orderItems.append("x.name ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("BACKLOG_TABLE_ASSIGNEE")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("BACKLOG_TABLE_PRODUCT")){
 						if (comma) { orderItems.append(","); }
-						orderItems.append("x.assignee.firstname ").append(item.get(GlobalConstant.ORDERDIR));
+						orderItems.append("x.product.name ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("BACKLOG_TABLE_SEVERITY")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("BACKLOG_TABLE_PROJECT")){
 						if (comma) { orderItems.append(","); }
-						orderItems.append("x.severity ").append(item.get(GlobalConstant.ORDERDIR));
-						comma = true;
-					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("BACKLOG_TABLE_PRIORITY")){
-						if (comma) { orderItems.append(","); }
-						orderItems.append("x.priority ").append(item.get(GlobalConstant.ORDERDIR));
-						comma = true;
-					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("BACKLOG_TABLE_STATUS")){
-						if (comma) { orderItems.append(","); }
-						orderItems.append("x.status ").append(item.get(GlobalConstant.ORDERDIR));
+						orderItems.append("x.project.name ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
 				}
@@ -180,20 +167,14 @@ public class BacklogDaoImpl implements BacklogDao {
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {  
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_SUMMARY")){
-						query.setParameter("summaryValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_NAME")){
+						query.setParameter("nameValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_ASSIGNEE")){
-						query.setParameter("assigneeValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_PRODUCT")){
+						query.setParameter("productValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_SEVERITY")){
-						query.setParameter("severityValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
-					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_PRIORITY")){
-						query.setParameter("priorityValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
-					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_STATUS")){
-						query.setParameter("statusValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_PROJECT")){
+						query.setParameter("projectValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
 				}
 			}
@@ -203,15 +184,15 @@ public class BacklogDaoImpl implements BacklogDao {
 			query.setMaxResults((Integer) request.getParam(GlobalConstant.LISTLIMIT));
 		}
 		@SuppressWarnings("unchecked")
-		List<Defect> defects = query.getResultList();
+		List<Backlog> backlogs = query.getResultList();
 
-		response.addParam(GlobalConstant.ITEMS, defects);
+		response.addParam(GlobalConstant.ITEMS, backlogs);
 		
 	}
 
 	@Override
 	public void itemCount(RestRequest request, RestResponse response) throws Exception {
-		String queryStr = "SELECT COUNT(DISTINCT x) FROM Defect as x ";
+		String queryStr = "SELECT COUNT(DISTINCT x) FROM Backlog as x ";
 		boolean and = false;
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			if (!and) { queryStr += " WHERE "; }
@@ -234,29 +215,19 @@ public class BacklogDaoImpl implements BacklogDao {
 			String lookupStr = "";
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_SUMMARY")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_NAME")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "x.summary LIKE :summaryValue"; 
+						lookupStr += "x.name LIKE :nameValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_ASSIGNEE")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_PRODUCT")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "x.assignee.firstname LIKE :assigneeValue"; 
+						lookupStr += "x.product.name LIKE :productValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_SEVERITY")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_PROJECT")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "x.severity LIKE :severityValue"; 
-						or = true;
-					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_PRIORITY")){
-						if (or) { lookupStr += " OR "; }
-						lookupStr += "x.priority LIKE :priorityValue"; 
-						or = true;
-					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_STATUS")){
-						if (or) { lookupStr += " OR "; }
-						lookupStr += "x.status LIKE :statusValue"; 
+						lookupStr += "x.project.name LIKE :projectValue"; 
 						or = true;
 					}
 				}
@@ -280,20 +251,14 @@ public class BacklogDaoImpl implements BacklogDao {
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {  
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_SUMMARY")){
-						query.setParameter("summaryValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_NAME")){
+						query.setParameter("nameValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_ASSIGNEE")){
-						query.setParameter("assigneeValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_PRODUCT")){
+						query.setParameter("productValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_SEVERITY")){
-						query.setParameter("severityValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
-					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_PRIORITY")){
-						query.setParameter("priorityValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
-					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_STATUS")){
-						query.setParameter("statusValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_PROJECT")){
+						query.setParameter("projectValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
 				}
 			}
@@ -314,9 +279,9 @@ public class BacklogDaoImpl implements BacklogDao {
 			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
 			query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
-			Defect defect = (Defect) query.getSingleResult();
+			Backlog backlog = (Backlog) query.getSingleResult();
 			
-			response.addParam(GlobalConstant.ITEM, defect);
+			response.addParam(GlobalConstant.ITEM, backlog);
 		} else {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID").getValue(), response);
 		}

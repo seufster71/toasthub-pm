@@ -34,6 +34,7 @@ import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
 import org.toasthub.pm.model.Defect;
+import org.toasthub.pm.model.Enhancement;
 
 @Repository("EnhancementDao")
 @Transactional("TransactionManagerData")
@@ -46,13 +47,20 @@ public class EnhancementDaoImpl implements EnhancementDao {
 	
 	@Override
 	public void delete(RestRequest request, RestResponse response) throws Exception {
-		
+		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
+			
+			Enhancement enhancement = (Enhancement) entityManagerDataSvc.getInstance().getReference(Enhancement.class,  new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			entityManagerDataSvc.getInstance().remove(enhancement);
+			
+		} else {
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "Missing ID", response);
+		}
 	}
 
 	@Override
 	public void save(RestRequest request, RestResponse response) throws Exception {
-		// TODO Auto-generated method stub
-		
+		Enhancement enhancement = (Enhancement) request.getParam(GlobalConstant.ITEM);
+		entityManagerDataSvc.getInstance().merge(enhancement);
 	}
 
 	@Override

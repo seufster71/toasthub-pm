@@ -19,6 +19,7 @@ package org.toasthub.pm.defect;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -29,6 +30,7 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
+import org.toasthub.pm.model.Defect;
 
 @Service("DefectSvc")
 public class DefectSvcImpl implements DefectSvc, ServiceProcessor {
@@ -51,19 +53,8 @@ public class DefectSvcImpl implements DefectSvc, ServiceProcessor {
 		
 		Long count = 0l;
 		switch (action) {
-		case "INIT": 
-			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
-			prefCacheUtil.getPrefInfo(request,response);
-			this.itemCount(request, response);
-			count = (Long) response.getParam(GlobalConstant.ITEMCOUNT);
-			if (count != null && count > 0){
-				this.items(request, response);
-			}
-			response.addParam(GlobalConstant.ITEMNAME, request.getParam(GlobalConstant.ITEMNAME));
-			
-			
-			break;
 		case "LIST":
+			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
 			prefCacheUtil.getPrefInfo(request,response);
 			this.itemCount(request, response);
 			count = (Long) response.getParam(GlobalConstant.ITEMCOUNT);
@@ -142,7 +133,38 @@ public class DefectSvcImpl implements DefectSvc, ServiceProcessor {
 
 	@Override
 	public void save(RestRequest request, RestResponse response) {
-		// TODO Auto-generated method stub
+		try {
+			// validate
+			utilSvc.validateParams(request, response);
+			
+			if ((Boolean) request.getParam(GlobalConstant.VALID) == false) {
+				utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_VALIDATION_ERR").getValue(), response);
+				return;
+			}
+			// get existing item
+			Map<String,Object> inputList = (Map<String, Object>) request.getParam(GlobalConstant.INPUTFIELDS);
+			if (inputList.containsKey(GlobalConstant.ITEMID) && inputList.get(GlobalConstant.ITEMID) != null && !"".equals(inputList.get(GlobalConstant.ITEMID))) {
+				request.addParam(GlobalConstant.ITEMID, inputList.get(GlobalConstant.ITEMID));
+				defectDao.item(request, response);
+				request.addParam(GlobalConstant.ITEM, response.getParam(GlobalConstant.ITEM));
+				response.getParams().remove(GlobalConstant.ITEM);
+			} else {
+				Defect defect = new Defect();
+				defect.setArchive(false);
+				defect.setLocked(false);
+				request.addParam(GlobalConstant.ITEM, defect);
+			}
+			// marshall
+			utilSvc.marshallFields(request, response);
 		
+			
+			// save
+			defectDao.save(request, response);
+			
+			utilSvc.addStatus(RestResponse.INFO, RestResponse.SUCCESS, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_SAVE_SUCCESS").getValue(), response);
+		} catch (Exception e) {
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_SAVE_FAIL").getValue(), response);
+			e.printStackTrace();
+		}
 	}
 }
