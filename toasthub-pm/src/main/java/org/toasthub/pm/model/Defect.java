@@ -48,7 +48,7 @@ public class Defect extends BaseEntity implements Serializable{
 	private User reportedBy;
 	private User assignee;
 	private String severity;
-	private String priority;
+	private int priority;
 	private String itemVersion;
 	private String externalRef;
 	private String internalRef;
@@ -58,8 +58,8 @@ public class Defect extends BaseEntity implements Serializable{
 	private double developEstimate;
 	private double testEstimate;
 	
-	private double developDuration;
-	private double testDuration;
+	private double developActual;
+	private double testActual;
 	
 	private Product product;
 	private Project project;
@@ -169,10 +169,10 @@ public class Defect extends BaseEntity implements Serializable{
 
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "priority")
-	public String getPriority() {
+	public int getPriority() {
 		return priority;
 	}
-	public void setPriority(String priority) {
+	public void setPriority(int priority) {
 		this.priority = priority;
 	}
 
@@ -231,21 +231,21 @@ public class Defect extends BaseEntity implements Serializable{
 	}
 	
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "develop_duration")
-	public double getDevelopDuration() {
-		return developDuration;
+	@Column(name = "develop_actual")
+	public double getDevelopActual() {
+		return developActual;
 	}
-	public void setDevelopDuration(double developDuration) {
-		this.developDuration = developDuration;
+	public void setDevelopActual(double developActual) {
+		this.developActual = developActual;
 	}
 
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "test_duration")
-	public double getTestDuration() {
-		return testDuration;
+	@Column(name = "test_Actual")
+	public double getTestActual() {
+		return testActual;
 	}
-	public void setTestDuration(double testDuration) {
-		this.testDuration = testDuration;
+	public void setTestActual(double testActual) {
+		this.testActual = testActual;
 	}
 
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
