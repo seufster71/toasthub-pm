@@ -19,6 +19,7 @@ package org.toasthub.pm.project;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -29,6 +30,7 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
+import org.toasthub.pm.model.Project;
 
 @Service("ProjectSvc")
 public class ProjectSvcImpl implements ProjectSvc, ServiceProcessor {
@@ -51,19 +53,8 @@ public class ProjectSvcImpl implements ProjectSvc, ServiceProcessor {
 		
 		Long count = 0l;
 		switch (action) {
-		case "INIT": 
-			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
-			prefCacheUtil.getPrefInfo(request,response);
-			this.itemCount(request, response);
-			count = (Long) response.getParam(GlobalConstant.ITEMCOUNT);
-			if (count != null && count > 0){
-				this.items(request, response);
-			}
-			response.addParam(GlobalConstant.ITEMNAME, request.getParam(GlobalConstant.ITEMNAME));
-			
-			
-			break;
 		case "LIST":
+			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
 			prefCacheUtil.getPrefInfo(request,response);
 			this.itemCount(request, response);
 			count = (Long) response.getParam(GlobalConstant.ITEMCOUNT);
@@ -82,7 +73,7 @@ public class ProjectSvcImpl implements ProjectSvc, ServiceProcessor {
 			break;
 		case "SAVE":
 			if (!request.containsParam(PrefCacheUtil.PREFFORMKEYS)) {
-				List<String> forms =  new ArrayList<String>(Arrays.asList("DEFECT_PAGE"));
+				List<String> forms =  new ArrayList<String>(Arrays.asList("PM_PROJECT_PAGE"));
 				request.addParam(PrefCacheUtil.PREFFORMKEYS, forms);
 			}
 			request.addParam(PrefCacheUtil.PREFGLOBAL, global);
@@ -142,7 +133,39 @@ public class ProjectSvcImpl implements ProjectSvc, ServiceProcessor {
 
 	@Override
 	public void save(RestRequest request, RestResponse response) {
-		// TODO Auto-generated method stub
+		try {
+			// validate
+			utilSvc.validateParams(request, response);
+			
+			if ((Boolean) request.getParam(GlobalConstant.VALID) == false) {
+				utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_VALIDATION_ERR").getValue(), response);
+				return;
+			}
+			// get existing item
+			Map<String,Object> inputList = (Map<String, Object>) request.getParam(GlobalConstant.INPUTFIELDS);
+			if (inputList.containsKey(GlobalConstant.ITEMID) && inputList.get(GlobalConstant.ITEMID) != null && !"".equals(inputList.get(GlobalConstant.ITEMID))) {
+				request.addParam(GlobalConstant.ITEMID, inputList.get(GlobalConstant.ITEMID));
+				projectDao.item(request, response);
+				request.addParam(GlobalConstant.ITEM, response.getParam(GlobalConstant.ITEM));
+				response.getParams().remove(GlobalConstant.ITEM);
+			} else {
+				Project project = new Project();
+				project.setArchive(false);
+				project.setLocked(false);
+				request.addParam(GlobalConstant.ITEM, project);
+			}
+			// marshall
+			utilSvc.marshallFields(request, response);
+		
+			
+			// save
+			projectDao.save(request, response);
+			
+			utilSvc.addStatus(RestResponse.INFO, RestResponse.SUCCESS, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_SAVE_SUCCESS").getValue(), response);
+		} catch (Exception e) {
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_SAVE_FAIL").getValue(), response);
+			e.printStackTrace();
+		}
 		
 	}
 }

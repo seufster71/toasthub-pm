@@ -73,7 +73,7 @@ public class BacklogSvcImpl implements BacklogSvc, ServiceProcessor {
 			break;
 		case "SAVE":
 			if (!request.containsParam(PrefCacheUtil.PREFFORMKEYS)) {
-				List<String> forms =  new ArrayList<String>(Arrays.asList("BACKLOG_PAGE"));
+				List<String> forms =  new ArrayList<String>(Arrays.asList("PM_BACKLOG_PAGE"));
 				request.addParam(PrefCacheUtil.PREFFORMKEYS, forms);
 			}
 			request.addParam(PrefCacheUtil.PREFGLOBAL, global);

@@ -32,22 +32,22 @@ import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity
 @Table(name = "pm_workflow_step")
-public class WorkFlowStep extends BaseEntity implements Serializable{
+public class WorkflowStep extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
 	private String name;
 	
-	private WorkFlow workFlow;
-	private WorkFlowStep parent;
+	private Workflow workFlow;
+	private WorkflowStep parent;
 	
 
 	//Constructor
-	public WorkFlowStep() {
+	public WorkflowStep() {
 		super();
 	}
 	
-	public WorkFlowStep(String name){
+	public WorkflowStep(String name){
 		this.setActive(true);
 		this.setArchive(false);
 		this.setLocked(false);
@@ -66,22 +66,22 @@ public class WorkFlowStep extends BaseEntity implements Serializable{
 	}
 
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@ManyToOne(targetEntity = WorkFlow.class)
+	@ManyToOne(targetEntity = Workflow.class)
 	@JoinColumn(name = "workflow_id")
-	public WorkFlow getWorkFlow() {
+	public Workflow getWorkFlow() {
 		return workFlow;
 	}
-	public void setWorkFlow(WorkFlow workFlow) {
+	public void setWorkFlow(Workflow workFlow) {
 		this.workFlow = workFlow;
 	}
 
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@ManyToOne(targetEntity = WorkFlowStep.class)
+	@ManyToOne(targetEntity = WorkflowStep.class)
 	@JoinColumn(name = "parent_id")
-	public WorkFlowStep getParent() {
+	public WorkflowStep getParent() {
 		return parent;
 	}
-	public void setParent(WorkFlowStep parent) {
+	public void setParent(WorkflowStep parent) {
 		this.parent = parent;
 	}
 	

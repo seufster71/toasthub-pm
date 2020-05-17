@@ -73,7 +73,7 @@ public class DefectSvcImpl implements DefectSvc, ServiceProcessor {
 			break;
 		case "SAVE":
 			if (!request.containsParam(PrefCacheUtil.PREFFORMKEYS)) {
-				List<String> forms =  new ArrayList<String>(Arrays.asList("DEFECT_PAGE"));
+				List<String> forms =  new ArrayList<String>(Arrays.asList("PM_DEFECT_PAGE"));
 				request.addParam(PrefCacheUtil.PREFFORMKEYS, forms);
 			}
 			request.addParam(PrefCacheUtil.PREFGLOBAL, global);

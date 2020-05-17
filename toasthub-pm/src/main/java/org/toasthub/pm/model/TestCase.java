@@ -38,6 +38,9 @@ public class TestCase extends BaseEntity implements Serializable{
 	
 	private String summary;
 	private String description;
+	private String environment;
+	private String userInfo;
+	private String setupInfo;
 	
 	private TestScenario testScenario;
 	
@@ -77,6 +80,33 @@ public class TestCase extends BaseEntity implements Serializable{
 		this.description = description;
 	}
 
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "environment")
+	public String getEnvironment() {
+		return environment;
+	}
+	public void setEnvironment(String environment) {
+		this.environment = environment;
+	}
+
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "user_info")
+	public String getUserInfo() {
+		return userInfo;
+	}
+	public void setUserInfo(String userInfo) {
+		this.userInfo = userInfo;
+	}
+
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "setup_info")
+	public String getSetupInfo() {
+		return setupInfo;
+	}
+	public void setSetupInfo(String setupInfo) {
+		this.setupInfo = setupInfo;
+	}
+	
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
 	@ManyToOne(targetEntity = TestScenario.class)
 	@JoinColumn(name = "test_scenario_id")

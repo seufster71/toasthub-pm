@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.toasthub.pm.backlog;
+package org.toasthub.pm.sprint;
 
 
 import java.util.ArrayList;
@@ -33,11 +33,11 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
-import org.toasthub.pm.model.Backlog;
+import org.toasthub.pm.model.Sprint;
 
-@Repository("BacklogDao")
+@Repository("SprintDao")
 @Transactional("TransactionManagerData")
-public class BacklogDaoImpl implements BacklogDao {
+public class SprintDaoImpl implements SprintDao {
 	
 	@Autowired
 	protected EntityManagerDataSvc entityManagerDataSvc;
@@ -48,8 +48,8 @@ public class BacklogDaoImpl implements BacklogDao {
 	public void delete(RestRequest request, RestResponse response) throws Exception {
 		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
 			
-			Backlog backlog = (Backlog) entityManagerDataSvc.getInstance().getReference(Backlog.class,  new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
-			entityManagerDataSvc.getInstance().remove(backlog);
+			Sprint sprint = (Sprint) entityManagerDataSvc.getInstance().getReference(Sprint.class,  new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			entityManagerDataSvc.getInstance().remove(sprint);
 			
 		} else {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "Missing ID", response);
@@ -58,13 +58,13 @@ public class BacklogDaoImpl implements BacklogDao {
 
 	@Override
 	public void save(RestRequest request, RestResponse response) throws Exception {
-		Backlog backlog = (Backlog) request.getParam(GlobalConstant.ITEM);
-		entityManagerDataSvc.getInstance().merge(backlog);
+		Sprint sprint = (Sprint) request.getParam(GlobalConstant.ITEM);
+		entityManagerDataSvc.getInstance().merge(sprint);
 	}
 
 	@Override
 	public void items(RestRequest request, RestResponse response) throws Exception {
-		String queryStr = "SELECT DISTINCT x FROM Backlog AS x ";
+		String queryStr = "SELECT DISTINCT x FROM Sprint AS x ";
 		
 		boolean and = false;
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
@@ -89,22 +89,37 @@ public class BacklogDaoImpl implements BacklogDao {
 			String lookupStr = "";
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_NAME")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("SPRINT_TABLE_NAME")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.name LIKE :nameValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_PRODUCT")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("SPRINT_TABLE_PRODUCT")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.product.name LIKE :productValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_PROJECT")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("SPRINT_TABLE_PROJECT")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.project.name LIKE :projectValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("SPRINT_TABLE_RELEASE")){
+						if (or) { lookupStr += " OR "; }
+						lookupStr += "x.release.name LIKE :releaseValue"; 
+						or = true;
+					}
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("SPRINT_TABLE_STARTDATE")){
+						if (or) { lookupStr += " OR "; }
+						lookupStr += "x.startDate LIKE :startDateValue"; 
+						or = true;
+					}
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("SPRINT_TABLE_ENDDATE")){
+						if (or) { lookupStr += " OR "; }
+						lookupStr += "x.endDate LIKE :endDateValue"; 
+						or = true;
+					}
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("SPRINT_TABLE_STATUS")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.active LIKE :statusValue"; 
 						or = true;
@@ -136,22 +151,37 @@ public class BacklogDaoImpl implements BacklogDao {
 			
 			for (LinkedHashMap<String,String> item : orderCriteria) {
 				if (item.containsKey(GlobalConstant.ORDERCOLUMN) && item.containsKey(GlobalConstant.ORDERDIR)) {
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("BACKLOG_TABLE_NAME")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("SPRINT_TABLE_NAME")){
 						if (comma) { orderItems.append(","); }
 						orderItems.append("x.name ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("BACKLOG_TABLE_PRODUCT")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("SPRINT_TABLE_PRODUCT")){
 						if (comma) { orderItems.append(","); }
 						orderItems.append("x.product.name ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("BACKLOG_TABLE_PROJECT")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("SPRINT_TABLE_PROJECT")){
 						if (comma) { orderItems.append(","); }
 						orderItems.append("x.project.name ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("BACKLOG_TABLE_STATUS")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("SPRINT_TABLE_RELEASE")){
+						if (comma) { orderItems.append(","); }
+						orderItems.append("x.release.name ").append(item.get(GlobalConstant.ORDERDIR));
+						comma = true;
+					}
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("SPRINT_TABLE_STARTDATE")){
+						if (comma) { orderItems.append(","); }
+						orderItems.append("x.startDate ").append(item.get(GlobalConstant.ORDERDIR));
+						comma = true;
+					}
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("SPRINT_TABLE_ENDDATE")){
+						if (comma) { orderItems.append(","); }
+						orderItems.append("x.endDate ").append(item.get(GlobalConstant.ORDERDIR));
+						comma = true;
+					}
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("SPRINT_TABLE_STATUS")){
 						if (comma) { orderItems.append(","); }
 						orderItems.append("x.active ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
@@ -177,16 +207,25 @@ public class BacklogDaoImpl implements BacklogDao {
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {  
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_NAME")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("SPRINT_TABLE_NAME")){
 						query.setParameter("nameValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_PRODUCT")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("SPRINT_TABLE_PRODUCT")){
 						query.setParameter("productValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_PROJECT")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("SPRINT_TABLE_PROJECT")){
 						query.setParameter("projectValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("SPRINT_TABLE_RELEASE")){
+						query.setParameter("releaseValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
+					}
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("SPRINT_TABLE_STARTDATE")){
+						query.setParameter("startDateValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
+					}
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("SPRINT_TABLE_ENDDATE")){
+						query.setParameter("endDateValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
+					}
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("SPRINT_TABLE_STATUS")){
 						if ("active".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
 							query.setParameter("statusValue", true);
 						} else if ("disabled".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
@@ -201,15 +240,15 @@ public class BacklogDaoImpl implements BacklogDao {
 			query.setMaxResults((Integer) request.getParam(GlobalConstant.LISTLIMIT));
 		}
 		@SuppressWarnings("unchecked")
-		List<Backlog> backlogs = query.getResultList();
+		List<Sprint> results = query.getResultList();
 
-		response.addParam(GlobalConstant.ITEMS, backlogs);
+		response.addParam(GlobalConstant.ITEMS, results);
 		
 	}
 
 	@Override
 	public void itemCount(RestRequest request, RestResponse response) throws Exception {
-		String queryStr = "SELECT COUNT(DISTINCT x) FROM Backlog as x ";
+		String queryStr = "SELECT COUNT(DISTINCT x) FROM Sprint as x ";
 		boolean and = false;
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			if (!and) { queryStr += " WHERE "; }
@@ -232,22 +271,37 @@ public class BacklogDaoImpl implements BacklogDao {
 			String lookupStr = "";
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_NAME")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("SPRINT_TABLE_NAME")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.name LIKE :nameValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_PRODUCT")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("SPRINT_TABLE_PRODUCT")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.product.name LIKE :productValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_PROJECT")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("SPRINT_TABLE_PROJECT")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.project.name LIKE :projectValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("SPRINT_TABLE_RELEASE")){
+						if (or) { lookupStr += " OR "; }
+						lookupStr += "x.release.name LIKE :releaseValue"; 
+						or = true;
+					}
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("SPRINT_TABLE_STARTDATE")){
+						if (or) { lookupStr += " OR "; }
+						lookupStr += "x.startDate LIKE :startDateValue"; 
+						or = true;
+					}
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("SPRINT_TABLE_ENDDATE")){
+						if (or) { lookupStr += " OR "; }
+						lookupStr += "x.endDate LIKE :endDateValue"; 
+						or = true;
+					}
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("SPRINT_TABLE_STATUS")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.active LIKE :statusValue"; 
 						or = true;
@@ -273,16 +327,25 @@ public class BacklogDaoImpl implements BacklogDao {
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {  
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_NAME")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("SPRINT_TABLE_NAME")){
 						query.setParameter("nameValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_PRODUCT")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("SPRINT_TABLE_PRODUCT")){
 						query.setParameter("productValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_PROJECT")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("SPRINT_TABLE_PROJECT")){
 						query.setParameter("projectValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("BACKLOG_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("SPRINT_TABLE_RELEASE")){
+						query.setParameter("releaseValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
+					}
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("SPRINT_TABLE_STARTDATE")){
+						query.setParameter("startDateValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
+					}
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("SPRINT_TABLE_ENDDATE")){
+						query.setParameter("endDateValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
+					}
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("SPRINT_TABLE_STATUS")){
 						if ("active".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
 							query.setParameter("statusValue", true);
 						} else if ("disabled".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
@@ -304,13 +367,13 @@ public class BacklogDaoImpl implements BacklogDao {
 	@Override
 	public void item(RestRequest request, RestResponse response) throws Exception {
 		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
-			String queryStr = "SELECT x FROM Backlog AS x WHERE x.id =:id";
+			String queryStr = "SELECT x FROM Sprint AS x WHERE x.id =:id";
 			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
 			query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
-			Backlog backlog = (Backlog) query.getSingleResult();
+			Sprint sprint = (Sprint) query.getSingleResult();
 			
-			response.addParam(GlobalConstant.ITEM, backlog);
+			response.addParam(GlobalConstant.ITEM, sprint);
 		} else {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID").getValue(), response);
 		}

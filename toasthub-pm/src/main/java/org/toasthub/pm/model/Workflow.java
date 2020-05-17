@@ -32,11 +32,11 @@ import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity
 @Table(name = "pm_workflow")
-public class WorkFlow extends BaseEntity implements Serializable{
+public class Workflow extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
-	private String title;
+	private String name;
 	private String description;
 	
 	private Project project;
@@ -45,27 +45,27 @@ public class WorkFlow extends BaseEntity implements Serializable{
 
 
 	//Constructor
-	public WorkFlow() {
+	public Workflow() {
 		super();
 	}
 	
-	public WorkFlow(String title, String description){
+	public Workflow(String name, String description){
 		this.setActive(true);
 		this.setArchive(false);
 		this.setLocked(false);
 		this.setCreated(Instant.now());
-		this.setTitle(title);
+		this.setName(name);
 		this.setDescription(description);
 	}
 
 	// Methods
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "title")
-	public String getTitle() {
-		return title;
+	@Column(name = "name")
+	public String getName() {
+		return name;
 	}
-	public void setTitle(String title) {
-		this.title = title;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})

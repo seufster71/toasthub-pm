@@ -73,7 +73,7 @@ public class ProductSvcImpl implements ProductSvc, ServiceProcessor {
 			break;
 		case "SAVE":
 			if (!request.containsParam(PrefCacheUtil.PREFFORMKEYS)) {
-				List<String> forms =  new ArrayList<String>(Arrays.asList("DEFECT_PAGE"));
+				List<String> forms =  new ArrayList<String>(Arrays.asList("PM_PRODUCT_PAGE"));
 				request.addParam(PrefCacheUtil.PREFFORMKEYS, forms);
 			}
 			request.addParam(PrefCacheUtil.PREFGLOBAL, global);

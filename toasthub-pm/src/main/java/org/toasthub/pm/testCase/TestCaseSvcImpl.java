@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.toasthub.pm.release;
+package org.toasthub.pm.testCase;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,14 +30,14 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
-import org.toasthub.pm.model.Release;
+import org.toasthub.pm.model.TestCase;
 
-@Service("ReleaseSvc")
-public class ReleaseSvcImpl implements ReleaseSvc, ServiceProcessor {
+@Service("TestCaseSvc")
+public class TestCaseSvcImpl implements TestCaseSvc, ServiceProcessor {
 
 	@Autowired
-	@Qualifier("ReleaseDao")
-	ReleaseDao releaseDao;
+	@Qualifier("TestCaseDao")
+	TestCaseDao testCaseDao;
 	
 	@Autowired
 	UtilSvc utilSvc;
@@ -73,7 +73,7 @@ public class ReleaseSvcImpl implements ReleaseSvc, ServiceProcessor {
 			break;
 		case "SAVE":
 			if (!request.containsParam(PrefCacheUtil.PREFFORMKEYS)) {
-				List<String> forms =  new ArrayList<String>(Arrays.asList("PM_RELEASE_PAGE"));
+				List<String> forms =  new ArrayList<String>(Arrays.asList("PM_TESTCASE_PAGE"));
 				request.addParam(PrefCacheUtil.PREFFORMKEYS, forms);
 			}
 			request.addParam(PrefCacheUtil.PREFGLOBAL, global);
@@ -89,7 +89,7 @@ public class ReleaseSvcImpl implements ReleaseSvc, ServiceProcessor {
 	@Override
 	public void items(RestRequest request, RestResponse response) {
 		try {
-			releaseDao.items(request, response);
+			testCaseDao.items(request, response);
 			if (response.getParam("items") == null){
 				utilSvc.addStatus(RestResponse.INFO, RestResponse.EMPTY, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_NO_ITEMS").getValue(), response);
 			}
@@ -103,7 +103,7 @@ public class ReleaseSvcImpl implements ReleaseSvc, ServiceProcessor {
 	@Override
 	public void itemCount(RestRequest request, RestResponse response) {
 		try {
-			releaseDao.itemCount(request, response);
+			testCaseDao.itemCount(request, response);
 		} catch (Exception e) {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_EXECUTION_FAIL").getValue(), response);
 			e.printStackTrace();
@@ -113,7 +113,7 @@ public class ReleaseSvcImpl implements ReleaseSvc, ServiceProcessor {
 	@Override
 	public void delete(RestRequest request, RestResponse response) {
 		try {
-			releaseDao.delete(request, response);
+			testCaseDao.delete(request, response);
 			utilSvc.addStatus(RestResponse.INFO, RestResponse.SUCCESS, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_DELETE_SUCCESS").getValue(), response);
 		} catch (Exception e) {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_DELETE_FAIL").getValue(), response);
@@ -124,7 +124,7 @@ public class ReleaseSvcImpl implements ReleaseSvc, ServiceProcessor {
 	@Override
 	public void item(RestRequest request, RestResponse response) {
 		try {
-			releaseDao.item(request, response);
+			testCaseDao.item(request, response);
 		} catch (Exception e) {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_EXECUTION_FAIL").getValue(), response);
 			e.printStackTrace();
@@ -145,21 +145,21 @@ public class ReleaseSvcImpl implements ReleaseSvc, ServiceProcessor {
 			Map<String,Object> inputList = (Map<String, Object>) request.getParam(GlobalConstant.INPUTFIELDS);
 			if (inputList.containsKey(GlobalConstant.ITEMID) && inputList.get(GlobalConstant.ITEMID) != null && !"".equals(inputList.get(GlobalConstant.ITEMID))) {
 				request.addParam(GlobalConstant.ITEMID, inputList.get(GlobalConstant.ITEMID));
-				releaseDao.item(request, response);
+				testCaseDao.item(request, response);
 				request.addParam(GlobalConstant.ITEM, response.getParam(GlobalConstant.ITEM));
 				response.getParams().remove(GlobalConstant.ITEM);
 			} else {
-				Release release = new Release();
-				release.setArchive(false);
-				release.setLocked(false);
-				request.addParam(GlobalConstant.ITEM, release);
+				TestCase testCase = new TestCase();
+				testCase.setArchive(false);
+				testCase.setLocked(false);
+				request.addParam(GlobalConstant.ITEM, testCase);
 			}
 			// marshall
 			utilSvc.marshallFields(request, response);
 		
 			
 			// save
-			releaseDao.save(request, response);
+			testCaseDao.save(request, response);
 			
 			utilSvc.addStatus(RestResponse.INFO, RestResponse.SUCCESS, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_SAVE_SUCCESS").getValue(), response);
 		} catch (Exception e) {
