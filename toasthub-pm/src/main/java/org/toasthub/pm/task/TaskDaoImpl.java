@@ -354,7 +354,7 @@ public class TaskDaoImpl implements TaskDao {
 			
 			response.addParam(GlobalConstant.ITEM, task);
 		} else {
-			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID").getValue(), response);
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID"), response);
 		}
 	}
 

@@ -38,7 +38,7 @@ public class Comment extends BaseEntity implements Serializable{
 	private static final long serialVersionUID = 1L;
 	
 	private String description;
-	
+	private Long owner;
 	private Comment parent;
 	
 	private Defect defect;
@@ -58,8 +58,6 @@ public class Comment extends BaseEntity implements Serializable{
 		this.setLocked(false);
 		this.setCreated(Instant.now());
 		
-
-		
 	}
 
 	// Methods
@@ -72,6 +70,15 @@ public class Comment extends BaseEntity implements Serializable{
 		this.description = description;
 	}
 
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "owner_id")
+	public Long getOwner() {
+		return owner;
+	}
+	public void setOwner(Long owner) {
+		this.owner = owner;
+	}
+	
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
 	@ManyToOne(targetEntity = Comment.class)
 	@JoinColumn(name = "parent_id")
@@ -101,12 +108,7 @@ public class Comment extends BaseEntity implements Serializable{
 	public void setEnhancement(Enhancement enhancement) {
 		this.enhancement = enhancement;
 	}
-	
-	
-	
-	
-	
-	
+
 	
 
 	

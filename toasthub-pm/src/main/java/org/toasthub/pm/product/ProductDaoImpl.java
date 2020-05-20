@@ -89,13 +89,13 @@ public class ProductDaoImpl implements ProductDao {
 			String lookupStr = "";
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PRODUCT_TABLE_NAME")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PRODUCT_TABLE_NAME")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.name LIKE :nameValue"; 
 						or = true;
 					}
 
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PRODUCT_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PRODUCT_TABLE_STATUS")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.active LIKE :statusValue"; 
 						or = true;
@@ -127,12 +127,12 @@ public class ProductDaoImpl implements ProductDao {
 			
 			for (LinkedHashMap<String,String> item : orderCriteria) {
 				if (item.containsKey(GlobalConstant.ORDERCOLUMN) && item.containsKey(GlobalConstant.ORDERDIR)) {
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PRODUCT_TABLE_NAME")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_PRODUCT_TABLE_NAME")){
 						if (comma) { orderItems.append(","); }
 						orderItems.append("x.name ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PRODUCT_TABLE_STATUS")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_PRODUCT_TABLE_STATUS")){
 						if (comma) { orderItems.append(","); }
 						orderItems.append("x.active ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
@@ -144,12 +144,10 @@ public class ProductDaoImpl implements ProductDao {
 			queryStr += " ORDER BY ".concat(orderItems.toString());
 		} else {
 			// default order
-			queryStr += " ORDER BY lt.text";
+			queryStr += " ORDER BY x.name";
 		}
 		
 		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
-		
-		query.setParameter("lang",request.getParam(GlobalConstant.LANG));
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
@@ -158,10 +156,10 @@ public class ProductDaoImpl implements ProductDao {
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {  
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PRODUCT_TABLE_NAME")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PRODUCT_TABLE_NAME")){
 						query.setParameter("nameValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PRODUCT_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PRODUCT_TABLE_STATUS")){
 						if ("active".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
 							query.setParameter("statusValue", true);
 						} else if ("disabled".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
@@ -207,12 +205,12 @@ public class ProductDaoImpl implements ProductDao {
 			String lookupStr = "";
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PRODUCT_TABLE_NAME")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PRODUCT_TABLE_NAME")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.name LIKE :nameValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PRODUCT_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PRODUCT_TABLE_STATUS")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.active LIKE :statusValue"; 
 						or = true;
@@ -238,10 +236,10 @@ public class ProductDaoImpl implements ProductDao {
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {  
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PRODUCT_TABLE_NAME")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PRODUCT_TABLE_NAME")){
 						query.setParameter("nameValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PRODUCT_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PRODUCT_TABLE_STATUS")){
 						if ("active".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
 							query.setParameter("statusValue", true);
 						} else if ("disabled".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
@@ -271,7 +269,7 @@ public class ProductDaoImpl implements ProductDao {
 			
 			response.addParam(GlobalConstant.ITEM, product);
 		} else {
-			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID").getValue(), response);
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID"), response);
 		}
 	}
 

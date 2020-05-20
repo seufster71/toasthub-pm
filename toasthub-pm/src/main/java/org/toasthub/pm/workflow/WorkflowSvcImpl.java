@@ -81,7 +81,7 @@ public class WorkflowSvcImpl implements WorkflowSvc, ServiceProcessor {
 			this.save(request, response);
 			break;
 		default:
-			utilSvc.addStatus(RestResponse.INFO, RestResponse.ACTIONNOTEXIST, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_ACTION_NOT_AVAIL").getValue(), response);
+			utilSvc.addStatus(RestResponse.INFO, RestResponse.ACTIONNOTEXIST, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_ACTION_NOT_AVAIL"), response);
 			break;
 		}
 	}
@@ -91,10 +91,10 @@ public class WorkflowSvcImpl implements WorkflowSvc, ServiceProcessor {
 		try {
 			workflowDao.items(request, response);
 			if (response.getParam("items") == null){
-				utilSvc.addStatus(RestResponse.INFO, RestResponse.EMPTY, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_NO_ITEMS").getValue(), response);
+				utilSvc.addStatus(RestResponse.INFO, RestResponse.EMPTY, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_NO_ITEMS"), response);
 			}
 		} catch (Exception e) {
-			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_EXECUTION_FAIL").getValue(), response);
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_EXECUTION_FAIL"), response);
 			e.printStackTrace();
 		}
 	}
@@ -105,7 +105,7 @@ public class WorkflowSvcImpl implements WorkflowSvc, ServiceProcessor {
 		try {
 			workflowDao.itemCount(request, response);
 		} catch (Exception e) {
-			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_EXECUTION_FAIL").getValue(), response);
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_EXECUTION_FAIL"), response);
 			e.printStackTrace();
 		}
 	}
@@ -114,9 +114,9 @@ public class WorkflowSvcImpl implements WorkflowSvc, ServiceProcessor {
 	public void delete(RestRequest request, RestResponse response) {
 		try {
 			workflowDao.delete(request, response);
-			utilSvc.addStatus(RestResponse.INFO, RestResponse.SUCCESS, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_DELETE_SUCCESS").getValue(), response);
+			utilSvc.addStatus(RestResponse.INFO, RestResponse.SUCCESS, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_DELETE_SUCCESS"), response);
 		} catch (Exception e) {
-			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_DELETE_FAIL").getValue(), response);
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_DELETE_FAIL"), response);
 			e.printStackTrace();
 		}
 	}
@@ -126,7 +126,7 @@ public class WorkflowSvcImpl implements WorkflowSvc, ServiceProcessor {
 		try {
 			workflowDao.item(request, response);
 		} catch (Exception e) {
-			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_EXECUTION_FAIL").getValue(), response);
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_EXECUTION_FAIL"), response);
 			e.printStackTrace();
 		}
 	}
@@ -138,7 +138,7 @@ public class WorkflowSvcImpl implements WorkflowSvc, ServiceProcessor {
 			utilSvc.validateParams(request, response);
 			
 			if ((Boolean) request.getParam(GlobalConstant.VALID) == false) {
-				utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_VALIDATION_ERR").getValue(), response);
+				utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_VALIDATION_ERR"), response);
 				return;
 			}
 			// get existing item
@@ -161,9 +161,9 @@ public class WorkflowSvcImpl implements WorkflowSvc, ServiceProcessor {
 			// save
 			workflowDao.save(request, response);
 			
-			utilSvc.addStatus(RestResponse.INFO, RestResponse.SUCCESS, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_SAVE_SUCCESS").getValue(), response);
+			utilSvc.addStatus(RestResponse.INFO, RestResponse.SUCCESS, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_SAVE_SUCCESS"), response);
 		} catch (Exception e) {
-			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_SAVE_FAIL").getValue(), response);
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_SAVE_FAIL"), response);
 			e.printStackTrace();
 		}
 	}

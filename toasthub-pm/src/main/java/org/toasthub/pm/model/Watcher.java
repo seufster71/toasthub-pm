@@ -25,7 +25,6 @@ import javax.persistence.Table;
 
 import org.toasthub.core.general.api.View;
 import org.toasthub.core.general.model.BaseEntity;
-import org.toasthub.security.model.User;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
@@ -35,7 +34,7 @@ public class Watcher extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
-	private User user;
+	private Long user;
 	private Defect defect;
 	private Enhancement enhancement;
 	
@@ -48,12 +47,11 @@ public class Watcher extends BaseEntity implements Serializable{
 
 	// Methods
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@ManyToOne(targetEntity = User.class)
 	@JoinColumn(name = "user_id")
-	public User getUser() {
+	public Long getUser() {
 		return user;
 	}
-	public void setUser(User user) {
+	public void setUser(Long user) {
 		this.user = user;
 	}
 

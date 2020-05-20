@@ -89,27 +89,27 @@ public class ProjectDaoImpl implements ProjectDao {
 			String lookupStr = "";
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PROJECT_TABLE_NAME")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PROJECT_TABLE_NAME")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.name LIKE :nameValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PROJECT_TABLE_PRODUCT")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PROJECT_TABLE_PRODUCT")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.product.name LIKE :productValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PROJECT_TABLE_STARTDATE")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PROJECT_TABLE_STARTDATE")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.startDate LIKE :startDateValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PROJECT_TABLE_ENDDATE")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PROJECT_TABLE_ENDDATE")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.endDate LIKE :endDateValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PROJECT_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PROJECT_TABLE_STATUS")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.active LIKE :statusValue"; 
 						or = true;
@@ -141,27 +141,27 @@ public class ProjectDaoImpl implements ProjectDao {
 			
 			for (LinkedHashMap<String,String> item : orderCriteria) {
 				if (item.containsKey(GlobalConstant.ORDERCOLUMN) && item.containsKey(GlobalConstant.ORDERDIR)) {
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PROJECT_TABLE_NAME")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_PROJECT_TABLE_NAME")){
 						if (comma) { orderItems.append(","); }
 						orderItems.append("x.name ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PROJECT_TABLE_PRODUCT")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_PROJECT_TABLE_PRODUCT")){
 						if (comma) { orderItems.append(","); }
 						orderItems.append("x.product.name ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PROJECT_TABLE_STARTDATE")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_PROJECT_TABLE_STARTDATE")){
 						if (comma) { orderItems.append(","); }
 						orderItems.append("x.startDate ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PROJECT_TABLE_ENDDATE")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_PROJECT_TABLE_ENDDATE")){
 						if (comma) { orderItems.append(","); }
 						orderItems.append("x.endDate ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PROJECT_TABLE_STATUS")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_PROJECT_TABLE_STATUS")){
 						if (comma) { orderItems.append(","); }
 						orderItems.append("x.active ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
@@ -173,12 +173,10 @@ public class ProjectDaoImpl implements ProjectDao {
 			queryStr += " ORDER BY ".concat(orderItems.toString());
 		} else {
 			// default order
-			queryStr += " ORDER BY lt.text";
+			queryStr += " ORDER BY x.name";
 		}
 		
 		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
-		
-		query.setParameter("lang",request.getParam(GlobalConstant.LANG));
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
@@ -187,19 +185,19 @@ public class ProjectDaoImpl implements ProjectDao {
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {  
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PROJECT_TABLE_NAME")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PROJECT_TABLE_NAME")){
 						query.setParameter("nameValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PROJECT_TABLE_PRODUCT")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PROJECT_TABLE_PRODUCT")){
 						query.setParameter("productValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PROJECT_TABLE_STARTDATE")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PROJECT_TABLE_STARTDATE")){
 						query.setParameter("startDateValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PROJECT_TABLE_ENDDATE")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PROJECT_TABLE_ENDDATE")){
 						query.setParameter("endDateValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PROJECT_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PROJECT_TABLE_STATUS")){
 						if ("active".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
 							query.setParameter("statusValue", true);
 						} else if ("disabled".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
@@ -245,27 +243,27 @@ public class ProjectDaoImpl implements ProjectDao {
 			String lookupStr = "";
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PROJECT_TABLE_NAME")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PROJECT_TABLE_NAME")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.name LIKE :nameValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PROJECT_TABLE_PRODUCT")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PROJECT_TABLE_PRODUCT")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.product.name LIKE :projectValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PROJECT_TABLE_STARTDATE")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PROJECT_TABLE_STARTDATE")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.startDate LIKE :startDateValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PROJECT_TABLE_ENDDATE")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PROJECT_TABLE_ENDDATE")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.endDate LIKE :endDateValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PROJECT_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PROJECT_TABLE_STATUS")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.active LIKE :statusValue"; 
 						or = true;
@@ -291,19 +289,19 @@ public class ProjectDaoImpl implements ProjectDao {
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {  
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PROJECT_TABLE_NAME")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PROJECT_TABLE_NAME")){
 						query.setParameter("nameValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PROJECT_TABLE_PRODUCT")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PROJECT_TABLE_PRODUCT")){
 						query.setParameter("productValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PROJECT_TABLE_STARTDATE")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PROJECT_TABLE_STARTDATE")){
 						query.setParameter("startDateValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PROJECT_TABLE_ENDDATE")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PROJECT_TABLE_ENDDATE")){
 						query.setParameter("endDateValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PROJECT_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PROJECT_TABLE_STATUS")){
 						if ("active".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
 							query.setParameter("statusValue", true);
 						} else if ("disabled".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
@@ -333,7 +331,7 @@ public class ProjectDaoImpl implements ProjectDao {
 			
 			response.addParam(GlobalConstant.ITEM, project);
 		} else {
-			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID").getValue(), response);
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID"), response);
 		}
 	}
 

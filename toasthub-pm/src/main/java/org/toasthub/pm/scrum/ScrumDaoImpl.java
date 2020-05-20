@@ -312,7 +312,7 @@ public class ScrumDaoImpl implements ScrumDao {
 			
 			response.addParam(GlobalConstant.ITEM, scrum);
 		} else {
-			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID").getValue(), response);
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID"), response);
 		}
 	}
 

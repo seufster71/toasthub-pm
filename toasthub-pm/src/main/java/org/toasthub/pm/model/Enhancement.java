@@ -28,7 +28,6 @@ import javax.persistence.Table;
 import org.toasthub.core.general.api.View;
 import org.toasthub.core.general.model.BaseEntity;
 import org.toasthub.core.general.model.Text;
-import org.toasthub.security.model.User;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
@@ -41,8 +40,8 @@ public class Enhancement extends BaseEntity implements Serializable{
 	private String summary;
 	private String description;
 	
-	private User reportedBy;
-	private User assignee;
+	private Long reportedBy;
+	private Long assignee;
 	private String severity;
 	private String priority;
 	private String itemVersion;
@@ -98,22 +97,20 @@ public class Enhancement extends BaseEntity implements Serializable{
 	}
 
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@ManyToOne(targetEntity = User.class)
 	@JoinColumn(name = "reported_by_id")
-	public User getReportedBy() {
+	public Long getReportedBy() {
 		return reportedBy;
 	}
-	public void setReportedBy(User reportedBy) {
+	public void setReportedBy(Long reportedBy) {
 		this.reportedBy = reportedBy;
 	}
 
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@ManyToOne(targetEntity = User.class)
 	@JoinColumn(name = "assignee_id")
-	public User getAssignee() {
+	public Long getAssignee() {
 		return assignee;
 	}
-	public void setAssignee(User assignee) {
+	public void setAssignee(Long assignee) {
 		this.assignee = assignee;
 	}
 
