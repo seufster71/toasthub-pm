@@ -43,6 +43,8 @@ public class ProjectDaoImpl implements ProjectDao {
 	protected EntityManagerDataSvc entityManagerDataSvc;
 	@Autowired
 	protected UtilSvc utilSvc;
+	@Autowired
+	PrefCacheUtil prefCacheUtil;
 	
 	@Override
 	public void delete(RestRequest request, RestResponse response) throws Exception {
@@ -331,7 +333,7 @@ public class ProjectDaoImpl implements ProjectDao {
 			
 			response.addParam(GlobalConstant.ITEM, project);
 		} else {
-			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID"), response);
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID",prefCacheUtil.getLang(request)), response);
 		}
 	}
 
