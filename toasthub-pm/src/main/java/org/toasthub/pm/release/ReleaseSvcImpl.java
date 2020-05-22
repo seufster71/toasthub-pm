@@ -53,6 +53,16 @@ public class ReleaseSvcImpl implements ReleaseSvc, ServiceProcessor {
 		
 		Long count = 0l;
 		switch (action) {
+		case "INIT":
+			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
+			prefCacheUtil.getPrefInfo(request,response);
+			this.itemCount(request, response);
+			count = (Long) response.getParam(GlobalConstant.ITEMCOUNT);
+			if (count != null && count > 0){
+				this.items(request, response);
+			}
+			response.addParam(GlobalConstant.ITEMNAME, request.getParam(GlobalConstant.ITEMNAME));
+			break;
 		case "LIST":
 			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
 			prefCacheUtil.getPrefInfo(request,response);
