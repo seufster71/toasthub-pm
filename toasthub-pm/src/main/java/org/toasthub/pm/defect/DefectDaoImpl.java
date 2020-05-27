@@ -43,6 +43,8 @@ public class DefectDaoImpl implements DefectDao {
 	protected EntityManagerDataSvc entityManagerDataSvc;
 	@Autowired
 	protected UtilSvc utilSvc;
+	@Autowired
+	PrefCacheUtil prefCacheUtil;
 	
 	@Override
 	public void delete(RestRequest request, RestResponse response) throws Exception {
@@ -96,7 +98,7 @@ public class DefectDaoImpl implements DefectDao {
 					}
 					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("DEFECT_TABLE_ASSIGNEE")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "x.assignee.firstname LIKE :assigneeValue"; 
+						lookupStr += "x.assignee LIKE :assigneeValue"; 
 						or = true;
 					}
 					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("DEFECT_TABLE_SEVERITY")){
@@ -148,7 +150,7 @@ public class DefectDaoImpl implements DefectDao {
 					}
 					if (item.get(GlobalConstant.ORDERCOLUMN).equals("DEFECT_TABLE_ASSIGNEE")){
 						if (comma) { orderItems.append(","); }
-						orderItems.append("x.assignee.firstname ").append(item.get(GlobalConstant.ORDERDIR));
+						orderItems.append("x.assignee ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
 					if (item.get(GlobalConstant.ORDERCOLUMN).equals("DEFECT_TABLE_SEVERITY")){
@@ -173,12 +175,10 @@ public class DefectDaoImpl implements DefectDao {
 			queryStr += " ORDER BY ".concat(orderItems.toString());
 		} else {
 			// default order
-			queryStr += " ORDER BY lt.text";
+			queryStr += " ORDER BY x.id";
 		}
 		
 		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
-		
-		query.setParameter("lang",request.getParam(GlobalConstant.LANG));
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
@@ -248,7 +248,7 @@ public class DefectDaoImpl implements DefectDao {
 					}
 					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("DEFECT_TABLE_ASSIGNEE")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "x.assignee.firstname LIKE :assigneeValue"; 
+						lookupStr += "x.assignee LIKE :assigneeValue"; 
 						or = true;
 					}
 					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("DEFECT_TABLE_SEVERITY")){
@@ -325,7 +325,7 @@ public class DefectDaoImpl implements DefectDao {
 			
 			response.addParam(GlobalConstant.ITEM, defect);
 		} else {
-			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID"), response);
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID",prefCacheUtil.getLang(request)), response);
 		}
 	}
 
