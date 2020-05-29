@@ -92,27 +92,27 @@ public class EnhancementDaoImpl implements EnhancementDao {
 			String lookupStr = "";
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ENHANCEMENT_TABLE_SUMMARY")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ENHANCEMENT_TABLE_SUMMARY")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.summary LIKE :summaryValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ENHANCEMENT_TABLE_ASSIGNEE")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ENHANCEMENT_TABLE_ID")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "x.assignee LIKE :assigneeValue"; 
+						lookupStr += "x.id LIKE :idValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ENHANCEMENT_TABLE_SEVERITY")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ENHANCEMENT_TABLE_SEVERITY")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.severity LIKE :severityValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ENHANCEMENT_TABLE_PRIORITY")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ENHANCEMENT_TABLE_PRIORITY")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.priority LIKE :priorityValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ENHANCEMENT_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ENHANCEMENT_TABLE_STATUS")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.status LIKE :statusValue"; 
 						or = true;
@@ -144,27 +144,27 @@ public class EnhancementDaoImpl implements EnhancementDao {
 			
 			for (LinkedHashMap<String,String> item : orderCriteria) {
 				if (item.containsKey(GlobalConstant.ORDERCOLUMN) && item.containsKey(GlobalConstant.ORDERDIR)) {
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("ENHANCEMENT_TABLE_SUMMARY")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_ENHANCEMENT_TABLE_SUMMARY")){
 						if (comma) { orderItems.append(","); }
 						orderItems.append("x.summary ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("ENHANCEMENT_TABLE_ASSIGNEE")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_ENHANCEMENT_TABLE_ID")){
 						if (comma) { orderItems.append(","); }
-						orderItems.append("x.assignee ").append(item.get(GlobalConstant.ORDERDIR));
+						orderItems.append("x.id ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("ENHANCEMENT_TABLE_SEVERITY")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_ENHANCEMENT_TABLE_SEVERITY")){
 						if (comma) { orderItems.append(","); }
 						orderItems.append("x.severity ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("ENHANCEMENT_TABLE_PRIORITY")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_ENHANCEMENT_TABLE_PRIORITY")){
 						if (comma) { orderItems.append(","); }
 						orderItems.append("x.priority ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("ENHANCEMENT_TABLE_STATUS")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_ENHANCEMENT_TABLE_STATUS")){
 						if (comma) { orderItems.append(","); }
 						orderItems.append("x.status ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
@@ -176,7 +176,7 @@ public class EnhancementDaoImpl implements EnhancementDao {
 			queryStr += " ORDER BY ".concat(orderItems.toString());
 		} else {
 			// default order
-			queryStr += " ORDER BY x.id";
+			queryStr += " ORDER BY x.id DESC";
 		}
 		
 		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
@@ -188,19 +188,21 @@ public class EnhancementDaoImpl implements EnhancementDao {
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {  
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ENHANCEMENT_TABLE_SUMMARY")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ENHANCEMENT_TABLE_SUMMARY")){
 						query.setParameter("summaryValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ENHANCEMENT_TABLE_ASSIGNEE")){
-						query.setParameter("assigneeValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ENHANCEMENT_TABLE_ID")){
+						String val = (String) item.get(GlobalConstant.SEARCHVALUE);
+						String[] valParts = val.split("-");
+						query.setParameter("idValue", "%" + valParts[1] + "%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ENHANCEMENT_TABLE_SEVERITY")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ENHANCEMENT_TABLE_SEVERITY")){
 						query.setParameter("severityValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ENHANCEMENT_TABLE_PRIORITY")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ENHANCEMENT_TABLE_PRIORITY")){
 						query.setParameter("priorityValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ENHANCEMENT_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ENHANCEMENT_TABLE_STATUS")){
 						query.setParameter("statusValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
 				}
@@ -242,27 +244,27 @@ public class EnhancementDaoImpl implements EnhancementDao {
 			String lookupStr = "";
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ENHANCEMENT_TABLE_SUMMARY")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ENHANCEMENT_TABLE_SUMMARY")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.summary LIKE :summaryValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ENHANCEMENT_TABLE_ASSIGNEE")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ENHANCEMENT_TABLE_ID")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "x.assignee LIKE :assigneeValue"; 
+						lookupStr += "x.id LIKE :idValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ENHANCEMENT_TABLE_SEVERITY")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ENHANCEMENT_TABLE_SEVERITY")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.severity LIKE :severityValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ENHANCEMENT_TABLE_PRIORITY")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ENHANCEMENT_TABLE_PRIORITY")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.priority LIKE :priorityValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ENHANCEMENT_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ENHANCEMENT_TABLE_STATUS")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.status LIKE :statusValue"; 
 						or = true;
@@ -288,19 +290,21 @@ public class EnhancementDaoImpl implements EnhancementDao {
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {  
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ENHANCEMENT_TABLE_SUMMARY")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ENHANCEMENT_TABLE_SUMMARY")){
 						query.setParameter("summaryValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ENHANCEMENT_TABLE_ASSIGNEE")){
-						query.setParameter("assigneeValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ENHANCEMENT_TABLE_ID")){
+						String val = (String) item.get(GlobalConstant.SEARCHVALUE);
+						String[] valParts = val.split("-");
+						query.setParameter("idValue", "%" + valParts[1] + "%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ENHANCEMENT_TABLE_SEVERITY")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ENHANCEMENT_TABLE_SEVERITY")){
 						query.setParameter("severityValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ENHANCEMENT_TABLE_PRIORITY")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ENHANCEMENT_TABLE_PRIORITY")){
 						query.setParameter("priorityValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ENHANCEMENT_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ENHANCEMENT_TABLE_STATUS")){
 						query.setParameter("statusValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
 				}

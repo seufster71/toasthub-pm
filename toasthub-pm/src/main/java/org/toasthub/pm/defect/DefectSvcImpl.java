@@ -23,6 +23,8 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.toasthub.core.common.UtilSvc;
 import org.toasthub.core.general.handler.ServiceProcessor;
@@ -31,6 +33,7 @@ import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
 import org.toasthub.pm.model.Defect;
+import org.toasthub.security.model.MyUserPrincipal;
 
 @Service("DefectSvc")
 public class DefectSvcImpl implements DefectSvc, ServiceProcessor {
@@ -83,7 +86,7 @@ public class DefectSvcImpl implements DefectSvc, ServiceProcessor {
 			break;
 		case "SAVE":
 			if (!request.containsParam(PrefCacheUtil.PREFFORMKEYS)) {
-				List<String> forms =  new ArrayList<String>(Arrays.asList("PM_DEFECT_PAGE"));
+				List<String> forms =  new ArrayList<String>(Arrays.asList("PM_DEFECT_FORM"));
 				request.addParam(PrefCacheUtil.PREFFORMKEYS, forms);
 			}
 			request.addParam(PrefCacheUtil.PREFGLOBAL, global);
@@ -167,6 +170,11 @@ public class DefectSvcImpl implements DefectSvc, ServiceProcessor {
 			// marshall
 			utilSvc.marshallFields(request, response);
 		
+			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+			MyUserPrincipal user = (MyUserPrincipal) authentication.getPrincipal();
+			
+			Defect defect = (Defect) request.getParam(GlobalConstant.ITEM);
+			defect.setReportedBy(user.getUser().getId());
 			
 			// save
 			defectDao.save(request, response);

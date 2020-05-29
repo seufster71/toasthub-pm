@@ -45,7 +45,7 @@ public class Defect extends BaseEntity implements Serializable{
 	private String envUsers;
 	
 	private Long reportedBy;
-	private Long assignee;
+	private String assignee;
 	private String severity;
 	private int priority;
 	private String itemVersion;
@@ -138,7 +138,7 @@ public class Defect extends BaseEntity implements Serializable{
 	}
 
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@JoinColumn(name = "reported_by_id")
+	@Column(name = "reported_by_id")
 	public Long getReportedBy() {
 		return reportedBy;
 	}
@@ -147,11 +147,11 @@ public class Defect extends BaseEntity implements Serializable{
 	}
 
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@JoinColumn(name = "assignee_id")
-	public Long getAssignee() {
+	@Column(name = "assignee_ids")
+	public String getAssignee() {
 		return assignee;
 	}
-	public void setAssignee(Long assignee) {
+	public void setAssignee(String assignee) {
 		this.assignee = assignee;
 	}
 

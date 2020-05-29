@@ -23,6 +23,8 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.toasthub.core.common.UtilSvc;
 import org.toasthub.core.general.handler.ServiceProcessor;
@@ -31,6 +33,9 @@ import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
 import org.toasthub.pm.model.Enhancement;
+import org.toasthub.security.model.MyUserPrincipal;
+import org.toasthub.security.model.User;
+import org.toasthub.security.model.UserContext;
 
 @Service("EnhancementSvc")
 public class EnhancementSvcImpl implements EnhancementSvc, ServiceProcessor {
@@ -44,6 +49,9 @@ public class EnhancementSvcImpl implements EnhancementSvc, ServiceProcessor {
 	
 	@Autowired
 	PrefCacheUtil prefCacheUtil;
+	
+	@Autowired
+	UserContext userContext;
 
 	
 	@Override
@@ -83,7 +91,7 @@ public class EnhancementSvcImpl implements EnhancementSvc, ServiceProcessor {
 			break;
 		case "SAVE":
 			if (!request.containsParam(PrefCacheUtil.PREFFORMKEYS)) {
-				List<String> forms =  new ArrayList<String>(Arrays.asList("PM_ENHANCEMENT_PAGE"));
+				List<String> forms =  new ArrayList<String>(Arrays.asList("PM_ENHANCEMENT_FORM"));
 				request.addParam(PrefCacheUtil.PREFFORMKEYS, forms);
 			}
 			request.addParam(PrefCacheUtil.PREFGLOBAL, global);
@@ -167,6 +175,11 @@ public class EnhancementSvcImpl implements EnhancementSvc, ServiceProcessor {
 			// marshall
 			utilSvc.marshallFields(request, response);
 		
+			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+			MyUserPrincipal user = (MyUserPrincipal) authentication.getPrincipal();
+			
+			Enhancement enhancement = (Enhancement) request.getParam(GlobalConstant.ITEM);
+			enhancement.setReportedBy(user.getUser().getId());
 			
 			// save
 			enhancementDao.save(request, response);
