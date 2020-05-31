@@ -43,6 +43,8 @@ public class TestScenarioDaoImpl implements TestScenarioDao {
 	protected EntityManagerDataSvc entityManagerDataSvc;
 	@Autowired
 	protected UtilSvc utilSvc;
+	@Autowired
+	PrefCacheUtil prefCacheUtil;
 	
 	@Override
 	public void delete(RestRequest request, RestResponse response) throws Exception {
@@ -89,22 +91,22 @@ public class TestScenarioDaoImpl implements TestScenarioDao {
 			String lookupStr = "";
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("TESTSCENARIO_TABLE_SUMMARY")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_SUMMARY")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.summary LIKE :summaryValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("TESTSCENARIO_TABLE_DEFECT")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_DEFECT")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.defect.summary LIKE :defectValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("TESTSCENARIO_TABLE_ENHANCEMENT")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_ENHANCEMENT")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.enhancement.summary LIKE :enhancementValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("TESTSCENARIO_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_STATUS")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.active LIKE :statusValue"; 
 						or = true;
@@ -136,22 +138,22 @@ public class TestScenarioDaoImpl implements TestScenarioDao {
 			
 			for (LinkedHashMap<String,String> item : orderCriteria) {
 				if (item.containsKey(GlobalConstant.ORDERCOLUMN) && item.containsKey(GlobalConstant.ORDERDIR)) {
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("TESTSCENARIO_TABLE_SUMMARY")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_TESTSCENARIO_TABLE_SUMMARY")){
 						if (comma) { orderItems.append(","); }
 						orderItems.append("x.summary ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("TESTSCENARIO_TABLE_DEFECT")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_TESTSCENARIO_TABLE_DEFECT")){
 						if (comma) { orderItems.append(","); }
 						orderItems.append("x.defect.summary ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("TESTSCENARIO_TABLE_ENHANCEMENT")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_TESTSCENARIO_TABLE_ENHANCEMENT")){
 						if (comma) { orderItems.append(","); }
 						orderItems.append("x.enhancement.summary ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("TESTSCENARIO_TABLE_STATUS")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_TESTSCENARIO_TABLE_STATUS")){
 						if (comma) { orderItems.append(","); }
 						orderItems.append("x.active ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
@@ -163,12 +165,10 @@ public class TestScenarioDaoImpl implements TestScenarioDao {
 			queryStr += " ORDER BY ".concat(orderItems.toString());
 		} else {
 			// default order
-			queryStr += " ORDER BY lt.text";
+			queryStr += " ORDER BY x.id DESC";
 		}
 		
 		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
-		
-		query.setParameter("lang",request.getParam(GlobalConstant.LANG));
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
@@ -177,16 +177,16 @@ public class TestScenarioDaoImpl implements TestScenarioDao {
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {  
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("TESTSCENARIO_TABLE_SUMMARY")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_SUMMARY")){
 						query.setParameter("summaryValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("TESTSCENARIO_TABLE_DEFECT")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_DEFECT")){
 						query.setParameter("defectValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("TESTSCENARIO_TABLE_ENHANCEMENT")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_ENHANCEMENT")){
 						query.setParameter("enhancementValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("TESTSCENARIO_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_STATUS")){
 						if ("active".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
 							query.setParameter("statusValue", true);
 						} else if ("disabled".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
@@ -232,22 +232,22 @@ public class TestScenarioDaoImpl implements TestScenarioDao {
 			String lookupStr = "";
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("TESTSCENARIO_TABLE_SUMMARY")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_SUMMARY")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.summary LIKE :summaryValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("TESTSCENARIO_TABLE_DEFECT")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_DEFECT")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.defect.summary LIKE :defectValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("TESTSCENARIO_TABLE_ENHANCEMENT")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_ENHANCEMENT")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.enhancement.summary LIKE :enhancementValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("TESTSCENARIO_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_STATUS")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.active LIKE :statusValue"; 
 						or = true;
@@ -273,16 +273,16 @@ public class TestScenarioDaoImpl implements TestScenarioDao {
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {  
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("TESTSCENARIO_TABLE_SUMMARY")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_SUMMARY")){
 						query.setParameter("summaryValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("TESTSCENARIO_TABLE_DEFECT")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_DEFECT")){
 						query.setParameter("defectValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("TESTSCENARIO_TABLE_ENHANCEMENT")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_ENHANCEMENT")){
 						query.setParameter("enhancementValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("TESTSCENARIO_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_STATUS")){
 						if ("active".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
 							query.setParameter("statusValue", true);
 						} else if ("disabled".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
@@ -312,7 +312,7 @@ public class TestScenarioDaoImpl implements TestScenarioDao {
 			
 			response.addParam(GlobalConstant.ITEM, testScenario);
 		} else {
-			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID"), response);
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID",prefCacheUtil.getLang(request)), response);
 		}
 	}
 

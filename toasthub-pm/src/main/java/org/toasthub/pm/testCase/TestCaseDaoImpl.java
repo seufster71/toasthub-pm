@@ -43,6 +43,8 @@ public class TestCaseDaoImpl implements TestCaseDao {
 	protected EntityManagerDataSvc entityManagerDataSvc;
 	@Autowired
 	protected UtilSvc utilSvc;
+	@Autowired
+	PrefCacheUtil prefCacheUtil;
 	
 	@Override
 	public void delete(RestRequest request, RestResponse response) throws Exception {
@@ -89,17 +91,17 @@ public class TestCaseDaoImpl implements TestCaseDao {
 			String lookupStr = "";
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("TESTCASE_TABLE_SUMMARY")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTCASE_TABLE_SUMMARY")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.summary LIKE :summaryValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("TESTCASE_TABLE_TESTSCENARIO")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTCASE_TABLE_TESTSCENARIO")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.testScenario.summary LIKE :productValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("TESTCASE_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTCASE_TABLE_STATUS")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.active LIKE :statusValue"; 
 						or = true;
@@ -131,17 +133,17 @@ public class TestCaseDaoImpl implements TestCaseDao {
 			
 			for (LinkedHashMap<String,String> item : orderCriteria) {
 				if (item.containsKey(GlobalConstant.ORDERCOLUMN) && item.containsKey(GlobalConstant.ORDERDIR)) {
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("TESTCASE_TABLE_SUMMARY")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_TESTCASE_TABLE_SUMMARY")){
 						if (comma) { orderItems.append(","); }
 						orderItems.append("x.summary ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("TESTCASE_TABLE_TESTSCENARIO")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_TESTCASE_TABLE_TESTSCENARIO")){
 						if (comma) { orderItems.append(","); }
 						orderItems.append("x.testScenario.summary ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("TESTCASE_TABLE_STATUS")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_TESTCASE_TABLE_STATUS")){
 						if (comma) { orderItems.append(","); }
 						orderItems.append("x.active ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
@@ -153,12 +155,10 @@ public class TestCaseDaoImpl implements TestCaseDao {
 			queryStr += " ORDER BY ".concat(orderItems.toString());
 		} else {
 			// default order
-			queryStr += " ORDER BY lt.text";
+			queryStr += " ORDER BY x.id DESC";
 		}
 		
 		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
-		
-		query.setParameter("lang",request.getParam(GlobalConstant.LANG));
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
@@ -167,13 +167,13 @@ public class TestCaseDaoImpl implements TestCaseDao {
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {  
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("TESTCASE_TABLE_SUMMARY")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTCASE_TABLE_SUMMARY")){
 						query.setParameter("summaryValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("TESTCASE_TABLE_TESTSCENARIO")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTCASE_TABLE_TESTSCENARIO")){
 						query.setParameter("testScenarioValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("TESTCASE_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTCASE_TABLE_STATUS")){
 						if ("active".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
 							query.setParameter("statusValue", true);
 						} else if ("disabled".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
@@ -219,17 +219,17 @@ public class TestCaseDaoImpl implements TestCaseDao {
 			String lookupStr = "";
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("TESTCASE_TABLE_SUMMARY")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTCASE_TABLE_SUMMARY")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.summary LIKE :summaryValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("TESTCASE_TABLE_TESTSCENARIO")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTCASE_TABLE_TESTSCENARIO")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.testScenario.summary LIKE :productValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("TESTCASE_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTCASE_TABLE_STATUS")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.active LIKE :statusValue"; 
 						or = true;
@@ -255,13 +255,13 @@ public class TestCaseDaoImpl implements TestCaseDao {
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {  
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("TESTCASE_TABLE_SUMMARY")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTCASE_TABLE_SUMMARY")){
 						query.setParameter("summaryValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("TESTCASE_TABLE_TESTSCENARIO")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTCASE_TABLE_TESTSCENARIO")){
 						query.setParameter("testScenarioValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("TESTCASE_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTCASE_TABLE_STATUS")){
 						if ("active".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
 							query.setParameter("statusValue", true);
 						} else if ("disabled".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
@@ -291,7 +291,7 @@ public class TestCaseDaoImpl implements TestCaseDao {
 			
 			response.addParam(GlobalConstant.ITEM, testCase);
 		} else {
-			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, PrefCacheUtil.getPrefText(request, "GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID"), response);
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID",prefCacheUtil.getLang(request)), response);
 		}
 	}
 
