@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 The ToastHub Project
+ * Copyright (C) 2020 The ToastHub Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ */
+
+/**
+ * @author Edward H. Seufert
  */
 
 package org.toasthub.pm.model;
@@ -37,30 +41,30 @@ public class Enhancement extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
-	private String summary;
-	private String description;
+	protected String summary;
+	protected String description;
 	
-	private Long reportedBy;
-	private String assignee;
-	private String severity;
-	private int priority;
-	private String itemVersion;
-	private String externalRef;
-	private String internalRef;
+	protected Long reportedBy;
+	protected String assignee;
+	protected String severity;
+	protected int priority;
+	protected String itemVersion;
+	protected String externalRef;
+	protected String internalRef;
 	
-	private String status;
+	protected String status;
 	
-	private double developEstimate;
-	private double testEstimate;
+	protected double developEstimate;
+	protected double testEstimate;
 	
-	private double developDuration;
-	private double testDuration;
+	protected double developDuration;
+	protected double testDuration;
 	
-	private Product product;
-	private Project project;
-	private Release release;
-	private Backlog backlog;
-	private Sprint sprint;
+	protected Product product;
+	protected Project project;
+	protected Release release;
+	protected Backlog backlog;
+	protected Sprint sprint;
 
 	//Constructor
 	public Enhancement() {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 The ToastHub Project
+ * Copyright (C) 2020 The ToastHub Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ */
+
+/**
+ * @author Edward H. Seufert
  */
 
 package org.toasthub.pm.model;
@@ -36,10 +40,10 @@ public class WorkflowStep extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
-	private String name;
+	protected String name;
 	
-	private Workflow workFlow;
-	private WorkflowStep parent;
+	protected Workflow workFlow;
+	protected WorkflowStep parent;
 	
 
 	//Constructor

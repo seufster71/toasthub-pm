@@ -28,46 +28,53 @@ import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.toasthub.core.general.api.View;
 import org.toasthub.core.general.model.BaseEntity;
-import org.toasthub.core.general.model.Text;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity
-@Table(name = "pm_sprint")
-public class Sprint extends BaseEntity implements Serializable{
+@Table(name = "pm_permission")
+public class Permission extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
 	protected String name;
-	protected String description;
-	protected Instant startDate;
-	protected Instant endDate;
+	protected String rights;
+	protected String code;
+	protected Instant effStart;
+	protected Instant effEnd;
 	
 	protected Product product;
 	protected Project project;
-	protected Release release;
-
-
-	//Constructor
-	public Sprint() {
-		super();
-	}
 	
-	public Sprint(String code, Text title, Boolean defaultLang, String dir){
+	// transient
+	protected RolePermission rolePermission;
+	
+	// constructors
+	public Permission(){
 		this.setActive(true);
 		this.setArchive(false);
 		this.setLocked(false);
 		this.setCreated(Instant.now());
-		
-
-		
 	}
+	
+	public Permission(String code, String name, String rights) {
+		this.setActive(true);
+		this.setArchive(false);
+		this.setLocked(false);
+		this.setCreated(Instant.now());
+		this.setCode(code);
+		this.setName(name);
+		this.setRights(rights);
+	}
+	
 
-	// Methods
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	// Setters and getters
+	
+	@JsonView({View.Member.class,View.Admin.class})
 	@Column(name = "name")
 	public String getName() {
 		return name;
@@ -75,35 +82,54 @@ public class Sprint extends BaseEntity implements Serializable{
 	public void setName(String name) {
 		this.name = name;
 	}
-
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "description")
-	public String getDescription() {
-		return description;
+	
+	@JsonView({View.Member.class,View.Admin.class})
+	@Column(name = "rights")
+	public String getRights() {
+		return rights;
 	}
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "start_date")
-	public Instant getStartDate() {
-		return startDate;
-	}
-	public void setStartDate(Instant startDate) {
-		this.startDate = startDate;
+	public void setRights(String rights) {
+		this.rights = rights;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "end_date")
-	public Instant getEndDate() {
-		return endDate;
+	@JsonView({View.Member.class,View.Admin.class})
+	@Column(name = "code")
+	public String getCode() {
+		return code;
 	}
-	public void setEndDate(Instant endDate) {
-		this.endDate = endDate;
+	public void setCode(String code) {
+		this.code = code;
 	}
 	
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class})
+	@Column(name = "eff_start", updatable = false)
+	public Instant getEffStart() {
+		return effStart;
+	}
+	public void setEffStart(Instant effStart) {
+		this.effStart = effStart;
+	}
+	
+	@JsonView({View.Member.class,View.Admin.class})
+	@Column(name = "eff_end", updatable = false)
+	public Instant getEffEnd() {
+		return effEnd;
+	}
+	public void setEffEnd(Instant effEnd) {
+		this.effEnd = effEnd;
+	}
+	
+	@JsonView({View.Member.class,View.Admin.class})
+	@Transient
+	public RolePermission getRolePermission() {
+		return this.rolePermission;
+	}
+	public void setRolePermission(RolePermission rolePermission) {
+		this.rolePermission = rolePermission;
+	}
+	
+	
+	@JsonView({View.Member.class,View.Admin.class})
 	@ManyToOne(targetEntity = Product.class)
 	@JoinColumn(name = "product_id")
 	public Product getProduct() {
@@ -113,7 +139,7 @@ public class Sprint extends BaseEntity implements Serializable{
 		this.product = product;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class})
 	@ManyToOne(targetEntity = Project.class)
 	@JoinColumn(name = "project_id")
 	public Project getProject() {
@@ -122,21 +148,4 @@ public class Sprint extends BaseEntity implements Serializable{
 	public void setProject(Project project) {
 		this.project = project;
 	}
-
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@ManyToOne(targetEntity = Release.class)
-	@JoinColumn(name = "release_id")
-	public Release getRelease() {
-		return release;
-	}
-	public void setRelease(Release release) {
-		this.release = release;
-	}
-	
-	
-	
-	
-	
-
-	
 }

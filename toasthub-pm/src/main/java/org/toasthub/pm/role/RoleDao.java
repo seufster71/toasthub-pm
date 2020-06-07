@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The ToastHub Project
+ * Copyright (C) 2016 The ToastHub Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,13 @@
  * limitations under the License.
  */
 
-/**
- * @author Edward H. Seufert
- */
-
-package org.toasthub.pm.model;
+package org.toasthub.pm.role;
 
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
+import org.toasthub.pm.model.BaseDao;
 
-public interface BaseDao {
-	public void delete(RestRequest request, RestResponse response) throws Exception;
-	public void save(RestRequest request, RestResponse response) throws Exception;
-	public void items(RestRequest request, RestResponse response) throws Exception;
-	public void itemCount(RestRequest request, RestResponse response) throws Exception;
-	public void item(RestRequest request, RestResponse response) throws Exception;
+public interface RoleDao extends BaseDao {
+
+	void userRoleIds(RestRequest request, RestResponse response);
 }

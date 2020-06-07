@@ -22,41 +22,46 @@ package org.toasthub.pm.model;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import org.toasthub.core.general.api.View;
 import org.toasthub.core.general.model.BaseEntity;
 import org.toasthub.core.general.model.Text;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity
-@Table(name = "pm_sprint")
-public class Sprint extends BaseEntity implements Serializable{
+@Table(name = "pm_role")
+public class Role extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
 	protected String name;
-	protected String description;
-	protected Instant startDate;
-	protected Instant endDate;
+	protected String code;
+	protected Set<RolePermission> permissions;
+	protected Instant effStart;
+	protected Instant effEnd;
+	
+	protected Member member;
 	
 	protected Product product;
 	protected Project project;
-	protected Release release;
-
 
 	//Constructor
-	public Sprint() {
+	public Role() {
 		super();
 	}
 	
-	public Sprint(String code, Text title, Boolean defaultLang, String dir){
+	public Role(String code, Text title, Boolean defaultLang, String dir){
 		this.setActive(true);
 		this.setArchive(false);
 		this.setLocked(false);
@@ -67,7 +72,7 @@ public class Sprint extends BaseEntity implements Serializable{
 	}
 
 	// Methods
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class})
 	@Column(name = "name")
 	public String getName() {
 		return name;
@@ -75,35 +80,44 @@ public class Sprint extends BaseEntity implements Serializable{
 	public void setName(String name) {
 		this.name = name;
 	}
-
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "description")
-	public String getDescription() {
-		return description;
+	
+	@JsonView({View.Member.class,View.Admin.class})
+	@Column(name = "code")
+	public String getCode() {
+		return code;
 	}
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "start_date")
-	public Instant getStartDate() {
-		return startDate;
-	}
-	public void setStartDate(Instant startDate) {
-		this.startDate = startDate;
+	public void setCode(String code) {
+		this.code = code;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "end_date")
-	public Instant getEndDate() {
-		return endDate;
+	@JsonIgnore
+	@OneToMany(mappedBy = "role", cascade = CascadeType.ALL)
+	public Set<RolePermission> getPermissions() {
+		return permissions;
 	}
-	public void setEndDate(Instant endDate) {
-		this.endDate = endDate;
+	public void setPermissions(Set<RolePermission> permissions) {
+		this.permissions = permissions;
 	}
 	
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class})
+	@Column(name = "eff_start", updatable = false)
+	public Instant getEffStart() {
+		return effStart;
+	}
+	public void setEffStart(Instant effStart) {
+		this.effStart = effStart;
+	}
+	
+	@JsonView({View.Member.class,View.Admin.class})
+	@Column(name = "eff_end", updatable = false)
+	public Instant getEffEnd() {
+		return effEnd;
+	}
+	public void setEffEnd(Instant effEnd) {
+		this.effEnd = effEnd;
+	}
+	
+	@JsonView({View.Member.class,View.Admin.class})
 	@ManyToOne(targetEntity = Product.class)
 	@JoinColumn(name = "product_id")
 	public Product getProduct() {
@@ -113,7 +127,7 @@ public class Sprint extends BaseEntity implements Serializable{
 		this.product = product;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class})
 	@ManyToOne(targetEntity = Project.class)
 	@JoinColumn(name = "project_id")
 	public Project getProject() {
@@ -122,21 +136,6 @@ public class Sprint extends BaseEntity implements Serializable{
 	public void setProject(Project project) {
 		this.project = project;
 	}
-
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@ManyToOne(targetEntity = Release.class)
-	@JoinColumn(name = "release_id")
-	public Release getRelease() {
-		return release;
-	}
-	public void setRelease(Release release) {
-		this.release = release;
-	}
 	
-	
-	
-	
-	
-
 	
 }

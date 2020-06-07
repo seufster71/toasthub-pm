@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 The ToastHub Project
+ * Copyright (C) 2020 The ToastHub Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ */
+
+/**
+ * @author Edward H. Seufert
  */
 
 package org.toasthub.pm.model;
@@ -37,13 +41,13 @@ public class ScrumRequest extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
-	private String name;
-	private String subject;
-	private String description;
-	private String requestDaysTimes; // json object
-	private String emailTo; // json object
+	protected String name;
+	protected String subject;
+	protected String description;
+	protected String requestDaysTimes; // json object
+	protected String emailTo; // json object
 	
-	private Scrum scrum;
+	protected Scrum scrum;
 
 	//Constructor
 	public ScrumRequest() {

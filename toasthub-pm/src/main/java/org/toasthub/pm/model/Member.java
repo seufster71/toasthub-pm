@@ -36,83 +36,70 @@ import org.toasthub.core.general.model.Text;
 import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity
-@Table(name = "pm_comment")
-public class Comment extends BaseEntity implements Serializable{
+@Table(name = "pm_member")
+public class Member extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
-	protected String description;
-	protected Long owner;
-	protected Comment parent;
-	
-	protected Defect defect;
-	protected Enhancement enhancement;
-	
+	protected long userId;
+	protected String type; // INTERNAL, EXTERNAL
 
-
+	protected Product product;
+	protected Project project;
 
 	//Constructor
-	public Comment() {
+	public Member() {
 		super();
 	}
 	
-	public Comment(String code, Text title, Boolean defaultLang, String dir){
+	public Member(String code, Text title, Boolean defaultLang, String dir){
 		this.setActive(true);
 		this.setArchive(false);
 		this.setLocked(false);
 		this.setCreated(Instant.now());
 		
+
+		
 	}
 
 	// Methods
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "description")
-	public String getDescription() {
-		return description;
+	@JsonView({View.Member.class,View.Admin.class})
+	@Column(name = "user_id")
+	public long getUserId() {
+		return userId;
 	}
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "owner_id")
-	public Long getOwner() {
-		return owner;
-	}
-	public void setOwner(Long owner) {
-		this.owner = owner;
+	public void setUserId(long userId) {
+		this.userId = userId;
 	}
 	
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@ManyToOne(targetEntity = Comment.class)
-	@JoinColumn(name = "parent_id")
-	public Comment getParent() {
-		return parent;
+	@JsonView({View.Member.class,View.Admin.class})
+	@Column(name = "type")
+	public String getType() {
+		return type;
 	}
-	public void setParent(Comment parent) {
-		this.parent = parent;
-	}
-
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@ManyToOne(targetEntity = Defect.class)
-	@JoinColumn(name = "defect_id")
-	public Defect getDefect() {
-		return defect;
-	}
-	public void setDefect(Defect defect) {
-		this.defect = defect;
+	public void setType(String type) {
+		this.type = type;
 	}
 
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@ManyToOne(targetEntity = Enhancement.class)
-	@JoinColumn(name = "enhancement_id")
-	public Enhancement getEnhancement() {
-		return enhancement;
+	@ManyToOne(targetEntity = Product.class)
+	@JoinColumn(name = "product_id")
+	public Product getProduct() {
+		return product;
 	}
-	public void setEnhancement(Enhancement enhancement) {
-		this.enhancement = enhancement;
+	public void setProduct(Product product) {
+		this.product = product;
 	}
 
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@ManyToOne(targetEntity = Project.class)
+	@JoinColumn(name = "project_id")
+	public Project getProject() {
+		return project;
+	}
+	public void setProject(Project project) {
+		this.project = project;
+	}
 	
 
 	
