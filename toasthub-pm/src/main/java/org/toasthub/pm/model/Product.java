@@ -25,6 +25,8 @@ import java.time.Instant;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.toasthub.core.general.api.View;
@@ -42,7 +44,8 @@ public class Product extends BaseEntity implements Serializable{
 	protected String name;
 	protected String description;
 
-
+	protected Workflow workflow;
+	
 	//Constructor
 	public Product() {
 		super();
@@ -77,13 +80,15 @@ public class Product extends BaseEntity implements Serializable{
 		this.description = description;
 	}
 
-	
-	
-	
-	
-	
-	
-	
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@ManyToOne(targetEntity = Workflow.class)
+	@JoinColumn(name = "workflow_id")
+	public Workflow getWorkflow() {
+		return workflow;
+	}
+	public void setWorkflow(Workflow workflow) {
+		this.workflow = workflow;
+	}
 
 	
 }

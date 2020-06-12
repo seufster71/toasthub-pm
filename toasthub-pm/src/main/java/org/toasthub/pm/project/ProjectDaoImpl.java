@@ -33,6 +33,8 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
+import org.toasthub.pm.model.PMConstant;
+import org.toasthub.pm.model.Product;
 import org.toasthub.pm.model.Project;
 
 @Repository("ProjectDao")
@@ -61,6 +63,13 @@ public class ProjectDaoImpl implements ProjectDao {
 	@Override
 	public void save(RestRequest request, RestResponse response) throws Exception {
 		Project project = (Project) request.getParam(GlobalConstant.ITEM);
+		
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			Product product = (Product) entityManagerDataSvc.getInstance().getReference(Product.class,  new Long((Integer) request.getParam(PMConstant.PRODUCTID)));
+			if (project.getProduct() == null || project.getProduct() != null && !project.getProduct().getId().equals(new Long((Integer) request.getParam(PMConstant.PRODUCTID)))) {
+				project.setProduct(product);
+			}
+		}
 		entityManagerDataSvc.getInstance().merge(project);
 	}
 
@@ -72,6 +81,16 @@ public class ProjectDaoImpl implements ProjectDao {
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			if (!and) { queryStr += " WHERE "; }
 			queryStr += "x.active =:active ";
+			and = true;
+		}
+		 
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.product.id =:productId ";
+			and = true;
+		} else {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.product IS NULL ";
 			and = true;
 		}
 		
@@ -183,6 +202,9 @@ public class ProjectDaoImpl implements ProjectDao {
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
 		} 
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			query.setParameter("productId", new Long((Integer) request.getParam(PMConstant.PRODUCTID)));
+		}
 		
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
@@ -227,6 +249,16 @@ public class ProjectDaoImpl implements ProjectDao {
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			if (!and) { queryStr += " WHERE "; }
 			queryStr += "x.active =:active ";
+			and = true;
+		}
+		
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.product.id =:productId ";
+			and = true;
+		} else {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.product IS NULL ";
 			and = true;
 		}
 		
@@ -286,7 +318,10 @@ public class ProjectDaoImpl implements ProjectDao {
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
-		} 
+		}
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			query.setParameter("productId", new Long((Integer) request.getParam(PMConstant.PRODUCTID)));
+		}
 		
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {

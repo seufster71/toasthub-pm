@@ -32,7 +32,7 @@ import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
 import org.toasthub.pm.model.Workflow;
 
-@Service("WorkflowSvc")
+@Service("PMWorkflowSvc")
 public class WorkflowSvcImpl implements WorkflowSvc, ServiceProcessor {
 
 	@Autowired
@@ -53,6 +53,16 @@ public class WorkflowSvcImpl implements WorkflowSvc, ServiceProcessor {
 		
 		Long count = 0l;
 		switch (action) {
+		case "INIT":
+			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
+			prefCacheUtil.getPrefInfo(request,response);
+			this.itemCount(request, response);
+			count = (Long) response.getParam(GlobalConstant.ITEMCOUNT);
+			if (count != null && count > 0){
+				this.items(request, response);
+			}
+			response.addParam(GlobalConstant.ITEMNAME, request.getParam(GlobalConstant.ITEMNAME));
+			break;
 		case "LIST":
 			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
 			prefCacheUtil.getPrefInfo(request,response);
@@ -73,7 +83,7 @@ public class WorkflowSvcImpl implements WorkflowSvc, ServiceProcessor {
 			break;
 		case "SAVE":
 			if (!request.containsParam(PrefCacheUtil.PREFFORMKEYS)) {
-				List<String> forms =  new ArrayList<String>(Arrays.asList("PM_BACKLOG_PAGE"));
+				List<String> forms =  new ArrayList<String>(Arrays.asList("PM_WORKFLOW_FORM"));
 				request.addParam(PrefCacheUtil.PREFFORMKEYS, forms);
 			}
 			request.addParam(PrefCacheUtil.PREFGLOBAL, global);

@@ -33,8 +33,13 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
-import org.toasthub.pm.model.Defect;
+import org.toasthub.pm.model.Backlog;
 import org.toasthub.pm.model.Enhancement;
+import org.toasthub.pm.model.PMConstant;
+import org.toasthub.pm.model.Product;
+import org.toasthub.pm.model.Project;
+import org.toasthub.pm.model.Release;
+import org.toasthub.pm.model.Sprint;
 
 @Repository("EnhancementDao")
 @Transactional("TransactionManagerData")
@@ -62,6 +67,33 @@ public class EnhancementDaoImpl implements EnhancementDao {
 	@Override
 	public void save(RestRequest request, RestResponse response) throws Exception {
 		Enhancement enhancement = (Enhancement) request.getParam(GlobalConstant.ITEM);
+		
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			Product product = (Product) entityManagerDataSvc.getInstance().getReference(Product.class,  new Long((Integer) request.getParam(PMConstant.PRODUCTID)));
+			if (enhancement.getProduct() == null || enhancement.getProduct() != null && !enhancement.getProduct().getId().equals(new Long((Integer) request.getParam(PMConstant.PRODUCTID)))) {
+				enhancement.setProduct(product);
+			}
+		} else if (request.containsParam(PMConstant.PROJECTID)) {
+			Project project = (Project) entityManagerDataSvc.getInstance().getReference(Project.class,  new Long((Integer) request.getParam(PMConstant.PROJECTID)));
+			if (enhancement.getProject() == null || enhancement.getProject() != null && !enhancement.getProject().getId().equals(new Long((Integer) request.getParam(PMConstant.PROJECTID)))) {
+				enhancement.setProject(project);
+			}
+		} else if (request.containsParam(PMConstant.RELEASEID)) {
+			Release release = (Release) entityManagerDataSvc.getInstance().getReference(Release.class,  new Long((Integer) request.getParam(PMConstant.RELEASEID)));
+			if (enhancement.getRelease() == null || enhancement.getRelease() != null && !enhancement.getRelease().getId().equals(new Long((Integer) request.getParam(PMConstant.RELEASEID)))) {
+				enhancement.setRelease(release);
+			}
+		} else if (request.containsParam(PMConstant.BACKLOGID)) {
+			Backlog backlog = (Backlog) entityManagerDataSvc.getInstance().getReference(Backlog.class,  new Long((Integer) request.getParam(PMConstant.BACKLOGID)));
+			if (enhancement.getBacklog() == null || enhancement.getBacklog() != null && !enhancement.getBacklog().getId().equals(new Long((Integer) request.getParam(PMConstant.BACKLOGID)))) {
+				enhancement.setBacklog(backlog);
+			}
+		} else if (request.containsParam(PMConstant.SPRINTID)) {
+			Sprint sprint = (Sprint) entityManagerDataSvc.getInstance().getReference(Sprint.class,  new Long((Integer) request.getParam(PMConstant.SPRINTID)));
+			if (enhancement.getSprint() == null || enhancement.getSprint() != null && !enhancement.getSprint().getId().equals(new Long((Integer) request.getParam(PMConstant.SPRINTID)))) {
+				enhancement.setSprint(sprint);
+			}
+		}
 		entityManagerDataSvc.getInstance().merge(enhancement);
 	}
 
@@ -74,6 +106,32 @@ public class EnhancementDaoImpl implements EnhancementDao {
 			if (!and) { queryStr += " WHERE "; }
 			queryStr += "x.active =:active ";
 			and = true;
+		}
+		
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.product.id =:productId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.PROJECTID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.project.id =:projectId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.RELEASEID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.release.id =:releaseId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.BACKLOGID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.backlog.id =:backlogId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.SPRINTID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.sprint.id =:sprintId ";
+			and = true;
+		} else {
+		//	if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+		//	queryStr += "x.product IS NULL AND x.project IS NULL AND x.release IS NULL AND x.backlog IS NULL AND x.sprint IS NULL ";
+		//	and = true;
 		}
 		
 		// search
@@ -184,6 +242,17 @@ public class EnhancementDaoImpl implements EnhancementDao {
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
 		} 
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			query.setParameter("productId", new Long((Integer) request.getParam(PMConstant.PRODUCTID)));
+		} else if (request.containsParam(PMConstant.PROJECTID)) {
+			query.setParameter("projectId", new Long((Integer) request.getParam(PMConstant.PROJECTID)));
+		} else if (request.containsParam(PMConstant.RELEASEID)) {
+			query.setParameter("releaseId", new Long((Integer) request.getParam(PMConstant.RELEASEID)));
+		} else if (request.containsParam(PMConstant.BACKLOGID)) {
+			query.setParameter("backlogId", new Long((Integer) request.getParam(PMConstant.BACKLOGID)));
+		} else if (request.containsParam(PMConstant.SPRINTID)) {
+			query.setParameter("sprintId", new Long((Integer) request.getParam(PMConstant.SPRINTID)));
+		}
 		
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
@@ -213,9 +282,9 @@ public class EnhancementDaoImpl implements EnhancementDao {
 			query.setMaxResults((Integer) request.getParam(GlobalConstant.LISTLIMIT));
 		}
 		@SuppressWarnings("unchecked")
-		List<Defect> defects = query.getResultList();
+		List<Enhancement> enhancement = query.getResultList();
 
-		response.addParam(GlobalConstant.ITEMS, defects);
+		response.addParam(GlobalConstant.ITEMS, enhancement);
 		
 	}
 
@@ -227,6 +296,32 @@ public class EnhancementDaoImpl implements EnhancementDao {
 			if (!and) { queryStr += " WHERE "; }
 			queryStr += "x.active =:active ";
 			and = true;
+		}
+		
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.product.id =:productId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.PROJECTID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.project.id =:projectId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.RELEASEID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.release.id =:releaseId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.BACKLOGID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.backlog.id =:backlogId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.SPRINTID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.sprint.id =:sprintId ";
+			and = true;
+		} else {
+		//	if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+		//	queryStr += "x.product IS NULL AND x.project IS NULL AND x.release IS NULL AND x.backlog IS NULL AND x.sprint IS NULL ";
+		//	and = true;
 		}
 		
 		ArrayList<LinkedHashMap<String,String>> searchCriteria = null;
@@ -286,6 +381,17 @@ public class EnhancementDaoImpl implements EnhancementDao {
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
 		} 
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			query.setParameter("productId", new Long((Integer) request.getParam(PMConstant.PRODUCTID)));
+		} else if (request.containsParam(PMConstant.PROJECTID)) {
+			query.setParameter("projectId", new Long((Integer) request.getParam(PMConstant.PROJECTID)));
+		} else if (request.containsParam(PMConstant.RELEASEID)) {
+			query.setParameter("releaseId", new Long((Integer) request.getParam(PMConstant.RELEASEID)));
+		} else if (request.containsParam(PMConstant.BACKLOGID)) {
+			query.setParameter("backlogId", new Long((Integer) request.getParam(PMConstant.BACKLOGID)));
+		} else if (request.containsParam(PMConstant.SPRINTID)) {
+			query.setParameter("sprintId", new Long((Integer) request.getParam(PMConstant.SPRINTID)));
+		}
 		
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
@@ -326,9 +432,9 @@ public class EnhancementDaoImpl implements EnhancementDao {
 			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
 			query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
-			Defect defect = (Defect) query.getSingleResult();
+			Enhancement enhancement = (Enhancement) query.getSingleResult();
 			
-			response.addParam(GlobalConstant.ITEM, defect);
+			response.addParam(GlobalConstant.ITEM, enhancement);
 		} else {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID",prefCacheUtil.getLang(request)), response);
 		}

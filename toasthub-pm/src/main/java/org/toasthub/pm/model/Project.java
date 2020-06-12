@@ -47,7 +47,7 @@ public class Project extends BaseEntity implements Serializable{
 	protected Instant endDate;
 
 	protected Product product;
-	
+	protected Workflow workflow;
 
 	//Constructor
 	public Project() {
@@ -111,8 +111,15 @@ public class Project extends BaseEntity implements Serializable{
 		this.product = product;
 	}
 
-	
-	
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@ManyToOne(targetEntity = Workflow.class)
+	@JoinColumn(name = "workflow_id")
+	public Workflow getWorkflow() {
+		return workflow;
+	}
+	public void setWorkflow(Workflow workflow) {
+		this.workflow = workflow;
+	}
 	
 
 	

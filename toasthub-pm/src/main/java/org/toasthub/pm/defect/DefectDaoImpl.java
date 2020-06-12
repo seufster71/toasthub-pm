@@ -33,7 +33,13 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
+import org.toasthub.pm.model.Backlog;
 import org.toasthub.pm.model.Defect;
+import org.toasthub.pm.model.PMConstant;
+import org.toasthub.pm.model.Product;
+import org.toasthub.pm.model.Project;
+import org.toasthub.pm.model.Release;
+import org.toasthub.pm.model.Sprint;
 
 @Repository("DefectDao")
 @Transactional("TransactionManagerData")
@@ -61,6 +67,33 @@ public class DefectDaoImpl implements DefectDao {
 	@Override
 	public void save(RestRequest request, RestResponse response) throws Exception {
 		Defect defect = (Defect) request.getParam(GlobalConstant.ITEM);
+		
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			Product product = (Product) entityManagerDataSvc.getInstance().getReference(Product.class,  new Long((Integer) request.getParam(PMConstant.PRODUCTID)));
+			if (defect.getProduct() == null || defect.getProduct() != null && !defect.getProduct().getId().equals(new Long((Integer) request.getParam(PMConstant.PRODUCTID)))) {
+				defect.setProduct(product);
+			}
+		} else if (request.containsParam(PMConstant.PROJECTID)) {
+			Project project = (Project) entityManagerDataSvc.getInstance().getReference(Project.class,  new Long((Integer) request.getParam(PMConstant.PROJECTID)));
+			if (defect.getProject() == null || defect.getProject() != null && !defect.getProject().getId().equals(new Long((Integer) request.getParam(PMConstant.PROJECTID)))) {
+				defect.setProject(project);
+			}
+		} else if (request.containsParam(PMConstant.RELEASEID)) {
+			Release release = (Release) entityManagerDataSvc.getInstance().getReference(Release.class,  new Long((Integer) request.getParam(PMConstant.RELEASEID)));
+			if (defect.getRelease() == null || defect.getRelease() != null && !defect.getRelease().getId().equals(new Long((Integer) request.getParam(PMConstant.RELEASEID)))) {
+				defect.setRelease(release);
+			}
+		} else if (request.containsParam(PMConstant.BACKLOGID)) {
+			Backlog backlog = (Backlog) entityManagerDataSvc.getInstance().getReference(Backlog.class,  new Long((Integer) request.getParam(PMConstant.BACKLOGID)));
+			if (defect.getBacklog() == null || defect.getBacklog() != null && !defect.getBacklog().getId().equals(new Long((Integer) request.getParam(PMConstant.BACKLOGID)))) {
+				defect.setBacklog(backlog);
+			}
+		} else if (request.containsParam(PMConstant.SPRINTID)) {
+			Sprint sprint = (Sprint) entityManagerDataSvc.getInstance().getReference(Sprint.class,  new Long((Integer) request.getParam(PMConstant.SPRINTID)));
+			if (defect.getSprint() == null || defect.getSprint() != null && !defect.getSprint().getId().equals(new Long((Integer) request.getParam(PMConstant.SPRINTID)))) {
+				defect.setSprint(sprint);
+			}
+		}
 		entityManagerDataSvc.getInstance().merge(defect);
 	}
 
@@ -75,6 +108,31 @@ public class DefectDaoImpl implements DefectDao {
 			and = true;
 		}
 		
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.product.id =:productId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.PROJECTID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.project.id =:projectId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.RELEASEID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.release.id =:releaseId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.BACKLOGID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.backlog.id =:backlogId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.SPRINTID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.sprint.id =:sprintId ";
+			and = true;
+		} else {
+		//	if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+		//	queryStr += "x.product IS NULL AND x.project IS NULL AND x.release IS NULL AND x.backlog IS NULL AND x.sprint IS NULL ";
+		//	and = true;
+		}
 		// search
 		ArrayList<LinkedHashMap<String,String>> searchCriteria = null;
 		if (request.containsParam(GlobalConstant.SEARCHCRITERIA) && !request.getParam(GlobalConstant.SEARCHCRITERIA).equals("")) {
@@ -182,7 +240,18 @@ public class DefectDaoImpl implements DefectDao {
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
-		} 
+		}
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			query.setParameter("productId", new Long((Integer) request.getParam(PMConstant.PRODUCTID)));
+		} else if (request.containsParam(PMConstant.PROJECTID)) {
+			query.setParameter("projectId", new Long((Integer) request.getParam(PMConstant.PROJECTID)));
+		} else if (request.containsParam(PMConstant.RELEASEID)) {
+			query.setParameter("releaseId", new Long((Integer) request.getParam(PMConstant.RELEASEID)));
+		} else if (request.containsParam(PMConstant.BACKLOGID)) {
+			query.setParameter("backlogId", new Long((Integer) request.getParam(PMConstant.BACKLOGID)));
+		} else if (request.containsParam(PMConstant.SPRINTID)) {
+			query.setParameter("sprintId", new Long((Integer) request.getParam(PMConstant.SPRINTID)));
+		}
 		
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
@@ -226,6 +295,32 @@ public class DefectDaoImpl implements DefectDao {
 			if (!and) { queryStr += " WHERE "; }
 			queryStr += "x.active =:active ";
 			and = true;
+		}
+		
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.product.id =:productId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.PROJECTID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.project.id =:projectId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.RELEASEID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.release.id =:releaseId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.BACKLOGID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.backlog.id =:backlogId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.SPRINTID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.sprint.id =:sprintId ";
+			and = true;
+		} else {
+		//	if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+		//	queryStr += "x.product IS NULL AND x.project IS NULL AND x.release IS NULL AND x.backlog IS NULL AND x.sprint IS NULL ";
+		//	and = true;
 		}
 		
 		ArrayList<LinkedHashMap<String,String>> searchCriteria = null;
@@ -285,6 +380,17 @@ public class DefectDaoImpl implements DefectDao {
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
 		} 
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			query.setParameter("productId", new Long((Integer) request.getParam(PMConstant.PRODUCTID)));
+		} else if (request.containsParam(PMConstant.PROJECTID)) {
+			query.setParameter("projectId", new Long((Integer) request.getParam(PMConstant.PROJECTID)));
+		} else if (request.containsParam(PMConstant.RELEASEID)) {
+			query.setParameter("releaseId", new Long((Integer) request.getParam(PMConstant.RELEASEID)));
+		} else if (request.containsParam(PMConstant.BACKLOGID)) {
+			query.setParameter("backlogId", new Long((Integer) request.getParam(PMConstant.BACKLOGID)));
+		} else if (request.containsParam(PMConstant.SPRINTID)) {
+			query.setParameter("sprintId", new Long((Integer) request.getParam(PMConstant.SPRINTID)));
+		}
 		
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {

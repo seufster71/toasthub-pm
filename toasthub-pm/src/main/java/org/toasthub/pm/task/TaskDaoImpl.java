@@ -33,6 +33,12 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
+import org.toasthub.pm.model.Backlog;
+import org.toasthub.pm.model.PMConstant;
+import org.toasthub.pm.model.Product;
+import org.toasthub.pm.model.Project;
+import org.toasthub.pm.model.Release;
+import org.toasthub.pm.model.Sprint;
 import org.toasthub.pm.model.Task;
 
 @Repository("TaskDao")
@@ -61,6 +67,33 @@ public class TaskDaoImpl implements TaskDao {
 	@Override
 	public void save(RestRequest request, RestResponse response) throws Exception {
 		Task task = (Task) request.getParam(GlobalConstant.ITEM);
+		
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			Product product = (Product) entityManagerDataSvc.getInstance().getReference(Product.class,  new Long((Integer) request.getParam(PMConstant.PRODUCTID)));
+			if (task.getProduct() == null || task.getProduct() != null && !task.getProduct().getId().equals(new Long((Integer) request.getParam(PMConstant.PRODUCTID)))) {
+				task.setProduct(product);
+			}
+		} else if (request.containsParam(PMConstant.PROJECTID)) {
+			Project project = (Project) entityManagerDataSvc.getInstance().getReference(Project.class,  new Long((Integer) request.getParam(PMConstant.PROJECTID)));
+			if (task.getProject() == null || task.getProject() != null && !task.getProject().getId().equals(new Long((Integer) request.getParam(PMConstant.PROJECTID)))) {
+				task.setProject(project);
+			}
+		} else if (request.containsParam(PMConstant.RELEASEID)) {
+			Release release = (Release) entityManagerDataSvc.getInstance().getReference(Release.class,  new Long((Integer) request.getParam(PMConstant.RELEASEID)));
+			if (task.getRelease() == null || task.getRelease() != null && !task.getRelease().getId().equals(new Long((Integer) request.getParam(PMConstant.RELEASEID)))) {
+				task.setRelease(release);
+			}
+		} else if (request.containsParam(PMConstant.BACKLOGID)) {
+			Backlog backlog = (Backlog) entityManagerDataSvc.getInstance().getReference(Backlog.class,  new Long((Integer) request.getParam(PMConstant.BACKLOGID)));
+			if (task.getBacklog() == null || task.getBacklog() != null && !task.getBacklog().getId().equals(new Long((Integer) request.getParam(PMConstant.BACKLOGID)))) {
+				task.setBacklog(backlog);
+			}
+		} else if (request.containsParam(PMConstant.SPRINTID)) {
+			Sprint sprint = (Sprint) entityManagerDataSvc.getInstance().getReference(Sprint.class,  new Long((Integer) request.getParam(PMConstant.SPRINTID)));
+			if (task.getSprint() == null || task.getSprint() != null && !task.getSprint().getId().equals(new Long((Integer) request.getParam(PMConstant.SPRINTID)))) {
+				task.setSprint(sprint);
+			}
+		}
 		entityManagerDataSvc.getInstance().merge(task);
 	}
 
@@ -73,6 +106,32 @@ public class TaskDaoImpl implements TaskDao {
 			if (!and) { queryStr += " WHERE "; }
 			queryStr += "x.active =:active ";
 			and = true;
+		}
+		
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.product.id =:productId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.PROJECTID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.project.id =:projectId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.RELEASEID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.release.id =:releaseId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.BACKLOGID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.backlog.id =:backlogId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.SPRINTID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.sprint.id =:sprintId ";
+			and = true;
+		} else {
+		//	if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+		//	queryStr += "x.product IS NULL AND x.project IS NULL AND x.release IS NULL AND x.backlog IS NULL AND x.sprint IS NULL ";
+		//	and = true;
 		}
 		
 		// search
@@ -192,7 +251,18 @@ public class TaskDaoImpl implements TaskDao {
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
-		} 
+		}
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			query.setParameter("productId", new Long((Integer) request.getParam(PMConstant.PRODUCTID)));
+		} else if (request.containsParam(PMConstant.PROJECTID)) {
+			query.setParameter("projectId", new Long((Integer) request.getParam(PMConstant.PROJECTID)));
+		} else if (request.containsParam(PMConstant.RELEASEID)) {
+			query.setParameter("releaseId", new Long((Integer) request.getParam(PMConstant.RELEASEID)));
+		} else if (request.containsParam(PMConstant.BACKLOGID)) {
+			query.setParameter("backlogId", new Long((Integer) request.getParam(PMConstant.BACKLOGID)));
+		} else if (request.containsParam(PMConstant.SPRINTID)) {
+			query.setParameter("sprintId", new Long((Integer) request.getParam(PMConstant.SPRINTID)));
+		}
 		
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
@@ -241,6 +311,32 @@ public class TaskDaoImpl implements TaskDao {
 			if (!and) { queryStr += " WHERE "; }
 			queryStr += "x.active =:active ";
 			and = true;
+		}
+		
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.product.id =:productId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.PROJECTID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.project.id =:projectId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.RELEASEID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.release.id =:releaseId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.BACKLOGID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.backlog.id =:backlogId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.SPRINTID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.sprint.id =:sprintId ";
+			and = true;
+		} else {
+		//	if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+		//	queryStr += "x.product IS NULL AND x.project IS NULL AND x.release IS NULL AND x.backlog IS NULL AND x.sprint IS NULL ";
+		//	and = true;
 		}
 		
 		ArrayList<LinkedHashMap<String,String>> searchCriteria = null;
@@ -305,6 +401,18 @@ public class TaskDaoImpl implements TaskDao {
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
 		} 
+		
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			query.setParameter("productId", new Long((Integer) request.getParam(PMConstant.PRODUCTID)));
+		} else if (request.containsParam(PMConstant.PROJECTID)) {
+			query.setParameter("projectId", new Long((Integer) request.getParam(PMConstant.PROJECTID)));
+		} else if (request.containsParam(PMConstant.RELEASEID)) {
+			query.setParameter("releaseId", new Long((Integer) request.getParam(PMConstant.RELEASEID)));
+		} else if (request.containsParam(PMConstant.BACKLOGID)) {
+			query.setParameter("backlogId", new Long((Integer) request.getParam(PMConstant.BACKLOGID)));
+		} else if (request.containsParam(PMConstant.SPRINTID)) {
+			query.setParameter("sprintId", new Long((Integer) request.getParam(PMConstant.SPRINTID)));
+		}
 		
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {

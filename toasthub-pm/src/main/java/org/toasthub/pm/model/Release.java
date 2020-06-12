@@ -46,6 +46,7 @@ public class Release extends BaseEntity implements Serializable{
 	protected Instant startDate;
 	protected Instant endDate;
 	
+	protected Workflow workflow;
 	protected Product product;
 	protected Project project;
 
@@ -123,7 +124,15 @@ public class Release extends BaseEntity implements Serializable{
 		this.project = project;
 	}
 	
-	
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@ManyToOne(targetEntity = Workflow.class)
+	@JoinColumn(name = "workflow_id")
+	public Workflow getWorkflow() {
+		return workflow;
+	}
+	public void setWorkflow(Workflow workflow) {
+		this.workflow = workflow;
+	}
 	
 
 	

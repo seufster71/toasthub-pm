@@ -33,6 +33,9 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
+import org.toasthub.pm.model.PMConstant;
+import org.toasthub.pm.model.Product;
+import org.toasthub.pm.model.Project;
 import org.toasthub.pm.model.Release;
 
 @Repository("ReleaseDao")
@@ -61,6 +64,18 @@ public class ReleaseDaoImpl implements ReleaseDao {
 	@Override
 	public void save(RestRequest request, RestResponse response) throws Exception {
 		Release release = (Release) request.getParam(GlobalConstant.ITEM);
+		
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			Product product = (Product) entityManagerDataSvc.getInstance().getReference(Product.class,  new Long((Integer) request.getParam(PMConstant.PRODUCTID)));
+			if (release.getProduct() == null || release.getProduct() != null && !release.getProduct().getId().equals(new Long((Integer) request.getParam(PMConstant.PRODUCTID)))) {
+				release.setProduct(product);
+			}
+		} else if (request.containsParam(PMConstant.PROJECTID)) {
+			Project project = (Project) entityManagerDataSvc.getInstance().getReference(Project.class,  new Long((Integer) request.getParam(PMConstant.PROJECTID)));
+			if (release.getProject() == null || release.getProject() != null && !release.getProject().getId().equals(new Long((Integer) request.getParam(PMConstant.PROJECTID)))) {
+				release.setProject(project);
+			}
+		}
 		entityManagerDataSvc.getInstance().merge(release);
 	}
 
@@ -72,6 +87,20 @@ public class ReleaseDaoImpl implements ReleaseDao {
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			if (!and) { queryStr += " WHERE "; }
 			queryStr += "x.active =:active ";
+			and = true;
+		}
+		
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.product.id =:productId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.PROJECTID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.project.id =:projectId ";
+			and = true;
+		} else {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.product IS NULL AND x.project IS NULL ";
 			and = true;
 		}
 		
@@ -192,7 +221,12 @@ public class ReleaseDaoImpl implements ReleaseDao {
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
-		} 
+		}
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			query.setParameter("productId", new Long((Integer) request.getParam(PMConstant.PRODUCTID)));
+		} else if (request.containsParam(PMConstant.PROJECTID)) {
+			query.setParameter("projectId", new Long((Integer) request.getParam(PMConstant.PROJECTID)));
+		}
 		
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
@@ -240,6 +274,20 @@ public class ReleaseDaoImpl implements ReleaseDao {
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			if (!and) { queryStr += " WHERE "; }
 			queryStr += "x.active =:active ";
+			and = true;
+		}
+		
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.product.id =:productId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.PROJECTID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.project.id =:projectId ";
+			and = true;
+		} else {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.product IS NULL AND x.project IS NULL ";
 			and = true;
 		}
 		
@@ -304,7 +352,12 @@ public class ReleaseDaoImpl implements ReleaseDao {
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
-		} 
+		}
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			query.setParameter("productId", new Long((Integer) request.getParam(PMConstant.PRODUCTID)));
+		} else if (request.containsParam(PMConstant.PROJECTID)) {
+			query.setParameter("projectId", new Long((Integer) request.getParam(PMConstant.PROJECTID)));
+		}
 		
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {

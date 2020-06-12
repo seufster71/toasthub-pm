@@ -56,7 +56,7 @@ public class Defect extends BaseEntity implements Serializable{
 	protected String externalRef;
 	protected String internalRef;
 	
-	protected String status;
+	protected WorkflowStep workflowStep;
 	
 	protected double developEstimate;
 	protected double testEstimate;
@@ -205,12 +205,12 @@ public class Defect extends BaseEntity implements Serializable{
 	}
 
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "status")
-	public String getStatus() {
-		return status;
+	@Column(name = "workflowstep_id")
+	public WorkflowStep setWorkflowStep() {
+		return workflowStep;
 	}
-	public void setStatus(String status) {
-		this.status = status;
+	public void setWorkflowStep(WorkflowStep workflowStep) {
+		this.workflowStep = workflowStep;
 	}
 
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
