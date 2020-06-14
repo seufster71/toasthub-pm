@@ -15,4 +15,5 @@ public class PMConstant {
 	public static final String ROLEID = "roleId";
 	public static final String PERMISSIONID = "permissionId";
 	public static final String TASKID = "taskId";
+	public static final String WORKFLOWID = "workflowId";
 }
