@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.toasthub.pm.release;
+package org.toasthub.pm.team;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,14 +30,14 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
-import org.toasthub.pm.model.Release;
+import org.toasthub.pm.model.Team;
 
-@Service("PMReleaseSvc")
-public class ReleaseSvcImpl implements ReleaseSvc, ServiceProcessor {
+@Service("PMTeamSvc")
+public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 
 	@Autowired
-	@Qualifier("PMReleaseDao")
-	ReleaseDao releaseDao;
+	@Qualifier("PMTeamDao")
+	TeamDao teamDao;
 	
 	@Autowired
 	UtilSvc utilSvc;
@@ -83,7 +83,7 @@ public class ReleaseSvcImpl implements ReleaseSvc, ServiceProcessor {
 			break;
 		case "SAVE":
 			if (!request.containsParam(PrefCacheUtil.PREFFORMKEYS)) {
-				List<String> forms =  new ArrayList<String>(Arrays.asList("PM_RELEASE_FORM"));
+				List<String> forms =  new ArrayList<String>(Arrays.asList("PM_PROJECT_FORM"));
 				request.addParam(PrefCacheUtil.PREFFORMKEYS, forms);
 			}
 			request.addParam(PrefCacheUtil.PREFGLOBAL, global);
@@ -99,7 +99,7 @@ public class ReleaseSvcImpl implements ReleaseSvc, ServiceProcessor {
 	@Override
 	public void items(RestRequest request, RestResponse response) {
 		try {
-			releaseDao.items(request, response);
+			teamDao.items(request, response);
 			if (response.getParam("items") == null){
 				utilSvc.addStatus(RestResponse.INFO, RestResponse.EMPTY, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_NO_ITEMS",prefCacheUtil.getLang(request)), response);
 			}
@@ -113,7 +113,7 @@ public class ReleaseSvcImpl implements ReleaseSvc, ServiceProcessor {
 	@Override
 	public void itemCount(RestRequest request, RestResponse response) {
 		try {
-			releaseDao.itemCount(request, response);
+			teamDao.itemCount(request, response);
 		} catch (Exception e) {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_EXECUTION_FAIL",prefCacheUtil.getLang(request)), response);
 			e.printStackTrace();
@@ -123,7 +123,7 @@ public class ReleaseSvcImpl implements ReleaseSvc, ServiceProcessor {
 	@Override
 	public void delete(RestRequest request, RestResponse response) {
 		try {
-			releaseDao.delete(request, response);
+			teamDao.delete(request, response);
 			utilSvc.addStatus(RestResponse.INFO, RestResponse.SUCCESS, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_DELETE_SUCCESS",prefCacheUtil.getLang(request)), response);
 		} catch (Exception e) {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_DELETE_FAIL",prefCacheUtil.getLang(request)), response);
@@ -134,9 +134,9 @@ public class ReleaseSvcImpl implements ReleaseSvc, ServiceProcessor {
 	@Override
 	public void item(RestRequest request, RestResponse response) {
 		try {
-			releaseDao.item(request, response);
+			teamDao.item(request, response);
 		} catch (Exception e) {
-			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText( "GLOBAL_SERVICE", "GLOBAL_SERVICE_EXECUTION_FAIL",prefCacheUtil.getLang(request)), response);
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_EXECUTION_FAIL",prefCacheUtil.getLang(request)), response);
 			e.printStackTrace();
 		}
 	}
@@ -155,27 +155,28 @@ public class ReleaseSvcImpl implements ReleaseSvc, ServiceProcessor {
 			Map<String,Object> inputList = (Map<String, Object>) request.getParam(GlobalConstant.INPUTFIELDS);
 			if (inputList.containsKey(GlobalConstant.ITEMID) && inputList.get(GlobalConstant.ITEMID) != null && !"".equals(inputList.get(GlobalConstant.ITEMID))) {
 				request.addParam(GlobalConstant.ITEMID, inputList.get(GlobalConstant.ITEMID));
-				releaseDao.item(request, response);
+				teamDao.item(request, response);
 				request.addParam(GlobalConstant.ITEM, response.getParam(GlobalConstant.ITEM));
 				response.getParams().remove(GlobalConstant.ITEM);
 			} else {
-				Release release = new Release();
-				release.setArchive(false);
-				release.setLocked(false);
-				request.addParam(GlobalConstant.ITEM, release);
+				Team team = new Team();
+				team.setActive(true);
+				team.setArchive(false);
+				team.setLocked(false);
+				request.addParam(GlobalConstant.ITEM, team);
 			}
 			// marshall
 			utilSvc.marshallFields(request, response);
 		
 			
-			
 			// save
-			releaseDao.save(request, response);
+			teamDao.save(request, response);
 			
-			utilSvc.addStatus(RestResponse.INFO, RestResponse.SUCCESS, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_SAVE_SUCCESS",prefCacheUtil.getLang(request)), response);
+			utilSvc.addStatus(RestResponse.INFO, RestResponse.SUCCESS, prefCacheUtil.getPrefText( "GLOBAL_SERVICE", "GLOBAL_SERVICE_SAVE_SUCCESS", prefCacheUtil.getLang(request)), response);
 		} catch (Exception e) {
-			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_SAVE_FAIL",prefCacheUtil.getLang(request)), response);
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, prefCacheUtil.getPrefText( "GLOBAL_SERVICE", "GLOBAL_SERVICE_SAVE_FAIL", prefCacheUtil.getLang(request)), response);
 			e.printStackTrace();
 		}
+		
 	}
 }

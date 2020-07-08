@@ -38,7 +38,7 @@ import org.toasthub.pm.model.Product;
 import org.toasthub.pm.model.Project;
 import org.toasthub.pm.model.Release;
 
-@Repository("ReleaseDao")
+@Repository("PMReleaseDao")
 @Transactional("TransactionManagerData")
 public class ReleaseDaoImpl implements ReleaseDao {
 	

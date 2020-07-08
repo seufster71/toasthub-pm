@@ -36,7 +36,7 @@ import org.toasthub.pm.model.Task;
 public class TaskSvcImpl implements TaskSvc, ServiceProcessor {
 
 	@Autowired
-	@Qualifier("TaskDao")
+	@Qualifier("PMTaskDao")
 	TaskDao taskDao;
 	
 	@Autowired

@@ -25,8 +25,6 @@ import java.time.Instant;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.toasthub.core.general.api.View;
@@ -36,33 +34,29 @@ import org.toasthub.core.general.model.Text;
 import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity
-@Table(name = "pm_product")
-public class Product extends BaseEntity implements Serializable{
+@Table(name = "pm_team")
+public class Team extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
-	
-	protected String name;
-	protected String description;
-	protected long ownerId;
-	protected Team team;
 
-	protected Workflow workflow;
+	protected String name;
+	protected long ownerId;
 	
 	//Constructor
-	public Product() {
+	public Team() {
 		super();
 	}
 	
-	public Product(String code, Text title, Boolean defaultLang, String dir){
+	public Team(String code, Text title, Boolean defaultLang, String dir){
 		this.setActive(true);
 		this.setArchive(false);
 		this.setLocked(false);
 		this.setCreated(Instant.now());
-	
 		
 	}
 
 	// Methods
+
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "name")
 	public String getName() {
@@ -70,15 +64,6 @@ public class Product extends BaseEntity implements Serializable{
 	}
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "description")
-	public String getDescription() {
-		return description;
-	}
-	public void setDescription(String description) {
-		this.description = description;
 	}
 
 	@JsonView({View.Member.class,View.Admin.class})
@@ -89,26 +74,5 @@ public class Product extends BaseEntity implements Serializable{
 	public void setOwnerId(long ownerId) {
 		this.ownerId = ownerId;
 	}
-
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@ManyToOne(targetEntity = Team.class)
-	@JoinColumn(name = "team_id")
-	public Team getTeam() {
-		return team;
-	}
-	public void setTeam(Team team) {
-		this.team = team;
-	}
-
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@ManyToOne(targetEntity = Workflow.class)
-	@JoinColumn(name = "workflow_id")
-	public Workflow getWorkflow() {
-		return workflow;
-	}
-	public void setWorkflow(Workflow workflow) {
-		this.workflow = workflow;
-	}
-
 	
 }

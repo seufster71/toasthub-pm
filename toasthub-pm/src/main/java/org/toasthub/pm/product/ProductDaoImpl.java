@@ -35,7 +35,7 @@ import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
 import org.toasthub.pm.model.Product;
 
-@Repository("ProductDao")
+@Repository("PMProductDao")
 @Transactional("TransactionManagerData")
 public class ProductDaoImpl implements ProductDao {
 	

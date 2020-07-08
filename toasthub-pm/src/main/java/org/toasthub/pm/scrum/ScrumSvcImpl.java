@@ -32,11 +32,11 @@ import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
 import org.toasthub.pm.model.Scrum;
 
-@Service("ScrumSvc")
+@Service("PMScrumSvc")
 public class ScrumSvcImpl implements ScrumSvc, ServiceProcessor {
 
 	@Autowired
-	@Qualifier("ScrumDao")
+	@Qualifier("PMScrumDao")
 	ScrumDao scrumDao;
 	
 	@Autowired

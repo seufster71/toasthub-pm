@@ -32,11 +32,11 @@ import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
 import org.toasthub.pm.model.Sprint;
 
-@Service("SprintSvc")
+@Service("PMSprintSvc")
 public class SprintSvcImpl implements SprintSvc, ServiceProcessor {
 
 	@Autowired
-	@Qualifier("SprintDao")
+	@Qualifier("PMSprintDao")
 	SprintDao sprintDao;
 	
 	@Autowired

@@ -44,9 +44,6 @@ public class Member extends BaseEntity implements Serializable{
 	protected long userId;
 	protected String type; // INTERNAL, EXTERNAL
 
-	protected Product product;
-	protected Project project;
-
 	//Constructor
 	public Member() {
 		super();
@@ -57,14 +54,11 @@ public class Member extends BaseEntity implements Serializable{
 		this.setArchive(false);
 		this.setLocked(false);
 		this.setCreated(Instant.now());
-		
-
-		
 	}
 
 	// Methods
 	@JsonView({View.Member.class,View.Admin.class})
-	@Column(name = "user_id")
+	@Column(name = "user_ref_id")
 	public long getUserId() {
 		return userId;
 	}
@@ -79,26 +73,6 @@ public class Member extends BaseEntity implements Serializable{
 	}
 	public void setType(String type) {
 		this.type = type;
-	}
-
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@ManyToOne(targetEntity = Product.class)
-	@JoinColumn(name = "product_id")
-	public Product getProduct() {
-		return product;
-	}
-	public void setProduct(Product product) {
-		this.product = product;
-	}
-
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@ManyToOne(targetEntity = Project.class)
-	@JoinColumn(name = "project_id")
-	public Project getProject() {
-		return project;
-	}
-	public void setProject(Project project) {
-		this.project = project;
 	}
 	
 

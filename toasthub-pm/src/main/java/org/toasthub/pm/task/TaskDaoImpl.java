@@ -41,7 +41,7 @@ import org.toasthub.pm.model.Release;
 import org.toasthub.pm.model.Sprint;
 import org.toasthub.pm.model.Task;
 
-@Repository("TaskDao")
+@Repository("PMTaskDao")
 @Transactional("TransactionManagerData")
 public class TaskDaoImpl implements TaskDao {
 	

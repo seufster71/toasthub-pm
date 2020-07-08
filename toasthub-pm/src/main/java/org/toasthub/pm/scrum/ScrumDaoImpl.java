@@ -35,7 +35,7 @@ import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
 import org.toasthub.pm.model.Scrum;
 
-@Repository("ScrumDao")
+@Repository("PMScrumDao")
 @Transactional("TransactionManagerData")
 public class ScrumDaoImpl implements ScrumDao {
 	

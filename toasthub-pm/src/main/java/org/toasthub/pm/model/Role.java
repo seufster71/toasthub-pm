@@ -27,8 +27,6 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -50,11 +48,7 @@ public class Role extends BaseEntity implements Serializable{
 	protected Set<RolePermission> permissions;
 	protected Instant effStart;
 	protected Instant effEnd;
-	
-	protected Member member;
-	
-	protected Product product;
-	protected Project project;
+
 
 	//Constructor
 	public Role() {
@@ -66,8 +60,6 @@ public class Role extends BaseEntity implements Serializable{
 		this.setArchive(false);
 		this.setLocked(false);
 		this.setCreated(Instant.now());
-		
-
 		
 	}
 
@@ -116,26 +108,5 @@ public class Role extends BaseEntity implements Serializable{
 	public void setEffEnd(Instant effEnd) {
 		this.effEnd = effEnd;
 	}
-	
-	@JsonView({View.Member.class,View.Admin.class})
-	@ManyToOne(targetEntity = Product.class)
-	@JoinColumn(name = "product_id")
-	public Product getProduct() {
-		return product;
-	}
-	public void setProduct(Product product) {
-		this.product = product;
-	}
-
-	@JsonView({View.Member.class,View.Admin.class})
-	@ManyToOne(targetEntity = Project.class)
-	@JoinColumn(name = "project_id")
-	public Project getProject() {
-		return project;
-	}
-	public void setProject(Project project) {
-		this.project = project;
-	}
-	
 	
 }

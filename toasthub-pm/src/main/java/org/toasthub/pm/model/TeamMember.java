@@ -37,11 +37,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity
-@Table(name = "pm_member_role")
-public class MemberRole extends BaseEntity implements Serializable{
+@Table(name = "pm_team_member")
+public class TeamMember extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
+	protected Team team;
 	protected Role role;
 	protected Member member;
 	protected Integer order;
@@ -49,17 +50,20 @@ public class MemberRole extends BaseEntity implements Serializable{
 	protected Instant endDate;
 	
 	// transient
+	protected Long teamId;
 	protected Long roleId;
+	protected Long memberId;
 	
 	// Constructor
-	public MemberRole(){}
+	public TeamMember(){}
 	
-	public MemberRole(Member member, Role role){
+	public TeamMember(Team team, Member member, Role role){
+		this.team = team;
 		this.member = member;
 		this.role = role;
 	}
 	
-	public MemberRole(Long id, boolean active, Integer order, Instant startDate, Instant endDate, Long roleId) {
+	public TeamMember(Long id, boolean active, Integer order, Instant startDate, Instant endDate, Long roleId) {
 		this.id = id;
 		this.active = active;
 		this.order = order;
@@ -69,6 +73,16 @@ public class MemberRole extends BaseEntity implements Serializable{
 	}
 	
 	// Methods
+	@JsonIgnore
+	@ManyToOne(targetEntity = Team.class)
+	@JoinColumn(name = "team_id")
+	public Team getTeam() {
+		return team;
+	}
+	public void setTeam(Team team) {
+		this.team = team;
+	}
+	
 	@JsonIgnore
 	@ManyToOne(targetEntity = Role.class)
 	@JoinColumn(name = "role_id")
@@ -116,17 +130,43 @@ public class MemberRole extends BaseEntity implements Serializable{
 		this.endDate = endDate;
 	}
 	
-	@JsonView({View.Admin.class})
+	@JsonView({View.Member.class,View.Admin.class})
 	@Transient
 	public Long getRoleId() {
-		if (this.role == null) {
-			return this.roleId;
+		if (role == null) {
+			return roleId;
 		} else {
-			return this.role.getId();
+			return role.getId();
 		}
 	}
 	public void setRoleId(Long roleId) {
 		this.roleId = roleId;
+	}
+
+	@JsonView({View.Member.class,View.Admin.class})
+	@Transient
+	public Long getTeamId() {
+		if (team == null) {
+			return teamId;
+		} else {
+			return team.getId();
+		}
+	}
+	public void setTeamId(Long teamId) {
+		this.teamId = teamId;
+	}
+
+	@JsonView({View.Member.class,View.Admin.class})
+	@Transient
+	public Long getMemberId() {
+		if (member == null) {
+			return memberId;
+		} else {
+			return member.getId();
+		}
+	}
+	public void setMemberId(Long memberId) {
+		this.memberId = memberId;
 	}
 	
 	

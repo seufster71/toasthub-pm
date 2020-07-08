@@ -38,7 +38,7 @@ import org.toasthub.pm.model.PMConstant;
 import org.toasthub.pm.model.Product;
 import org.toasthub.pm.model.Project;
 
-@Repository("BacklogDao")
+@Repository("PMBacklogDao")
 @Transactional("TransactionManagerData")
 public class BacklogDaoImpl implements BacklogDao {
 	

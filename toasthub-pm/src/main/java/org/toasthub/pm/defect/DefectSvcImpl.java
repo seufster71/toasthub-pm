@@ -35,11 +35,11 @@ import org.toasthub.core.preference.model.PrefCacheUtil;
 import org.toasthub.pm.model.Defect;
 import org.toasthub.security.model.MyUserPrincipal;
 
-@Service("DefectSvc")
+@Service("PMDefectSvc")
 public class DefectSvcImpl implements DefectSvc, ServiceProcessor {
 
 	@Autowired
-	@Qualifier("DefectDao")
+	@Qualifier("PMDefectDao")
 	DefectDao defectDao;
 	
 	@Autowired

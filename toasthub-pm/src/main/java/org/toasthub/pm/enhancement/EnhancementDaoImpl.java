@@ -41,7 +41,7 @@ import org.toasthub.pm.model.Project;
 import org.toasthub.pm.model.Release;
 import org.toasthub.pm.model.Sprint;
 
-@Repository("EnhancementDao")
+@Repository("PMEnhancementDao")
 @Transactional("TransactionManagerData")
 public class EnhancementDaoImpl implements EnhancementDao {
 	

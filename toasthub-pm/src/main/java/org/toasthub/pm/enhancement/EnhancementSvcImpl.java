@@ -34,14 +34,13 @@ import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
 import org.toasthub.pm.model.Enhancement;
 import org.toasthub.security.model.MyUserPrincipal;
-import org.toasthub.security.model.User;
 import org.toasthub.security.model.UserContext;
 
-@Service("EnhancementSvc")
+@Service("PMEnhancementSvc")
 public class EnhancementSvcImpl implements EnhancementSvc, ServiceProcessor {
 
 	@Autowired
-	@Qualifier("EnhancementDao")
+	@Qualifier("PMEnhancementDao")
 	EnhancementDao enhancementDao;
 	
 	@Autowired

@@ -32,11 +32,11 @@ import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
 import org.toasthub.pm.model.Project;
 
-@Service("ProjectSvc")
+@Service("PMProjectSvc")
 public class ProjectSvcImpl implements ProjectSvc, ServiceProcessor {
 
 	@Autowired
-	@Qualifier("ProjectDao")
+	@Qualifier("PMProjectDao")
 	ProjectDao projectDao;
 	
 	@Autowired

@@ -37,7 +37,7 @@ import org.toasthub.pm.model.PMConstant;
 import org.toasthub.pm.model.Product;
 import org.toasthub.pm.model.Project;
 
-@Repository("ProjectDao")
+@Repository("PMProjectDao")
 @Transactional("TransactionManagerData")
 public class ProjectDaoImpl implements ProjectDao {
 	
