@@ -104,7 +104,7 @@ public class RolePermission extends BaseEntity implements Serializable{
 	}
 	
 	@JsonView({View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "eff_start")
+	@Column(name = "start_date")
 	public Instant getStartDate() {
 		return startDate;
 	}
@@ -113,7 +113,7 @@ public class RolePermission extends BaseEntity implements Serializable{
 	}
 	
 	@JsonView({View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "eff_end")
+	@Column(name = "end_date")
 	public Instant getEndDate() {
 		return endDate;
 	}

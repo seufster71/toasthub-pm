@@ -30,14 +30,19 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
-import org.toasthub.pm.model.Team;
+import org.toasthub.pm.model.Member;
+import org.toasthub.security.users.UsersDao;
 
-@Service("PMTeamSvc")
-public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
+@Service("PMMemberSvc")
+public class MemberSvcImpl implements MemberSvc, ServiceProcessor {
 
 	@Autowired
-	@Qualifier("PMTeamDao")
-	TeamDao teamDao;
+	@Qualifier("PMMemberDao")
+	MemberDao memberDao;
+	
+	@Autowired
+	@Qualifier("UsersDao")
+	UsersDao usersDao;
 	
 	@Autowired
 	UtilSvc utilSvc;
@@ -83,13 +88,15 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 			break;
 		case "SAVE":
 			if (!request.containsParam(PrefCacheUtil.PREFFORMKEYS)) {
-				List<String> forms =  new ArrayList<String>(Arrays.asList("PM_TEAM_FORM"));
+				List<String> forms =  new ArrayList<String>(Arrays.asList("PM_MEMBER_FORM"));
 				request.addParam(PrefCacheUtil.PREFFORMKEYS, forms);
 			}
 			request.addParam(PrefCacheUtil.PREFGLOBAL, global);
 			prefCacheUtil.getPrefInfo(request,response);
 			this.save(request, response);
 			break;
+		case "SELECTLIST":
+			this.selectList(request, response);
 		default:
 			utilSvc.addStatus(RestResponse.INFO, RestResponse.ACTIONNOTEXIST, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_ACTION_NOT_AVAIL",prefCacheUtil.getLang(request)), response);
 			break;
@@ -99,7 +106,7 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 	@Override
 	public void items(RestRequest request, RestResponse response) {
 		try {
-			teamDao.items(request, response);
+			memberDao.items(request, response);
 			if (response.getParam("items") == null){
 				utilSvc.addStatus(RestResponse.INFO, RestResponse.EMPTY, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_NO_ITEMS",prefCacheUtil.getLang(request)), response);
 			}
@@ -113,7 +120,7 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 	@Override
 	public void itemCount(RestRequest request, RestResponse response) {
 		try {
-			teamDao.itemCount(request, response);
+			memberDao.itemCount(request, response);
 		} catch (Exception e) {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_EXECUTION_FAIL",prefCacheUtil.getLang(request)), response);
 			e.printStackTrace();
@@ -123,7 +130,7 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 	@Override
 	public void delete(RestRequest request, RestResponse response) {
 		try {
-			teamDao.delete(request, response);
+			memberDao.delete(request, response);
 			utilSvc.addStatus(RestResponse.INFO, RestResponse.SUCCESS, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_DELETE_SUCCESS",prefCacheUtil.getLang(request)), response);
 		} catch (Exception e) {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_DELETE_FAIL",prefCacheUtil.getLang(request)), response);
@@ -134,7 +141,7 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 	@Override
 	public void item(RestRequest request, RestResponse response) {
 		try {
-			teamDao.item(request, response);
+			memberDao.item(request, response);
 		} catch (Exception e) {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_EXECUTION_FAIL",prefCacheUtil.getLang(request)), response);
 			e.printStackTrace();
@@ -155,22 +162,22 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 			Map<String,Object> inputList = (Map<String, Object>) request.getParam(GlobalConstant.INPUTFIELDS);
 			if (inputList.containsKey(GlobalConstant.ITEMID) && inputList.get(GlobalConstant.ITEMID) != null && !"".equals(inputList.get(GlobalConstant.ITEMID))) {
 				request.addParam(GlobalConstant.ITEMID, inputList.get(GlobalConstant.ITEMID));
-				teamDao.item(request, response);
+				memberDao.item(request, response);
 				request.addParam(GlobalConstant.ITEM, response.getParam(GlobalConstant.ITEM));
 				response.getParams().remove(GlobalConstant.ITEM);
 			} else {
-				Team team = new Team();
-				team.setActive(true);
-				team.setArchive(false);
-				team.setLocked(false);
-				request.addParam(GlobalConstant.ITEM, team);
+				Member member = new Member();
+				member.setActive(true);
+				member.setArchive(false);
+				member.setLocked(false);
+				request.addParam(GlobalConstant.ITEM, member);
 			}
 			// marshall
 			utilSvc.marshallFields(request, response);
 		
 			
 			// save
-			teamDao.save(request, response);
+			memberDao.save(request, response);
 			
 			utilSvc.addStatus(RestResponse.INFO, RestResponse.SUCCESS, prefCacheUtil.getPrefText( "GLOBAL_SERVICE", "GLOBAL_SERVICE_SAVE_SUCCESS", prefCacheUtil.getLang(request)), response);
 		} catch (Exception e) {
@@ -178,5 +185,17 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 			e.printStackTrace();
 		}
 		
+	}
+	
+	@Override
+	public void selectList(RestRequest request, RestResponse response) {
+		try {
+			if ("PM_MEMBER_FORM_USERNAME".equals(request.getParam("fieldName"))) {
+				usersDao.listByUsernameEmail(request,response);
+			}
+		} catch (Exception e) {
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_EXECUTION_FAIL",prefCacheUtil.getLang(request)), response);
+			e.printStackTrace();
+		}
 	}
 }

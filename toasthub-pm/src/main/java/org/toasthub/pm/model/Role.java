@@ -29,6 +29,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.toasthub.core.general.api.View;
 import org.toasthub.core.general.model.BaseEntity;
@@ -46,10 +47,12 @@ public class Role extends BaseEntity implements Serializable{
 	protected String name;
 	protected String code;
 	protected Set<RolePermission> permissions;
-	protected Instant effStart;
-	protected Instant effEnd;
+	protected Instant startDate;
+	protected Instant endDate;
 
-
+	// transient
+	protected Member teamMemberRole;
+	
 	//Constructor
 	public Role() {
 		super();
@@ -92,21 +95,30 @@ public class Role extends BaseEntity implements Serializable{
 	}
 	
 	@JsonView({View.Member.class,View.Admin.class})
-	@Column(name = "eff_start", updatable = false)
-	public Instant getEffStart() {
-		return effStart;
+	@Column(name = "start_date")
+	public Instant getStartDate() {
+		return startDate;
 	}
-	public void setEffStart(Instant effStart) {
-		this.effStart = effStart;
+	public void setStartDate(Instant startDate) {
+		this.startDate = startDate;
 	}
-	
+
 	@JsonView({View.Member.class,View.Admin.class})
-	@Column(name = "eff_end", updatable = false)
-	public Instant getEffEnd() {
-		return effEnd;
+	@Column(name = "end_date")
+	public Instant getEndDate() {
+		return endDate;
 	}
-	public void setEffEnd(Instant effEnd) {
-		this.effEnd = effEnd;
+	public void setEndDate(Instant endDate) {
+		this.endDate = endDate;
+	}
+
+	@JsonView({View.Member.class,View.Admin.class})
+	@Transient
+	public Member getTeamMemberRole() {
+		return teamMemberRole;
+	}
+	public void setTeamMemberRole(Member teamMemberRole) {
+		this.teamMemberRole = teamMemberRole;
 	}
 	
 }
