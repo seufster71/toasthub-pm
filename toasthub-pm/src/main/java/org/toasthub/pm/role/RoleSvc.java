@@ -16,8 +16,11 @@
 
 package org.toasthub.pm.role;
 
+import org.toasthub.core.general.model.RestRequest;
+import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.pm.model.BaseSvc;
 
 public interface RoleSvc extends BaseSvc {
-
+	public void memberRole(RestRequest request, RestResponse response);
+	public void memberRoleSave(RestRequest request, RestResponse response);
 }

@@ -22,5 +22,7 @@ import org.toasthub.pm.model.BaseDao;
 
 public interface RoleDao extends BaseDao {
 
-	void userRoleIds(RestRequest request, RestResponse response);
+	void memberRoles(RestRequest request, RestResponse response) throws Exception;
+	void memberRole(RestRequest request, RestResponse response) throws Exception;
+	void memberRoleSave(RestRequest request, RestResponse response) throws Exception;
 }

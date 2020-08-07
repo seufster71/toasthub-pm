@@ -31,10 +31,13 @@ import org.toasthub.core.common.UtilSvc;
 import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
+import org.toasthub.pm.model.Member;
+import org.toasthub.pm.model.MemberRole;
+import org.toasthub.pm.model.PMConstant;
 import org.toasthub.pm.model.Role;
 
 @Repository("PMRoleDao")
-@Transactional("TransactionManagerSecurity")
+@Transactional("TransactionManagerData")
 public class RoleDaoImpl implements RoleDao {
 	
 	@Autowired
@@ -44,13 +47,13 @@ public class RoleDaoImpl implements RoleDao {
 	
 	@Override
 	public void items(RestRequest request, RestResponse response) throws Exception {
-		
-		String queryStr = "SELECT DISTINCT r FROM Role AS r JOIN FETCH r.title AS t JOIN FETCH t.langTexts as lt JOIN FETCH r.application AS a JOIN FETCH a.title AS at JOIN FETCH at.langTexts as alt "
-				+ "WHERE lt.lang =:lang AND alt.lang =:lang ";
-		
-		if (request.containsParam(GlobalConstant.ACTIVE)) {
-			queryStr += "AND r.active =:active ";
+
+		if ( !(request.containsParam(PMConstant.TEAMID) && !"".equals(request.getParam(PMConstant.TEAMID))) ) {
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "Missing Team ID", response);
+			return;
 		}
+		
+		String queryStr = "SELECT DISTINCT x FROM Role AS x WHERE x.team.id =:teamId ";
 		
 		// search
 		ArrayList<LinkedHashMap<String,String>> searchCriteria = null;
@@ -68,24 +71,19 @@ public class RoleDaoImpl implements RoleDao {
 			String lookupStr = "";
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_ROLE_TABLE_NAME")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ROLE_TABLE_NAME")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "lt.lang =:lang AND lt.text LIKE :nameValue"; 
+						lookupStr += "x.name LIKE :nameValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_ROLE_TABLE_CODE")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ROLE_TABLE_CODE")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "r.code LIKE :codeValue"; 
+						lookupStr += "x.code LIKE :codeValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_ROLE_TABLE_APPLICATION")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ROLE_TABLE_STATUS")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "r.application.code LIKE :appValue"; 
-						or = true;
-					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_ROLE_TABLE_STATUS")){
-						if (or) { lookupStr += " OR "; }
-						lookupStr += "r.active LIKE :statusValue"; 
+						lookupStr += "x.active LIKE :statusValue"; 
 						or = true;
 					}
 				}
@@ -112,24 +110,19 @@ public class RoleDaoImpl implements RoleDao {
 			
 			for (LinkedHashMap<String,String> item : orderCriteria) {
 				if (item.containsKey(GlobalConstant.ORDERCOLUMN) && item.containsKey(GlobalConstant.ORDERDIR)) {
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("ADMIN_ROLE_TABLE_NAME")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_ROLE_TABLE_NAME")){
 						if (comma) { orderItems.append(","); }
-						orderItems.append("lt.text ").append(item.get(GlobalConstant.ORDERDIR));
+						orderItems.append("x.name ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("ADMIN_ROLE_TABLE_CODE")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_ROLE_TABLE_CODE")){
 						if (comma) { orderItems.append(","); }
-						orderItems.append("r.code ").append(item.get(GlobalConstant.ORDERDIR));
+						orderItems.append("x.code ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("ADMIN_ROLE_TABLE_APPLICATION")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_ROLE_TABLE_STATUS")){
 						if (comma) { orderItems.append(","); }
-						orderItems.append("r.application.code ").append(item.get(GlobalConstant.ORDERDIR));
-						comma = true;
-					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("ADMIN_ROLE_TABLE_STATUS")){
-						if (comma) { orderItems.append(","); }
-						orderItems.append("r.active ").append(item.get(GlobalConstant.ORDERDIR));
+						orderItems.append("x.active ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
 				}
@@ -139,14 +132,10 @@ public class RoleDaoImpl implements RoleDao {
 			queryStr += " ORDER BY ".concat(orderItems.toString());
 		} else {
 			// default order
-			queryStr += " ORDER BY lt.text";
+			queryStr += " ORDER BY x.name";
 		}
 		
-		
-		
-		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
-		
-		query.setParameter("lang",request.getParam(GlobalConstant.LANG));
+		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr).setParameter("teamId", new Long((Integer) request.getParam(PMConstant.TEAMID)));
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
@@ -155,17 +144,13 @@ public class RoleDaoImpl implements RoleDao {
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {  
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_ROLE_TABLE_NAME")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ROLE_TABLE_NAME")){
 						query.setParameter("nameValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
-						query.setParameter("lang",request.getParam(GlobalConstant.LANG));
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_ROLE_TABLE_CODE")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ROLE_TABLE_CODE")){
 						query.setParameter("codeValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_ROLE_TABLE_APPLICATION")){
-						query.setParameter("appValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
-					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_ROLE_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ROLE_TABLE_STATUS")){
 						if ("active".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
 							query.setParameter("statusValue", true);
 						} else if ("disabled".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
@@ -188,13 +173,13 @@ public class RoleDaoImpl implements RoleDao {
 
 	@Override
 	public void itemCount(RestRequest request, RestResponse response) throws Exception {
-		String queryStr = "SELECT COUNT(DISTINCT r) FROM Role as r JOIN r.title AS t JOIN t.langTexts as lt ";
-		boolean and = false;
-		if (request.containsParam(GlobalConstant.ACTIVE)) {
-			if (!and) { queryStr += " WHERE "; }
-			queryStr += "r.active =:active ";
-			and = true;
+		
+		if ( !(request.containsParam(PMConstant.TEAMID) && !"".equals(request.getParam(PMConstant.TEAMID))) ) {
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "Missing Team ID", response);
+			return;
 		}
+		
+		String queryStr = "SELECT COUNT(DISTINCT x) FROM Role as x WHERE x.team.id =:teamId ";
 		
 		ArrayList<LinkedHashMap<String,String>> searchCriteria = null;
 		if (request.containsParam(GlobalConstant.SEARCHCRITERIA) && !request.getParam(GlobalConstant.SEARCHCRITERIA).equals("")) {
@@ -211,58 +196,41 @@ public class RoleDaoImpl implements RoleDao {
 			String lookupStr = "";
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_ROLE_TABLE_NAME")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ROLE_TABLE_NAME")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "lt.lang =:lang AND lt.text LIKE :nameValue"; 
+						lookupStr += "x.name LIKE :nameValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_ROLE_TABLE_CODE")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ROLE_TABLE_CODE")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "r.code LIKE :codeValue"; 
+						lookupStr += "x.code LIKE :codeValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_ROLE_TABLE_APPLICATION")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ROLE_TABLE_STATUS")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "r.application.code LIKE :appValue"; 
-						or = true;
-					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_ROLE_TABLE_STATUS")){
-						if (or) { lookupStr += " OR "; }
-						lookupStr += "r.active LIKE :statusValue"; 
+						lookupStr += "x.active LIKE :statusValue"; 
 						or = true;
 					}
 				}
 			}
 			if (!"".equals(lookupStr)) {
-				if (!and) { 
-					queryStr += " WHERE ( " + lookupStr + " ) ";
-				} else {
-					queryStr += " AND ( " + lookupStr + " ) ";
-				}
+				queryStr += " AND ( " + lookupStr + " ) ";
 			}
 			
 		}
 
-		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
-		
-		if (request.containsParam(GlobalConstant.ACTIVE)) {
-			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
-		} 
+		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr).setParameter("teamId", new Long((Integer) request.getParam(PMConstant.TEAMID)));
 		
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {  
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_ROLE_TABLE_NAME")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ROLE_TABLE_NAME")){
 						query.setParameter("nameValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
-						query.setParameter("lang",request.getParam(GlobalConstant.LANG));
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_ROLE_TABLE_CODE")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ROLE_TABLE_CODE")){
 						query.setParameter("codeValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_ROLE_TABLE_APPLICATION")){
-						query.setParameter("appValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
-					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_ROLE_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_ROLE_TABLE_STATUS")){
 						if ("active".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
 							query.setParameter("statusValue", true);
 						} else if ("disabled".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
@@ -284,7 +252,7 @@ public class RoleDaoImpl implements RoleDao {
 	@Override
 	public void item(RestRequest request, RestResponse response) throws Exception {
 		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
-			String queryStr = "SELECT r FROM Role AS r JOIN FETCH r.title AS t JOIN FETCH t.langTexts WHERE r.id =:id";
+			String queryStr = "SELECT x FROM Role AS x WHERE x.id =:id";
 			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
 			query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
@@ -297,67 +265,72 @@ public class RoleDaoImpl implements RoleDao {
 	}
 
 	@Override
-	public void userRoleIds(RestRequest request, RestResponse response) {
-		if (request.containsParam("userId") && !"".equals(request.getParam("userId"))) {
-			String queryStr = "SELECT new UserRole(ur.id, ur.active, ur.order, ur.startDate, ur.endDate, ur.role.id) FROM UserRole AS ur WHERE ur.user.id =:id";
+	public void delete(RestRequest request, RestResponse response) throws Exception {
+		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
+			
+			Role role = (Role) entityManagerDataSvc.getInstance().getReference(Role.class,  new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			entityManagerDataSvc.getInstance().remove(role);
+			
+		} else {
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "Missing ID", response);
+		}
+	}
+
+	@Override
+	public void save(RestRequest request, RestResponse response) throws Exception {
+		Role role = (Role) request.getParam(GlobalConstant.ITEM);
+		entityManagerDataSvc.getInstance().merge(role);
+	}
+
+	
+	@Override
+	public void memberRoles(RestRequest request, RestResponse response) throws Exception {
+		if (request.containsParam(GlobalConstant.PARENTID) && !"".equals(request.getParam(GlobalConstant.PARENTID))) {
+			String queryStr = "SELECT new MemberRole(x.id, x.active, x.sortOrder, x.startDate, x.endDate, x.role.id) FROM MemberRole AS x WHERE x.member.id =:id";
 			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
-			query.setParameter("id", new Long((Integer) request.getParam("userId")));
-			List<Long> roles = query.getResultList();
+			query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+			List<MemberRole> roles = query.getResultList();
 			
-			response.addParam("userRoles", roles);
+			response.addParam("memberRoles", roles);
+		} else {
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "Missing ID", response);
+		}
+		
+	}
+	
+	@Override
+	public void memberRole(RestRequest request, RestResponse response) throws Exception {
+		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
+			String queryStr = "SELECT r FROM MemberRole AS r WHERE r.id =:id";
+			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+		
+			query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			MemberRole memberRole = (MemberRole) query.getSingleResult();
+			
+			response.addParam(GlobalConstant.ITEM, memberRole);
 		} else {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "Missing ID", response);
 		}
 		
 	}
 
-	/*@Override
-	public void selectList(RestRequest request, RestResponse response) throws Exception {
-
-		String queryStr = "SELECT r.id, lt.text FROM Role AS r JOIN FETCH r.title AS t JOIN FETCH t.langTexts as lt WHERE lt.lang =:lang ";
-		
-		if (request.containsParam(GlobalConstant.ACTIVE)) {
-			queryStr += "r.active =:active ";
-		}
-		
-		if (request.containsParam(GlobalConstant.SEARCHVALUE) && !request.getParam(GlobalConstant.SEARCHVALUE).equals("")){
-			queryStr += "lt.text LIKE :searchValue"; 
-		}
-		
-		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
-		
-		query.setParameter("lang",request.getParam(GlobalConstant.LANG));
-		
-		if (request.containsParam(GlobalConstant.ACTIVE)) {
-			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
-		} 
-		
-		if (request.containsParam(GlobalConstant.SEARCHVALUE) && !request.getParam(GlobalConstant.SEARCHVALUE).equals("")){
-			query.setParameter("searchValue", "%"+((String)request.getParam(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
-		}
-		if (request.containsParam(GlobalConstant.LISTLIMIT) && (Integer) request.getParam(GlobalConstant.LISTLIMIT) != 0){
-			query.setFirstResult((Integer) request.getParam(GlobalConstant.LISTSTART));
-			query.setMaxResults((Integer) request.getParam(GlobalConstant.LISTLIMIT));
-		}
-		
-		@SuppressWarnings("unchecked")
-		List<Map<Long,String>> roles = query.getResultList();
-
-		response.addParam("rolesSelectList", roles);
-		
-	}*/
-
 	@Override
-	public void delete(RestRequest request, RestResponse response) throws Exception {
-		// TODO Auto-generated method stub
+	public void memberRoleSave(RestRequest request, RestResponse response) throws Exception {
+		MemberRole memberRole = (MemberRole) request.getParam(GlobalConstant.ITEM);
 		
+		if (memberRole.getRole() == null) {
+			Role role = (Role) entityManagerDataSvc.getInstance().getReference(Role.class,  new Long((Integer) request.getParam("roleId")));
+			memberRole.setRole(role);
+		}
+		if (memberRole.getMember() == null) {
+			Member member = (Member) entityManagerDataSvc.getInstance().getReference(Member.class,  new Long((Integer) request.getParam("memberId")));
+			memberRole.setMember(member);
+		}
+		
+		entityManagerDataSvc.getInstance().merge(memberRole);
 	}
 
-	@Override
-	public void save(RestRequest request, RestResponse response) throws Exception {
-		// TODO Auto-generated method stub
-		
-	}
+	
 
 }

@@ -23,11 +23,14 @@ package org.toasthub.pm.model;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -50,6 +53,7 @@ public class Member extends BaseEntity implements Serializable{
 	protected String type; // INTERNAL, EXTERNAL
 	protected Instant startDate;
 	protected Instant endDate;
+	protected Set<MemberRole> memberRoles;
 	
 	// Constructor
 	public Member(){}
@@ -63,6 +67,19 @@ public class Member extends BaseEntity implements Serializable{
 		this.active = active;
 		this.startDate = startDate;
 		this.endDate = endDate;
+	}
+	
+	public Member(boolean active, boolean archive, boolean locked, String type, Team team, long userId, String name, String username, Instant startDate, Instant endDate) {
+		this.setActive(active);
+		this.setArchive(archive);
+		this.setLocked(locked);
+		this.setTeam(team);
+		this.setType(type);
+		this.setUserId(userId);
+		this.setName(name);
+		this.setUsername(username);
+		this.setStartDate(startDate);
+		this.setEndDate(endDate);
 	}
 	
 	// Methods
@@ -143,4 +160,12 @@ public class Member extends BaseEntity implements Serializable{
 		}
 	}
 
+	@JsonIgnore
+	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+	public Set<MemberRole> getMemberRoles() {
+		return memberRoles;
+	}
+	public void setMemberRoles(Set<MemberRole> memberRoles) {
+		this.memberRoles = memberRoles;
+	}
 }

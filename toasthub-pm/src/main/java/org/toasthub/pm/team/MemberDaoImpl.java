@@ -197,9 +197,9 @@ public class MemberDaoImpl implements MemberDao {
 			query.setMaxResults((Integer) request.getParam(GlobalConstant.LISTLIMIT));
 		}
 		@SuppressWarnings("unchecked")
-		List<Member> teamMembers = query.getResultList();
+		List<Member> members = query.getResultList();
 
-		response.addParam(GlobalConstant.ITEMS, teamMembers);
+		response.addParam(GlobalConstant.ITEMS, members);
 		
 	}
 

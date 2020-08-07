@@ -27,8 +27,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.toasthub.core.general.api.View;
 import org.toasthub.core.general.model.BaseEntity;
@@ -47,32 +47,43 @@ public class MemberRole extends BaseEntity implements Serializable{
 	protected Integer sortOrder;
 	protected Instant startDate;
 	protected Instant endDate;
-	
-	// transient
-	protected Long teamId;
-	protected String name;
 
-	
+	// transient
+	protected Long roleId;
+		
 	// Constructor
 	public MemberRole(){}
 	
 	
-	public MemberRole(Long id, boolean active, Instant startDate, Instant endDate) {
-		this.id = id;
-		this.active = active;
-		this.startDate = startDate;
-		this.endDate = endDate;
+	public MemberRole(Long id, boolean active, Integer sortOrder, Instant startDate, Instant endDate, Long roleId) {
+		this.setId(id);
+		this.setActive(active);
+		this.setSortOrder(sortOrder);
+		this.setStartDate(startDate);
+		this.setEndDate(endDate);
+		this.setRoleId(roleId);
 	}
 	
 	public MemberRole(Role role, Integer sortOrder, Instant startDate, Instant endDate) {
 		this.setRole(role);
 		this.setSortOrder(sortOrder);
-		this.startDate = startDate;
-		this.endDate = endDate;
+		this.setStartDate(startDate);
+		this.setEndDate(endDate);
 		this.setActive(true);
 		this.setArchive(false);
 		this.setLocked(false);
 		this.setCreated(Instant.now());
+	}
+	
+	public MemberRole(boolean active, boolean archive, boolean locked, Integer sortOrder, Instant startDate, Instant endDate, Member member, Role role) {
+		this.setActive(true);
+		this.setArchive(false);
+		this.setLocked(false);
+		this.setSortOrder(sortOrder);
+		this.setStartDate(startDate);
+		this.setEndDate(endDate);
+		this.setMember(member);
+		this.setRole(role);
 	}
 	
 	@JsonIgnore
@@ -122,5 +133,16 @@ public class MemberRole extends BaseEntity implements Serializable{
 		this.endDate = endDate;
 	}
 	
-	
+	@JsonView({View.Admin.class})
+	@Transient
+	public Long getRoleId() {
+		if (this.role == null) {
+			return this.roleId;
+		} else {
+			return this.role.getId();
+		}
+	}
+	public void setRoleId(Long roleId) {
+		this.roleId = roleId;
+	}
 }

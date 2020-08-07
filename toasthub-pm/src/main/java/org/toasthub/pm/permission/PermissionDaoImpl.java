@@ -32,6 +32,7 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.pm.model.Permission;
+import org.toasthub.pm.model.Role;
 import org.toasthub.pm.model.RolePermission;
 
 @Repository("PMPermissionDao")
@@ -46,11 +47,13 @@ public class PermissionDaoImpl implements PermissionDao {
 	@Override
 	public void items(RestRequest request, RestResponse response) throws Exception {
 		
-		String queryStr = "SELECT DISTINCT p FROM Permission AS p JOIN FETCH p.application AS a JOIN FETCH a.title AS at JOIN FETCH at.langTexts as alt "
-			+ "WHERE lt.lang =:lang AND alt.lang =:lang ";
+		String queryStr = "SELECT DISTINCT x FROM Permission AS x ";
 		
+		boolean and = false;
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
-			queryStr += "AND p.active =:active ";
+			if (!and) { queryStr += " WHERE "; }
+			queryStr += "x.active =:active ";
+			and = true;
 		}
 		
 		// search
@@ -69,35 +72,34 @@ public class PermissionDaoImpl implements PermissionDao {
 			String lookupStr = "";
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_PERMISSION_TABLE_NAME")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PERMISSION_TABLE_NAME")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "lt.lang =:lang AND lt.text LIKE :nameValue"; 
+						lookupStr += "x.name LIKE :nameValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_PERMISSION_TABLE_CODE")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PERMISSION_TABLE_CODE")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "p.code LIKE :codeValue"; 
+						lookupStr += "x.code LIKE :codeValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_PERMISSION_TABLE_RIGHTS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PERMISSION_TABLE_RIGHTS")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "p.rights LIKE :rightsValue"; 
+						lookupStr += "x.rights LIKE :rightsValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_PERMISSION_TABLE_APPLICATION")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PERMISSION_TABLE_STATUS")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "p.application.code LIKE :appValue"; 
-						or = true;
-					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_PERMISSION_TABLE_STATUS")){
-						if (or) { lookupStr += " OR "; }
-						lookupStr += "p.active LIKE :statusValue"; 
+						lookupStr += "x.active LIKE :statusValue"; 
 						or = true;
 					}
 				}
 			}
 			if (!"".equals(lookupStr)) {
-				queryStr += " AND ( " + lookupStr + " ) ";
+				if (!and) { 
+					queryStr += " WHERE ( " + lookupStr + " ) ";
+				} else {
+					queryStr += " AND ( " + lookupStr + " ) ";
+				}
 			}
 			
 		}
@@ -118,29 +120,24 @@ public class PermissionDaoImpl implements PermissionDao {
 			
 			for (LinkedHashMap<String,String> item : orderCriteria) {
 				if (item.containsKey(GlobalConstant.ORDERCOLUMN) && item.containsKey(GlobalConstant.ORDERDIR)) {
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("ADMIN_PERMISSION_TABLE_NAME")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_PERMISSION_TABLE_NAME")){
 						if (comma) { orderItems.append(","); }
-						orderItems.append("lt.text ").append(item.get(GlobalConstant.ORDERDIR));
+						orderItems.append("x.name ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("ADMIN_PERMISSION_TABLE_CODE")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_PERMISSION_TABLE_CODE")){
 						if (comma) { orderItems.append(","); }
-						orderItems.append("p.code ").append(item.get(GlobalConstant.ORDERDIR));
+						orderItems.append("x.code ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("ADMIN_PERMISSION_TABLE_RIGHTS")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_PERMISSION_TABLE_RIGHTS")){
 						if (comma) { orderItems.append(","); }
-						orderItems.append("p.rights ").append(item.get(GlobalConstant.ORDERDIR));
+						orderItems.append("x.rights ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("ADMIN_PERMISSION_TABLE_APPLICATION")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_PERMISSION_TABLE_STATUS")){
 						if (comma) { orderItems.append(","); }
-						orderItems.append("p.application.code ").append(item.get(GlobalConstant.ORDERDIR));
-						comma = true;
-					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("ADMIN_PERMISSION_TABLE_STATUS")){
-						if (comma) { orderItems.append(","); }
-						orderItems.append("p.active ").append(item.get(GlobalConstant.ORDERDIR));
+						orderItems.append("x.active ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
 				}
@@ -150,12 +147,10 @@ public class PermissionDaoImpl implements PermissionDao {
 			queryStr += " ORDER BY ".concat(orderItems.toString());
 		} else {
 			// default order
-			queryStr += " ORDER BY lt.text";
+			queryStr += " ORDER BY x.name";
 		}
 		
 		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
-		
-		query.setParameter("lang",request.getParam(GlobalConstant.LANG));
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
@@ -164,20 +159,16 @@ public class PermissionDaoImpl implements PermissionDao {
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {  
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_PERMISSION_TABLE_NAME")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PERMISSION_TABLE_NAME")){
 						query.setParameter("nameValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
-						query.setParameter("lang",request.getParam(GlobalConstant.LANG));
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_PERMISSION_TABLE_CODE")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PERMISSION_TABLE_CODE")){
 						query.setParameter("codeValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_PERMISSION_TABLE_RIGHTS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PERMISSION_TABLE_RIGHTS")){
 						query.setParameter("rightsValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_PERMISSION_TABLE_APPLICATION")){
-						query.setParameter("appValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
-					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_PERMISSION_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PERMISSION_TABLE_STATUS")){
 						if ("active".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
 							query.setParameter("statusValue", true);
 						} else if ("disabled".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
@@ -200,11 +191,11 @@ public class PermissionDaoImpl implements PermissionDao {
 
 	@Override
 	public void itemCount(RestRequest request, RestResponse response) throws Exception {
-		String queryStr = "SELECT COUNT(DISTINCT p) FROM Permission as p JOIN p.title AS t JOIN t.langTexts as lt ";
+		String queryStr = "SELECT COUNT(DISTINCT x) FROM Permission as x ";
 		boolean and = false;
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			if (!and) { queryStr += " WHERE "; }
-			queryStr += "p.active =:active ";
+			queryStr += "x.active =:active ";
 			and = true;
 		}
 		
@@ -223,29 +214,24 @@ public class PermissionDaoImpl implements PermissionDao {
 			String lookupStr = "";
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_PERMISSION_TABLE_NAME")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PERMISSION_TABLE_NAME")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "lt.lang =:lang AND lt.text LIKE :nameValue"; 
+						lookupStr += "x.name LIKE :nameValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_PERMISSION_TABLE_CODE")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PERMISSION_TABLE_CODE")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "p.code LIKE :codeValue"; 
+						lookupStr += "x.code LIKE :codeValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_PERMISSION_TABLE_RIGHT")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PERMISSION_TABLE_RIGHT")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "p.rights LIKE :rightsValue"; 
-						or = true;
-					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_PERMISSION_TABLE_APPLICATION")){
-						if (or) { lookupStr += " OR "; }
-						lookupStr += "p.application.code LIKE :appValue"; 
+						lookupStr += "x.rights LIKE :rightsValue"; 
 						or = true;
 					}
 					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_PERMISSION_TABLE_STATUS")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "p.active LIKE :statusValue"; 
+						lookupStr += "x.active LIKE :statusValue"; 
 						or = true;
 					}
 				}
@@ -269,20 +255,16 @@ public class PermissionDaoImpl implements PermissionDao {
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {  
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_PERMISSION_TABLE_NAME")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PERMISSION_TABLE_NAME")){
 						query.setParameter("nameValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
-						query.setParameter("lang",request.getParam(GlobalConstant.LANG));
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_PERMISSION_TABLE_CODE")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PERMISSION_TABLE_CODE")){
 						query.setParameter("codeValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_PERMISSION_TABLE_RIGHTS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PERMISSION_TABLE_RIGHTS")){
 						query.setParameter("rightsValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_PERMISSION_TABLE_APPLICATION")){
-						query.setParameter("appValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
-					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("ADMIN_PERMISSION_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_PERMISSION_TABLE_STATUS")){
 						if ("active".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
 							query.setParameter("statusValue", true);
 						} else if ("disabled".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
@@ -304,7 +286,7 @@ public class PermissionDaoImpl implements PermissionDao {
 	@Override
 	public void item(RestRequest request, RestResponse response) throws Exception {
 		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
-			String queryStr = "SELECT p FROM Permission AS p JOIN FETCH p.title AS t JOIN FETCH t.langTexts WHERE p.id =:id";
+			String queryStr = "SELECT x FROM Permission AS x WHERE x.id =:id";
 			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
 			query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
@@ -317,30 +299,63 @@ public class PermissionDaoImpl implements PermissionDao {
 	}
 
 	@Override
-	public void rolePermissionIds(RestRequest request, RestResponse response) {
-		if (request.containsParam("roleId") && !"".equals(request.getParam("roleId"))) {
-			String queryStr = "SELECT new RolePermission(rp.id, rp.active, rp.rights, rp.startDate, rp.endDate, rp.permission.id) FROM RolePermission AS rp WHERE rp.role.id =:id";
-			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
-		
-			query.setParameter("id", new Long((Integer) request.getParam("roleId")));
-			List<RolePermission> permissions = query.getResultList();
+	public void delete(RestRequest request, RestResponse response) throws Exception {
+		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
 			
-			response.addParam("rolePermissions", permissions);
+			Permission permission = (Permission) entityManagerDataSvc.getInstance().getReference(Permission.class,  new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			entityManagerDataSvc.getInstance().remove(permission);
+			
 		} else {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "Missing ID", response);
 		}
 	}
 
 	@Override
-	public void delete(RestRequest request, RestResponse response) throws Exception {
-		// TODO Auto-generated method stub
-		
+	public void save(RestRequest request, RestResponse response) throws Exception {
+		Permission permission = (Permission) request.getParam(GlobalConstant.ITEM);
+		entityManagerDataSvc.getInstance().merge(permission);
 	}
 
 	@Override
-	public void save(RestRequest request, RestResponse response) throws Exception {
-		// TODO Auto-generated method stub
+	public void rolePermissions(RestRequest request, RestResponse response) throws Exception {
+		String queryStr = "SELECT new RolePermission(x.id, x.active, x.rights, x.startDate, x.endDate, x.permission.id) FROM RolePermission AS x WHERE x.role.id =:id";
+		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+	
+		query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+		List<RolePermission> rolePermissions = query.getResultList();
 		
+		response.addParam("rolePermissions", rolePermissions);
+	}
+
+	@Override
+	public void rolePermission(RestRequest request, RestResponse response) throws Exception {
+		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
+			String queryStr = "SELECT x FROM RolePermission AS x WHERE x.id =:id";
+			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+		
+			query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			RolePermission rolePermission = (RolePermission) query.getSingleResult();
+			
+			response.addParam(GlobalConstant.ITEM, rolePermission);
+		} else {
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "Missing ID", response);
+		}
+	}
+
+	@Override
+	public void rolePermissionSave(RestRequest request, RestResponse response) throws Exception {
+		RolePermission rolePermission = (RolePermission) request.getParam(GlobalConstant.ITEM);
+		
+		if (rolePermission.getRole() == null) {
+			Role role = (Role) entityManagerDataSvc.getInstance().getReference(Role.class,  new Long((Integer) request.getParam("roleId")));
+			rolePermission.setRole(role);
+		}
+		if (rolePermission.getPermission() == null) {
+			Permission permission = (Permission) entityManagerDataSvc.getInstance().getReference(Permission.class,  new Long((Integer) request.getParam("permissionId")));
+			rolePermission.setPermission(permission);
+		}
+		
+		entityManagerDataSvc.getInstance().merge(rolePermission);
 	}
 
 

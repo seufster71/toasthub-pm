@@ -27,6 +27,8 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -44,14 +46,16 @@ public class Role extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
+	protected Team team;
 	protected String name;
 	protected String code;
 	protected Set<RolePermission> permissions;
 	protected Instant startDate;
 	protected Instant endDate;
+	protected Set<MemberRole> memberRoles;
 
 	// transient
-	protected Member teamMemberRole;
+	protected MemberRole memberRole;
 	
 	//Constructor
 	public Role() {
@@ -63,10 +67,30 @@ public class Role extends BaseEntity implements Serializable{
 		this.setArchive(false);
 		this.setLocked(false);
 		this.setCreated(Instant.now());
-		
 	}
 
+	public Role(boolean active, boolean archive, boolean locked, String name, String code, Team team, Instant startDate, Instant endDate) {
+		this.setActive(active);
+		this.setArchive(archive);
+		this.setLocked(locked);
+		this.setName(name);
+		this.setCode(code);
+		this.setTeam(team);
+		this.setStartDate(startDate);
+		this.setEndDate(endDate);
+	}
+	
 	// Methods
+	@JsonIgnore
+	@ManyToOne(targetEntity = Team.class)
+	@JoinColumn(name = "team_id")
+	public Team getTeam() {
+		return team;
+	}
+	public void setTeam(Team team) {
+		this.team = team;
+	}
+	
 	@JsonView({View.Member.class,View.Admin.class})
 	@Column(name = "name")
 	public String getName() {
@@ -114,11 +138,19 @@ public class Role extends BaseEntity implements Serializable{
 
 	@JsonView({View.Member.class,View.Admin.class})
 	@Transient
-	public Member getTeamMemberRole() {
-		return teamMemberRole;
+	public MemberRole getMemberRole() {
+		return memberRole;
 	}
-	public void setTeamMemberRole(Member teamMemberRole) {
-		this.teamMemberRole = teamMemberRole;
+	public void setMemberRole(MemberRole memberRole) {
+		this.memberRole = memberRole;
 	}
 	
+	@JsonIgnore
+	@OneToMany(mappedBy = "role", cascade = CascadeType.ALL)
+	public Set<MemberRole> getMemberRoles() {
+		return memberRoles;
+	}
+	public void setMemberRoles(Set<MemberRole> memberRoles) {
+		this.memberRoles = memberRoles;
+	}
 }

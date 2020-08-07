@@ -12,9 +12,11 @@ public class PMConstant {
 	public static final String SPRINTID = "sprintId";
 	public static final String COMMENTID = "commentId";
 	public static final String MEMBERID = "memberId";
+	public static final String MEMBER = "member";
 	public static final String ROLEID = "roleId";
 	public static final String PERMISSIONID = "permissionId";
 	public static final String TASKID = "taskId";
 	public static final String WORKFLOWID = "workflowId";
 	public static final String OWNERID = "ownerId";
+	public static final String TEAMID = "teamId";
 }

@@ -22,6 +22,7 @@ import org.toasthub.pm.model.BaseDao;
 
 public interface PermissionDao extends BaseDao {
 
-	void rolePermissionIds(RestRequest request, RestResponse response);
-	
+	void rolePermissions(RestRequest request, RestResponse response) throws Exception;
+	void rolePermission(RestRequest request, RestResponse response) throws Exception;
+	void rolePermissionSave(RestRequest request, RestResponse response) throws Exception;
 }

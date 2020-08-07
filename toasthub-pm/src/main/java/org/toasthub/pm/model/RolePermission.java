@@ -60,17 +60,28 @@ public class RolePermission extends BaseEntity implements Serializable{
 	public RolePermission(){}
 	
 	public RolePermission(Role role, Permission permission) {
-		this.role = role;
-		this.permission = permission;
+		this.setRole(role);
+		this.setPermission(permission);
 	}
 	
 	public RolePermission(Long id, boolean active, String rights, Instant startDate, Instant endDate, Long permissionId) {
-		this.id = id;
-		this.active = active;
-		this.rights = rights;
-		this.startDate = startDate;
-		this.endDate = endDate;
-		this.permissionId = permissionId;
+		this.setId(id);
+		this.setActive(active);
+		this.setRights(rights);
+		this.setStartDate(startDate);
+		this.setEndDate(endDate);
+		this.setPermissionId(permissionId);
+	}
+	
+	public RolePermission(boolean active, boolean archive, boolean locked, Instant startDate, Instant endDate, String rights, Role role, Permission permission) {
+		this.setActive(active);
+		this.setActive(active);
+		this.setLocked(locked);
+		this.setStartDate(startDate);
+		this.setEndDate(endDate);
+		this.setRights(rights);
+		this.setRole(role);
+		this.setPermission(permission);
 	}
 
 	// Methods

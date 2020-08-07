@@ -23,14 +23,22 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.toasthub.core.common.UtilSvc;
 import org.toasthub.core.general.handler.ServiceProcessor;
 import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
+import org.toasthub.pm.model.Member;
+import org.toasthub.pm.model.MemberRole;
+import org.toasthub.pm.model.PMConstant;
 import org.toasthub.pm.model.Team;
+import org.toasthub.pm.role.RoleSvc;
+import org.toasthub.security.model.MyUserPrincipal;
+import org.toasthub.security.model.User;
 
 @Service("PMTeamSvc")
 public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
@@ -44,7 +52,9 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 	
 	@Autowired
 	PrefCacheUtil prefCacheUtil;
-
+	
+	@Autowired
+	RoleSvc roleSvc;
 	
 	@Override
 	public void process(RestRequest request, RestResponse response) {
@@ -142,6 +152,7 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 	}
 
 	@Override
+	@Transactional("TransactionManagerData")
 	public void save(RestRequest request, RestResponse response) {
 		try {
 			// validate
@@ -159,11 +170,13 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 				request.addParam(GlobalConstant.ITEM, response.getParam(GlobalConstant.ITEM));
 				response.getParams().remove(GlobalConstant.ITEM);
 			} else {
+				// new Team
 				Team team = new Team();
 				team.setActive(true);
 				team.setArchive(false);
 				team.setLocked(false);
 				request.addParam(GlobalConstant.ITEM, team);
+				
 			}
 			// marshall
 			utilSvc.marshallFields(request, response);

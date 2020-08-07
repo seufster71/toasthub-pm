@@ -44,7 +44,6 @@ public class Product extends BaseEntity implements Serializable{
 	protected String name;
 	protected String description;
 	protected long ownerId;
-	protected Team team;
 
 	protected Workflow workflow;
 	
@@ -88,16 +87,6 @@ public class Product extends BaseEntity implements Serializable{
 	}
 	public void setOwnerId(long ownerId) {
 		this.ownerId = ownerId;
-	}
-
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@ManyToOne(targetEntity = Team.class)
-	@JoinColumn(name = "team_id")
-	public Team getTeam() {
-		return team;
-	}
-	public void setTeam(Team team) {
-		this.team = team;
 	}
 
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})

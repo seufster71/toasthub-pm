@@ -16,8 +16,12 @@
 
 package org.toasthub.pm.permission;
 
+import org.toasthub.core.general.model.RestRequest;
+import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.pm.model.BaseSvc;
 
 public interface PermissionSvc extends BaseSvc {
+	public void rolePermission(RestRequest request, RestResponse response);
+	public void rolePermissionSave(RestRequest request, RestResponse response);
 
 }

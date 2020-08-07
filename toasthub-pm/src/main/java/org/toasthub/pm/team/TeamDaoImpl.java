@@ -17,7 +17,10 @@
 package org.toasthub.pm.team;
 
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +28,7 @@ import java.util.Map;
 import javax.persistence.Query;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import org.toasthub.core.common.EntityManagerDataSvc;
@@ -33,8 +37,15 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
+import org.toasthub.pm.model.Member;
+import org.toasthub.pm.model.MemberRole;
 import org.toasthub.pm.model.PMConstant;
+import org.toasthub.pm.model.Permission;
+import org.toasthub.pm.model.Role;
+import org.toasthub.pm.model.RolePermission;
 import org.toasthub.pm.model.Team;
+import org.toasthub.security.model.MyUserPrincipal;
+import org.toasthub.security.model.User;
 
 @Repository("PMTeamDao")
 @Transactional("TransactionManagerData")
@@ -63,8 +74,190 @@ public class TeamDaoImpl implements TeamDao {
 	public void save(RestRequest request, RestResponse response) throws Exception {
 		Team team = (Team) request.getParam(GlobalConstant.ITEM);
 		
-		
-		entityManagerDataSvc.getInstance().merge(team);
+		if (team.getId() == null) {
+			team = entityManagerDataSvc.getInstance().merge(team);
+			
+			// add yourself as member
+			User user = ((MyUserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+			Member member = new Member(true, false, false, "INTERNAL", team, user.getId(), user.getFirstname()+" "+user.getLastname(), user.getUsername(), Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS));
+			member = entityManagerDataSvc.getInstance().merge(member);
+			
+			// Admin Role
+			Role role = new Role(true, false, false, "Admin", "ADMIN", team, Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS));
+			role = entityManagerDataSvc.getInstance().merge(role);
+			MemberRole memberRole = new MemberRole(true, false, false, 1, Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS), member, role);
+			memberRole = entityManagerDataSvc.getInstance().merge(memberRole);
+			String queryStr = "SELECT x FROM Permission AS x WHERE x.code =:code";
+			
+			Permission permission = null;
+			RolePermission rolePermission = null;
+			// Allow
+			List<String> permList = new ArrayList<String>(Arrays.asList("PMPRODUCTV","PMPRODUCTC","PMPRODUCTM","PMPRODUCTD"
+					,"PMPROJECTV","PMPROJECTC","PMPROJECTM","PMPROJECTD"
+					,"PMBACKLOGV","PMBACKLOGC","PMBACKLOGM","PMBACKLOGD"
+					,"PMCOMMENTV","PMCOMMENTC","PMCOMMENTM","PMCOMMENTD"
+					,"PMDEFECTV","PMDEFECTC","PMDEFECTM","PMDEFECTD"
+					,"PMENHANCEMENTV","PMENHANCEMENTC","PMENHANCEMENTM","PMENHANCEMENTD"
+					,"PMRELEASEV","PMRELEASEC","PMRELEASEM","PMRELEASED"
+					,"PMROLEV","PMROLEC","PMROLEM","PMROLED"
+					,"PMPERMISSIONV","PMPERMISSIONC","PMPERMISSIONM","PMPERMISSIOND"
+					,"PMSCRUMV","PMSCRUMC","PMSCRUMM","PMSCRUMD"
+					,"PMSPRINTV","PMSPRINTC","PMSPRINTM","PMSPRINTD"
+					,"PMTASKV","PMTASKC","PMTASKM","PMTASKD"
+					,"PMTEAMV","PMTEAMC","PMTEAMM","PMTEAMD"
+					,"PMTEAMMEMBERV","PMTEAMMEMBERC","PMTEAMMEMBERM","PMTEAMMEMBERD"
+					,"PMTESTCASEV","PMTESTCASEC","PMTESTCASEM","PMTESTCASED"
+					,"PMTESTSCENARIOV","PMTESTSCENARIOC","PMTESTSCENARIOM","PMTESTSCENARIOD"
+					,"PMWORKFLOWV","PMWORKFLOWC","PMWORKFLOWM","PMWORKFLOWD"));
+			for(String code : permList) {
+				permission = (Permission) entityManagerDataSvc.getInstance().createQuery(queryStr).setParameter("code", code).getSingleResult();
+				rolePermission = new RolePermission(true,false,true,Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS),"Y",role,permission);
+				rolePermission = entityManagerDataSvc.getInstance().merge(rolePermission);
+			}
+			
+			// Member Role
+			role = new Role(true, false, false, "Member", "MEMBER", team, Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS));
+			role = entityManagerDataSvc.getInstance().merge(role);
+			
+			// Allow
+			permList = new ArrayList<String>(Arrays.asList("PMPRODUCTV","PMPRODUCTC","PMPRODUCTM","PMPRODUCTD"
+					,"PMPROJECTV","PMPROJECTC","PMPROJECTM","PMPROJECTD"
+					,"PMBACKLOGV","PMBACKLOGC","PMBACKLOGM","PMBACKLOGD"
+					,"PMCOMMENTV","PMCOMMENTC","PMCOMMENTM","PMCOMMENTD"
+					,"PMDEFECTV","PMDEFECTC","PMDEFECTM","PMDEFECTD"
+					,"PMENHANCEMENTV","PMENHANCEMENTC","PMENHANCEMENTM","PMENHANCEMENTD"
+					,"PMRELEASEV","PMRELEASEC","PMRELEASEM","PMRELEASED"
+					,"PMROLEV"
+					,"PMPERMISSIONV"
+					,"PMSCRUMV","PMSCRUMC","PMSCRUMM","PMSCRUMD"
+					,"PMSPRINTV","PMSPRINTC","PMSPRINTM","PMSPRINTD"
+					,"PMTASKV","PMTASKC","PMTASKM","PMTASKD"
+					,"PMTEAMV"
+					,"PMTEAMMEMBERV"
+					,"PMTESTCASEV","PMTESTCASEC","PMTESTCASEM","PMTESTCASED"
+					,"PMTESTSCENARIOV","PMTESTSCENARIOC","PMTESTSCENARIOM","PMTESTSCENARIOD"
+					,"PMWORKFLOWV"));
+			for(String code : permList) {
+				permission = (Permission) entityManagerDataSvc.getInstance().createQuery(queryStr).setParameter("code", code).getSingleResult();
+				rolePermission = new RolePermission(true,false,true,Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS),"Y",role,permission);
+				rolePermission = entityManagerDataSvc.getInstance().merge(rolePermission);
+			}
+			// Deny
+			permList = new ArrayList<String>(Arrays.asList(
+					"PMROLEC","PMROLEM","PMROLED"
+					,"PMPERMISSIONC","PMPERMISSIONM","PMPERMISSIOND"
+					,"PMTEAMC","PMTEAMM","PMTEAMD"
+					,"PMTEAMMEMBERC","PMTEAMMEMBERM","PMTEAMMEMBERD"
+					,"PMWORKFLOWC","PMWORKFLOWM","PMWORKFLOWD"));
+			for(String code : permList) {
+				permission = (Permission) entityManagerDataSvc.getInstance().createQuery(queryStr).setParameter("code", code).getSingleResult();
+				rolePermission = new RolePermission(true,false,true,Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS),"N",role,permission);
+				rolePermission = entityManagerDataSvc.getInstance().merge(rolePermission);
+			}
+			
+			// Tester
+			role = new Role(true, false, false, "Tester", "TESTER", team, Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS));
+			role = entityManagerDataSvc.getInstance().merge(role);
+			
+			// Allow
+			permList = new ArrayList<String>(Arrays.asList("PMPRODUCTV"
+					,"PMPROJECTV"
+					,"PMBACKLOGV"
+					,"PMCOMMENTV","PMCOMMENTC","PMCOMMENTM","PMCOMMENTD"
+					,"PMDEFECTV","PMDEFECTC"
+					,"PMENHANCEMENTV","PMENHANCEMENTC"
+					,"PMRELEASEV"
+					,"PMROLEV"
+					,"PMPERMISSIONV"
+					,"PMSCRUMV"
+					,"PMSPRINTV"
+					,"PMTASKV","PMTASKC"
+					,"PMTEAMV"
+					,"PMTEAMMEMBERV"
+					,"PMTESTCASEV","PMTESTCASEC","PMTESTCASEM","PMTESTCASED"
+					,"PMTESTSCENARIOV","PMTESTSCENARIOC","PMTESTSCENARIOM","PMTESTSCENARIOD"
+					,"PMWORKFLOWV"));
+			for(String code : permList) {
+				permission = (Permission) entityManagerDataSvc.getInstance().createQuery(queryStr).setParameter("code", code).getSingleResult();
+				rolePermission = new RolePermission(true,false,true,Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS),"Y",role,permission);
+				rolePermission = entityManagerDataSvc.getInstance().merge(rolePermission);
+			}
+			// Deny
+			permList = new ArrayList<String>(Arrays.asList(
+					"PMPRODUCTC","PMPRODUCTM","PMPRODUCTD"
+					,"PMPROJECTC","PMPROJECTM","PMPROJECTD"
+					,"PMBACKLOGC","PMBACKLOGM","PMBACKLOGD"
+					,"PMDEFECTM","PMDEFECTD"
+					,"PMENHANCEMENTM","PMENHANCEMENTD"
+					,"PMRELEASEC","PMRELEASEM","PMRELEASED"
+					,"PMROLEC","PMROLEM","PMROLED"
+					,"PMPERMISSIONC","PMPERMISSIONM","PMPERMISSIOND"
+					,"PMSCRUMC","PMSCRUMM","PMSCRUMD"
+					,"PMSPRINTC","PMSPRINTM","PMSPRINTD"
+					,"PMTASKM","PMTASKD"
+					,"PMTEAMC","PMTEAMM","PMTEAMD"
+					,"PMTEAMMEMBERC","PMTEAMMEMBERM","PMTEAMMEMBERD"
+					,"PMWORKFLOWC","PMWORKFLOWM","PMWORKFLOWD"));
+			for(String code : permList) {
+				permission = (Permission) entityManagerDataSvc.getInstance().createQuery(queryStr).setParameter("code", code).getSingleResult();
+				rolePermission = new RolePermission(true,false,true,Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS),"N",role,permission);
+				rolePermission = entityManagerDataSvc.getInstance().merge(rolePermission);
+			}
+			
+			// Viewer
+			role = new Role(true, false, false, "Viewer", "VIEWER", team, Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS));
+			role = entityManagerDataSvc.getInstance().merge(role);
+			
+			// Allow
+			permList = new ArrayList<String>(Arrays.asList("PMPRODUCTV"
+					,"PMPROJECTV"
+					,"PMBACKLOGV"
+					,"PMCOMMENTV"
+					,"PMDEFECTV"
+					,"PMENHANCEMENTV"
+					,"PMRELEASEV"
+					,"PMROLEV"
+					,"PMPERMISSIONV"
+					,"PMSCRUMV"
+					,"PMSPRINTV"
+					,"PMTASKV","PMTASKC"
+					,"PMTEAMV"
+					,"PMTEAMMEMBERV"
+					,"PMTESTCASEV"
+					,"PMTESTSCENARIOV"
+					,"PMWORKFLOWV"));
+			for(String code : permList) {
+				permission = (Permission) entityManagerDataSvc.getInstance().createQuery(queryStr).setParameter("code", code).getSingleResult();
+				rolePermission = new RolePermission(true,false,true,Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS),"Y",role,permission);
+				rolePermission = entityManagerDataSvc.getInstance().merge(rolePermission);
+			}
+			// Deny
+			permList = new ArrayList<String>(Arrays.asList(
+					"PMPRODUCTC","PMPRODUCTM","PMPRODUCTD"
+					,"PMPROJECTC","PMPROJECTM","PMPROJECTD"
+					,"PMBACKLOGC","PMBACKLOGM","PMBACKLOGD"
+					,"PMCOMMENTC","PMCOMMENTM","PMCOMMENTD"
+					,"PMDEFECTC","PMDEFECTM","PMDEFECTD"
+					,"PMENHANCEMENTC","PMENHANCEMENTM","PMENHANCEMENTD"
+					,"PMRELEASEC","PMRELEASEM","PMRELEASED"
+					,"PMROLEC","PMROLEM","PMROLED"
+					,"PMPERMISSIONC","PMPERMISSIONM","PMPERMISSIOND"
+					,"PMSCRUMC","PMSCRUMM","PMSCRUMD"
+					,"PMSPRINTC","PMSPRINTM","PMSPRINTD"
+					,"PMTASKM","PMTASKD"
+					,"PMTEAMC","PMTEAMM","PMTEAMD"
+					,"PMTEAMMEMBERC","PMTEAMMEMBERM","PMTEAMMEMBERD"
+					,"PMTESTCASEC","PMTESTCASEM","PMTESTCASED"
+					,"PMTESTSCENARIOC","PMTESTSCENARIOM","PMTESTSCENARIOD"
+					,"PMWORKFLOWC","PMWORKFLOWM","PMWORKFLOWD"));
+			for(String code : permList) {
+				permission = (Permission) entityManagerDataSvc.getInstance().createQuery(queryStr).setParameter("code", code).getSingleResult();
+				rolePermission = new RolePermission(true,false,true,Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS),"N",role,permission);
+				rolePermission = entityManagerDataSvc.getInstance().merge(rolePermission);
+			}
+		} else {
+			entityManagerDataSvc.getInstance().merge(team);
+		}
 	}
 
 	@Override
