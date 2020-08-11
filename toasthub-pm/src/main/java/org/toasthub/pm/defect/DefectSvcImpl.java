@@ -64,7 +64,6 @@ public class DefectSvcImpl implements DefectSvc, ServiceProcessor {
 			if (count != null && count > 0){
 				this.items(request, response);
 			}
-			response.addParam(GlobalConstant.ITEMNAME, request.getParam(GlobalConstant.ITEMNAME));
 			break;
 		case "LIST":
 			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
@@ -74,7 +73,6 @@ public class DefectSvcImpl implements DefectSvc, ServiceProcessor {
 			if (count != null && count > 0){
 				this.items(request, response);
 			}
-			response.addParam(GlobalConstant.ITEMNAME, request.getParam(GlobalConstant.ITEMNAME));
 			break;
 		case "ITEM":
 			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);

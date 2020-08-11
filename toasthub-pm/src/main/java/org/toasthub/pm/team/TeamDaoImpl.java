@@ -41,6 +41,8 @@ import org.toasthub.pm.model.Member;
 import org.toasthub.pm.model.MemberRole;
 import org.toasthub.pm.model.PMConstant;
 import org.toasthub.pm.model.Permission;
+import org.toasthub.pm.model.Product;
+import org.toasthub.pm.model.ProductTeam;
 import org.toasthub.pm.model.Role;
 import org.toasthub.pm.model.RolePermission;
 import org.toasthub.pm.model.Team;
@@ -257,6 +259,12 @@ public class TeamDaoImpl implements TeamDao {
 			}
 		} else {
 			entityManagerDataSvc.getInstance().merge(team);
+		}
+		
+		if (request.containsParam(GlobalConstant.PARENTID) && !"".equals(request.getParam(GlobalConstant.PARENTID))) {
+			Product product = (Product) entityManagerDataSvc.getInstance().getReference(Product.class,  new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+			ProductTeam productTeam = new ProductTeam(product,team);
+			entityManagerDataSvc.getInstance().merge(productTeam);
 		}
 	}
 
@@ -490,6 +498,53 @@ public class TeamDaoImpl implements TeamDao {
 		} else {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID",prefCacheUtil.getLang(request)), response);
 		}
+	}
+
+
+	@Override
+	public void linkTeams(RestRequest request, RestResponse response) throws Exception {
+		if (request.containsParam(GlobalConstant.PARENTTYPE) && !"".equals(request.getParam(GlobalConstant.PARENTTYPE)) 
+				&& request.containsParam(GlobalConstant.PARENTID) && !"".equals(request.getParam(GlobalConstant.PARENTID))) {
+			String queryStr = "SELECT new ProductTeam(x.id, x.active, x.team.id) FROM ProductTeam AS x WHERE x.product.id =:id";
+			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+		
+			query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+			List<ProductTeam> teams = query.getResultList();
+			
+			response.addParam("productTeams", teams);
+		} else {
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "Missing ID", response);
+		}
+	}
+
+	@Override
+	public void linkTeam(RestRequest request, RestResponse response) throws Exception {
+		if (request.containsParam(GlobalConstant.PARENTTYPE) && !"".equals(request.getParam(GlobalConstant.PARENTTYPE)) 
+				&& request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
+			String queryStr = "";
+			if ("PRODUCT".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+				queryStr = "SELECT x FROM ProductTeam AS x WHERE x.id =:id";
+			}
+			if (!"".equals(queryStr)) {
+				Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+			
+				query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+				Team team = (Team) query.getSingleResult();
+				
+				response.addParam(GlobalConstant.ITEM, team);
+			} else {
+				response.addParam(GlobalConstant.ITEM, null);
+			}
+		} else {
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID",prefCacheUtil.getLang(request)), response);
+		}
+		
+	}
+
+	@Override
+	public void linkTeamSave(RestRequest request, RestResponse response) throws Exception {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

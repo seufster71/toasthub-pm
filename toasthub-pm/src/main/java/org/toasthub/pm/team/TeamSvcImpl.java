@@ -23,7 +23,6 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.toasthub.core.common.UtilSvc;
@@ -32,13 +31,11 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
-import org.toasthub.pm.model.Member;
 import org.toasthub.pm.model.MemberRole;
-import org.toasthub.pm.model.PMConstant;
+import org.toasthub.pm.model.ProductTeam;
+import org.toasthub.pm.model.Role;
 import org.toasthub.pm.model.Team;
 import org.toasthub.pm.role.RoleSvc;
-import org.toasthub.security.model.MyUserPrincipal;
-import org.toasthub.security.model.User;
 
 @Service("PMTeamSvc")
 public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
@@ -71,7 +68,7 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 			if (count != null && count > 0){
 				this.items(request, response);
 			}
-			response.addParam(GlobalConstant.ITEMNAME, request.getParam(GlobalConstant.ITEMNAME));
+			this.addProductTeams(request, response);
 			break;
 		case "LIST":
 			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
@@ -81,7 +78,7 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 			if (count != null && count > 0){
 				this.items(request, response);
 			}
-			response.addParam(GlobalConstant.ITEMNAME, request.getParam(GlobalConstant.ITEMNAME));
+			this.addProductTeams(request, response);
 			break;
 		case "ITEM":
 			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
@@ -99,6 +96,11 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 			request.addParam(PrefCacheUtil.PREFGLOBAL, global);
 			prefCacheUtil.getPrefInfo(request,response);
 			this.save(request, response);
+			break;
+		case "LINK_PARENT":
+			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
+			prefCacheUtil.getPrefInfo(request,response);
+			this.linkParent(request, response);
 			break;
 		default:
 			utilSvc.addStatus(RestResponse.INFO, RestResponse.ACTIONNOTEXIST, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_ACTION_NOT_AVAIL",prefCacheUtil.getLang(request)), response);
@@ -191,5 +193,35 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 			e.printStackTrace();
 		}
 		
+	}
+
+	@Override
+	public void linkParent(RestRequest request, RestResponse response) {
+		try {
+			teamDao.linkTeam(request, response);
+		} catch (Exception e) {
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_EXECUTION_FAIL",prefCacheUtil.getLang(request)), response);
+			e.printStackTrace();
+		}
+	}
+	
+	private void addProductTeams (RestRequest request, RestResponse response) {
+		try {
+			if (request.containsParam(GlobalConstant.PARENTID) && !"".equals(request.getParam(GlobalConstant.PARENTID))) {
+				teamDao.linkTeams(request, response);
+				// add link to items
+				List<ProductTeam> productTeams = (List<ProductTeam>) response.getParam("productTeams");
+				List<Team> teams = (List<Team>) response.getParam(GlobalConstant.ITEMS);
+				for (ProductTeam productTeam : productTeams) {
+					for (Team team : teams) {
+						if (productTeam.getTeamId() == team.getId()) {
+							team.setProductTeam(productTeam);
+						}
+					}
+				}
+			}
+		} catch(Exception e) {
+			
+		}
 	}
 }

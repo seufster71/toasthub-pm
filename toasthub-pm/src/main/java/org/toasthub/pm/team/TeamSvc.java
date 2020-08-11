@@ -16,8 +16,11 @@
 
 package org.toasthub.pm.team;
 
+import org.toasthub.core.general.model.RestRequest;
+import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.pm.model.BaseSvc;
 
 public interface TeamSvc extends BaseSvc {
 
+	public void linkParent(RestRequest request, RestResponse response);
 }

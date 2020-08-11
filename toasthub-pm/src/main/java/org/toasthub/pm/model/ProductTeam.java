@@ -66,6 +66,14 @@ public class ProductTeam extends BaseEntity implements Serializable{
 	}
 	
 	public ProductTeam(boolean active, boolean archive, boolean locked, Product product, Team team) {
+		this.setActive(active);
+		this.setArchive(archive);
+		this.setLocked(locked);
+		this.setProduct(product);
+		this.setTeam(team);
+	}
+	
+	public ProductTeam(Product product, Team team) {
 		this.setActive(true);
 		this.setArchive(false);
 		this.setLocked(false);

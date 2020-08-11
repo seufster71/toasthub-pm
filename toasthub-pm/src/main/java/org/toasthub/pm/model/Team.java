@@ -26,6 +26,7 @@ import java.time.Instant;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.toasthub.core.general.api.View;
 import org.toasthub.core.general.model.BaseEntity;
@@ -41,6 +42,9 @@ public class Team extends BaseEntity implements Serializable{
 
 	protected String name;
 	protected long ownerId;
+	
+	// Transient
+	protected ProductTeam productTeam;
 	
 	//Constructor
 	public Team() {
@@ -73,6 +77,15 @@ public class Team extends BaseEntity implements Serializable{
 	}
 	public void setOwnerId(long ownerId) {
 		this.ownerId = ownerId;
+	}
+
+	@JsonView({View.Member.class,View.Admin.class})
+	@Transient
+	public ProductTeam getProductTeam() {
+		return productTeam;
+	}
+	public void setProductTeam(ProductTeam productTeam) {
+		this.productTeam = productTeam;
 	}
 	
 }

@@ -16,8 +16,12 @@
 
 package org.toasthub.pm.team;
 
+import org.toasthub.core.general.model.RestRequest;
+import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.pm.model.BaseDao;
 
 public interface TeamDao extends BaseDao {
-	
+	void linkTeams(RestRequest request, RestResponse response) throws Exception;
+	void linkTeam(RestRequest request, RestResponse response) throws Exception;
+	void linkTeamSave(RestRequest request, RestResponse response) throws Exception;
 }
