@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
 import org.toasthub.pm.model.Defect;
+import org.toasthub.pm.model.PMConstant;
 import org.toasthub.security.model.MyUserPrincipal;
 
 @Service("PMDefectSvc")
@@ -47,6 +49,9 @@ public class DefectSvcImpl implements DefectSvc, ServiceProcessor {
 	
 	@Autowired
 	PrefCacheUtil prefCacheUtil;
+	
+	@Value( "${toasthub.pm.tenantType}")
+	private String tenantType;
 
 	
 	@Override
@@ -59,19 +64,66 @@ public class DefectSvcImpl implements DefectSvc, ServiceProcessor {
 		case "INIT":
 			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
 			prefCacheUtil.getPrefInfo(request,response);
-			this.itemCount(request, response);
-			count = (Long) response.getParam(GlobalConstant.ITEMCOUNT);
-			if (count != null && count > 0){
-				this.items(request, response);
+			if (request.containsParam(PMConstant.PRODUCTID) || request.containsParam(PMConstant.PROJECTID) || request.containsParam(PMConstant.RELEASEID)
+					|| request.containsParam(PMConstant.BACKLOGID) || request.containsParam(PMConstant.SPRINTID)) {
+				// check if you are member of parent
+				
+				// get items
+				this.itemCount(request, response);
+				count = (Long) response.getParam(GlobalConstant.ITEMCOUNT);
+				if (count != null && count > 0){
+					this.items(request, response);
+				}
+			} else {
+				if ("SINGLE".equalsIgnoreCase(tenantType)) {
+					this.itemCount(request, response);
+					count = (Long) response.getParam(GlobalConstant.ITEMCOUNT);
+					if (count != null && count > 0){
+						this.items(request, response);
+					}
+				} else {
+					Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+					MyUserPrincipal user = (MyUserPrincipal) authentication.getPrincipal();
+					request.addParam(PMConstant.ASSIGNEEID, user.getUser().getId());
+					this.itemCount(request, response);
+					count = (Long) response.getParam(GlobalConstant.ITEMCOUNT);
+					if (count != null && count > 0){
+						this.items(request, response);
+					}
+				}
 			}
+			
 			break;
 		case "LIST":
 			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
 			prefCacheUtil.getPrefInfo(request,response);
-			this.itemCount(request, response);
-			count = (Long) response.getParam(GlobalConstant.ITEMCOUNT);
-			if (count != null && count > 0){
-				this.items(request, response);
+			if (request.containsParam(PMConstant.PRODUCTID) || request.containsParam(PMConstant.PROJECTID) || request.containsParam(PMConstant.RELEASEID)
+					|| request.containsParam(PMConstant.BACKLOGID) || request.containsParam(PMConstant.SPRINTID)) {
+				// check if you are member of parent
+				
+				// get items
+				this.itemCount(request, response);
+				count = (Long) response.getParam(GlobalConstant.ITEMCOUNT);
+				if (count != null && count > 0){
+					this.items(request, response);
+				}
+			} else {
+				if ("SINGLE".equalsIgnoreCase(tenantType)) {
+					this.itemCount(request, response);
+					count = (Long) response.getParam(GlobalConstant.ITEMCOUNT);
+					if (count != null && count > 0){
+						this.items(request, response);
+					}
+				} else {
+					Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+					MyUserPrincipal user = (MyUserPrincipal) authentication.getPrincipal();
+					request.addParam(PMConstant.ASSIGNEEID, user.getUser().getId());
+					this.itemCount(request, response);
+					count = (Long) response.getParam(GlobalConstant.ITEMCOUNT);
+					if (count != null && count > 0){
+						this.items(request, response);
+					}
+				}
 			}
 			break;
 		case "ITEM":
@@ -173,7 +225,9 @@ public class DefectSvcImpl implements DefectSvc, ServiceProcessor {
 			
 			Defect defect = (Defect) request.getParam(GlobalConstant.ITEM);
 			defect.setReportedBy(user.getUser().getId());
-			
+			if (defect.getAssignee() == null) {
+				defect.setAssignee(user.getUser().getId());
+			}
 			// save
 			defectDao.save(request, response);
 			

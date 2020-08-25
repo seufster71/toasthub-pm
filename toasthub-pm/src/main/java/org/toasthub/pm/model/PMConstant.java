@@ -19,4 +19,5 @@ public class PMConstant {
 	public static final String WORKFLOWID = "workflowId";
 	public static final String OWNERID = "ownerId";
 	public static final String TEAMID = "teamId";
+	public static final String ASSIGNEEID = "assigneeId";
 }

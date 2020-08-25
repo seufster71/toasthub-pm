@@ -37,12 +37,14 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
+import org.toasthub.pm.model.BacklogTeam;
 import org.toasthub.pm.model.Member;
 import org.toasthub.pm.model.MemberRole;
-import org.toasthub.pm.model.PMConstant;
 import org.toasthub.pm.model.Permission;
 import org.toasthub.pm.model.Product;
 import org.toasthub.pm.model.ProductTeam;
+import org.toasthub.pm.model.ProjectTeam;
+import org.toasthub.pm.model.ReleaseTeam;
 import org.toasthub.pm.model.Role;
 import org.toasthub.pm.model.RolePermission;
 import org.toasthub.pm.model.Team;
@@ -270,21 +272,13 @@ public class TeamDaoImpl implements TeamDao {
 
 	@Override
 	public void items(RestRequest request, RestResponse response) throws Exception {
-		String queryStr = "SELECT DISTINCT x FROM Team AS x ";
+		String queryStr = "SELECT DISTINCT x FROM Team AS x LEFT JOIN x.members as m WHERE m.userId =:userId ";
 		
 		boolean and = false;
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			if (!and) { queryStr += " WHERE "; }
 			queryStr += "x.active =:active ";
 			and = true;
-		}
-		
-		if (request.containsParam(PMConstant.OWNERID)) {
-			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
-			queryStr += "x.ownerId =:ownerId ";
-			and = true;
-		} else {
-			// shared team
 		}
 		
 		// search
@@ -361,13 +355,11 @@ public class TeamDaoImpl implements TeamDao {
 		}
 		
 		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+		query.setParameter("userId", (Long) request.getParam(GlobalConstant.USERREF));
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
 		} 
-		if (request.containsParam(PMConstant.OWNERID)) {
-			query.setParameter("ownerId", new Long((Integer) request.getParam(PMConstant.OWNERID)));
-		}
 		
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
@@ -398,20 +390,12 @@ public class TeamDaoImpl implements TeamDao {
 
 	@Override
 	public void itemCount(RestRequest request, RestResponse response) throws Exception {
-		String queryStr = "SELECT COUNT(DISTINCT x) FROM Team as x ";
+		String queryStr = "SELECT COUNT(DISTINCT x) FROM Team as x LEFT JOIN x.members as m WHERE m.userId =:userId ";
 		boolean and = false;
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			if (!and) { queryStr += " WHERE "; }
 			queryStr += "x.active =:active ";
 			and = true;
-		}
-		
-		if (request.containsParam(PMConstant.OWNERID)) {
-			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
-			queryStr += "x.ownerId =:ownerId ";
-			and = true;
-		} else {
-			// shared team
 		}
 		
 		ArrayList<LinkedHashMap<String,String>> searchCriteria = null;
@@ -452,12 +436,10 @@ public class TeamDaoImpl implements TeamDao {
 		}
 
 		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+		query.setParameter("userId", (Long) request.getParam(GlobalConstant.USERREF));
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
-		}
-		if (request.containsParam(PMConstant.OWNERID)) {
-			query.setParameter("ownerId", new Long((Integer) request.getParam(PMConstant.OWNERID)));
 		}
 		
 		if (searchCriteria != null){
@@ -505,13 +487,36 @@ public class TeamDaoImpl implements TeamDao {
 	public void linkTeams(RestRequest request, RestResponse response) throws Exception {
 		if (request.containsParam(GlobalConstant.PARENTTYPE) && !"".equals(request.getParam(GlobalConstant.PARENTTYPE)) 
 				&& request.containsParam(GlobalConstant.PARENTID) && !"".equals(request.getParam(GlobalConstant.PARENTID))) {
-			String queryStr = "SELECT new ProductTeam(x.id, x.active, x.team.id) FROM ProductTeam AS x WHERE x.product.id =:id";
-			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
-		
-			query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
-			List<ProductTeam> teams = query.getResultList();
+			if ("PRODUCT".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+				String queryStr = "SELECT new ProductTeam(x.id, x.active, x.team.id) FROM ProductTeam AS x WHERE x.product.id =:id";
+				Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+				query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+				List<ProductTeam> teams = query.getResultList();
+				response.addParam("linkTeams", teams);
+			} else if ("PROJECT".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+				String queryStr = "SELECT new ProjectTeam(x.id, x.active, x.team.id) FROM ProjectTeam AS x WHERE x.project.id =:id";
+				Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+				query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+				List<ProjectTeam> teams = query.getResultList();
+				response.addParam("linkTeams", teams);
+			} else if ("RELEASE".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+				String queryStr = "SELECT new ReleaseTeam(x.id, x.active, x.team.id) FROM ReleaseTeam AS x WHERE x.release.id =:id";
+				Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+				query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+				List<ReleaseTeam> teams = query.getResultList();
+				response.addParam("linkTeams", teams);
+			} else if ("BACKLOG".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+				String queryStr = "SELECT new BacklogTeam(x.id, x.active, x.team.id) FROM BacklogTeam AS x WHERE x.backlog.id =:id";
+				Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+				query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+				List<BacklogTeam> teams = query.getResultList();
+				response.addParam("linkTeams", teams);
+			} else {
+				response.addParam("linkTeams", null);
+			}
 			
-			response.addParam("productTeams", teams);
+			
+			
 		} else {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "Missing ID", response);
 		}
@@ -524,14 +529,28 @@ public class TeamDaoImpl implements TeamDao {
 			String queryStr = "";
 			if ("PRODUCT".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
 				queryStr = "SELECT x FROM ProductTeam AS x WHERE x.id =:id";
-			}
-			if (!"".equals(queryStr)) {
 				Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
-			
 				query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
-				Team team = (Team) query.getSingleResult();
-				
-				response.addParam(GlobalConstant.ITEM, team);
+				ProductTeam productTeam = (ProductTeam) query.getSingleResult();
+				response.addParam(GlobalConstant.ITEM, productTeam);
+			} else if ("PROJECT".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+				queryStr = "SELECT x FROM ProjectTeam AS x WHERE x.id =:id";
+				Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+				query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+				ProjectTeam projectTeam = (ProjectTeam) query.getSingleResult();
+				response.addParam(GlobalConstant.ITEM, projectTeam);
+			} else if ("BACKLOG".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+				queryStr = "SELECT x FROM BacklogTeam AS x WHERE x.id =:id";
+				Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+				query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+				BacklogTeam backlogTeam = (BacklogTeam) query.getSingleResult();
+				response.addParam(GlobalConstant.ITEM, backlogTeam);
+			} else if ("RELEASE".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+				queryStr = "SELECT x FROM ReleaseTeam AS x WHERE x.id =:id";
+				Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+				query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+				ReleaseTeam releaseTeam = (ReleaseTeam) query.getSingleResult();
+				response.addParam(GlobalConstant.ITEM, releaseTeam);
 			} else {
 				response.addParam(GlobalConstant.ITEM, null);
 			}

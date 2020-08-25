@@ -23,19 +23,19 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.toasthub.core.common.UtilSvc;
 import org.toasthub.core.general.handler.ServiceProcessor;
 import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
-import org.toasthub.pm.model.MemberRole;
 import org.toasthub.pm.model.ProductTeam;
-import org.toasthub.pm.model.Role;
 import org.toasthub.pm.model.Team;
 import org.toasthub.pm.role.RoleSvc;
+import org.toasthub.security.model.MyUserPrincipal;
+import org.toasthub.security.model.User;
 
 @Service("PMTeamSvc")
 public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
@@ -57,12 +57,14 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 	public void process(RestRequest request, RestResponse response) {
 		String action = (String) request.getParams().get(GlobalConstant.ACTION);
 		List<String> global =  new ArrayList<String>(Arrays.asList("LANGUAGES"));
+		User user = ((MyUserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
 		
 		Long count = 0l;
 		switch (action) {
 		case "INIT":
 			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
 			prefCacheUtil.getPrefInfo(request,response);
+			request.addParam(GlobalConstant.USERREF, user.getId());
 			this.itemCount(request, response);
 			count = (Long) response.getParam(GlobalConstant.ITEMCOUNT);
 			if (count != null && count > 0){
@@ -73,6 +75,7 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 		case "LIST":
 			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
 			prefCacheUtil.getPrefInfo(request,response);
+			request.addParam(GlobalConstant.USERREF, user.getId());
 			this.itemCount(request, response);
 			count = (Long) response.getParam(GlobalConstant.ITEMCOUNT);
 			if (count != null && count > 0){
@@ -97,10 +100,18 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 			prefCacheUtil.getPrefInfo(request,response);
 			this.save(request, response);
 			break;
-		case "LINK_PARENT":
+		case "LINK_PARENT_MODIFY":
 			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
 			prefCacheUtil.getPrefInfo(request,response);
-			this.linkParent(request, response);
+			this.linkParentModify(request, response);
+			break;
+		case "LINK_PARENT_SAVE":
+			if (!request.containsParam(PrefCacheUtil.PREFFORMKEYS)) {
+				List<String> forms =  new ArrayList<String>(Arrays.asList("PM_TEAM_PRODUCT_FORM"));
+				request.addParam(PrefCacheUtil.PREFFORMKEYS, forms);
+			}
+			prefCacheUtil.getPrefInfo(request,response);
+			this.linkParentSave(request, response);
 			break;
 		default:
 			utilSvc.addStatus(RestResponse.INFO, RestResponse.ACTIONNOTEXIST, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_ACTION_NOT_AVAIL",prefCacheUtil.getLang(request)), response);
@@ -154,7 +165,6 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 	}
 
 	@Override
-	@Transactional("TransactionManagerData")
 	public void save(RestRequest request, RestResponse response) {
 		try {
 			// validate
@@ -196,11 +206,52 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 	}
 
 	@Override
-	public void linkParent(RestRequest request, RestResponse response) {
+	public void linkParentModify(RestRequest request, RestResponse response) {
 		try {
 			teamDao.linkTeam(request, response);
 		} catch (Exception e) {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_EXECUTION_FAIL",prefCacheUtil.getLang(request)), response);
+			e.printStackTrace();
+		}
+	}
+	
+	@Override
+	public void linkParentSave(RestRequest request, RestResponse response) {
+		try {
+			// validate
+			utilSvc.validateParams(request, response);
+			
+			if ((Boolean) request.getParam(GlobalConstant.VALID) == false) {
+				utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_VALIDATION_ERR",prefCacheUtil.getLang(request)), response);
+				return;
+			}
+			
+			// get existing item
+			Map<String,Object> inputList = (Map<String, Object>) request.getParam(GlobalConstant.INPUTFIELDS);
+			if (inputList.containsKey(GlobalConstant.ITEMID) && inputList.get(GlobalConstant.ITEMID) != null && !"".equals(inputList.get(GlobalConstant.ITEMID))) {
+				request.addParam(GlobalConstant.ITEMID, inputList.get(GlobalConstant.ITEMID));
+				teamDao.linkTeam(request, response);
+				request.addParam(GlobalConstant.ITEM, response.getParam(GlobalConstant.ITEM));
+				response.getParams().remove(GlobalConstant.ITEM);
+			} else {
+				// new Team
+				ProductTeam productTeam = new ProductTeam();
+				productTeam.setActive(true);
+				productTeam.setArchive(false);
+				productTeam.setLocked(false);
+				request.addParam(GlobalConstant.ITEM, productTeam);
+				
+			}
+			// marshall
+			utilSvc.marshallFields(request, response);
+		
+			
+			// save
+			teamDao.linkTeamSave(request, response);
+			
+			utilSvc.addStatus(RestResponse.INFO, RestResponse.SUCCESS, prefCacheUtil.getPrefText( "GLOBAL_SERVICE", "GLOBAL_SERVICE_SAVE_SUCCESS", prefCacheUtil.getLang(request)), response);
+		} catch (Exception e) {
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, prefCacheUtil.getPrefText( "GLOBAL_SERVICE", "GLOBAL_SERVICE_SAVE_FAIL", prefCacheUtil.getLang(request)), response);
 			e.printStackTrace();
 		}
 	}
@@ -210,7 +261,7 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 			if (request.containsParam(GlobalConstant.PARENTID) && !"".equals(request.getParam(GlobalConstant.PARENTID))) {
 				teamDao.linkTeams(request, response);
 				// add link to items
-				List<ProductTeam> productTeams = (List<ProductTeam>) response.getParam("productTeams");
+				List<ProductTeam> productTeams = (List<ProductTeam>) response.getParam("linkTeams");
 				List<Team> teams = (List<Team>) response.getParam(GlobalConstant.ITEMS);
 				for (ProductTeam productTeam : productTeams) {
 					for (Team team : teams) {

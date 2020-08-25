@@ -108,6 +108,12 @@ public class DefectDaoImpl implements DefectDao {
 			and = true;
 		}
 		
+		if (request.containsParam(PMConstant.ASSIGNEEID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.assignee =:assigneeId ";
+			and = true;
+		}
+		
 		if (request.containsParam(PMConstant.PRODUCTID)) {
 			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
 			queryStr += "x.product.id =:productId ";
@@ -241,6 +247,9 @@ public class DefectDaoImpl implements DefectDao {
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
 		}
+		if (request.containsParam(PMConstant.ASSIGNEEID)) {
+			query.setParameter("assigneeId", (Long) request.getParam(PMConstant.ASSIGNEEID));
+		}
 		if (request.containsParam(PMConstant.PRODUCTID)) {
 			query.setParameter("productId", new Long((Integer) request.getParam(PMConstant.PRODUCTID)));
 		} else if (request.containsParam(PMConstant.PROJECTID)) {
@@ -296,7 +305,11 @@ public class DefectDaoImpl implements DefectDao {
 			queryStr += "x.active =:active ";
 			and = true;
 		}
-		
+		if (request.containsParam(PMConstant.ASSIGNEEID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.assignee =:assigneeId ";
+			and = true;
+		}
 		if (request.containsParam(PMConstant.PRODUCTID)) {
 			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
 			queryStr += "x.product.id =:productId ";
@@ -380,6 +393,9 @@ public class DefectDaoImpl implements DefectDao {
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
 		} 
+		if (request.containsParam(PMConstant.ASSIGNEEID)) {
+			query.setParameter("assigneeId", (Long) request.getParam(PMConstant.ASSIGNEEID));
+		}
 		if (request.containsParam(PMConstant.PRODUCTID)) {
 			query.setParameter("productId", new Long((Integer) request.getParam(PMConstant.PRODUCTID)));
 		} else if (request.containsParam(PMConstant.PROJECTID)) {

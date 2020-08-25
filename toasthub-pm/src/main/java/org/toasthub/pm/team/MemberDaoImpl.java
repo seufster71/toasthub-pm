@@ -71,8 +71,8 @@ public class MemberDaoImpl implements MemberDao {
 			Team team = (Team) entityManagerDataSvc.getInstance().getReference(Team.class, new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
 			member.setTeam(team);
 
-			String queryStr = "SELECT x FROM Role AS x WHERE x.code =:code";
-			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr).setParameter("code", "MEMBER");
+			String queryStr = "SELECT x FROM Role AS x WHERE x.code =:code AND x.team.id =:teamId ";
+			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr).setParameter("code", "MEMBER").setParameter("teamId", team.getId());
 			Role role = (Role) query.getSingleResult();
 			if (role != null) {
 				memberRole = new MemberRole(role, 1, Instant.now(),Instant.now().plus(Duration.ofDays(14600)));
@@ -88,7 +88,7 @@ public class MemberDaoImpl implements MemberDao {
 
 	@Override
 	public void items(RestRequest request, RestResponse response) throws Exception {
-		String queryStr = "SELECT DISTINCT x FROM Member AS x ";
+		String queryStr = "SELECT DISTINCT x FROM Member AS x WHERE x.team.id =: teamId ";
 		
 		boolean and = false;
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
@@ -171,6 +171,7 @@ public class MemberDaoImpl implements MemberDao {
 		}
 		
 		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+		query.setParameter("teamId", new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
@@ -205,7 +206,7 @@ public class MemberDaoImpl implements MemberDao {
 
 	@Override
 	public void itemCount(RestRequest request, RestResponse response) throws Exception {
-		String queryStr = "SELECT COUNT(DISTINCT x) FROM Member as x ";
+		String queryStr = "SELECT COUNT(DISTINCT x) FROM Member as x WHERE x.team.id =: teamId ";
 		boolean and = false;
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			if (!and) { queryStr += " WHERE "; }
@@ -251,6 +252,7 @@ public class MemberDaoImpl implements MemberDao {
 		}
 
 		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+		query.setParameter("teamId", new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));

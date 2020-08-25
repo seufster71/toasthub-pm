@@ -22,9 +22,12 @@ package org.toasthub.pm.model;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -32,6 +35,7 @@ import org.toasthub.core.general.api.View;
 import org.toasthub.core.general.model.BaseEntity;
 import org.toasthub.core.general.model.Text;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity
@@ -42,6 +46,8 @@ public class Team extends BaseEntity implements Serializable{
 
 	protected String name;
 	protected long ownerId;
+	
+	protected Set<Member> members;
 	
 	// Transient
 	protected ProductTeam productTeam;
@@ -87,5 +93,13 @@ public class Team extends BaseEntity implements Serializable{
 	public void setProductTeam(ProductTeam productTeam) {
 		this.productTeam = productTeam;
 	}
-	
+
+	@JsonIgnore
+	@OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
+	public Set<Member> getMembers() {
+		return members;
+	}
+	public void setMembers(Set<Member> members) {
+		this.members = members;
+	}
 }

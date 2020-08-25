@@ -22,5 +22,6 @@ import org.toasthub.pm.model.BaseSvc;
 
 public interface TeamSvc extends BaseSvc {
 
-	public void linkParent(RestRequest request, RestResponse response);
+	public void linkParentModify(RestRequest request, RestResponse response);
+	public void linkParentSave(RestRequest request, RestResponse response);
 }
