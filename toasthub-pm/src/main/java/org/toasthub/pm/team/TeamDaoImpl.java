@@ -562,8 +562,17 @@ public class TeamDaoImpl implements TeamDao {
 
 	@Override
 	public void linkTeamSave(RestRequest request, RestResponse response) throws Exception {
-		// TODO Auto-generated method stub
+		ProductTeam productTeam = (ProductTeam) request.getParam(GlobalConstant.ITEM);
+		if (request.containsParam(GlobalConstant.PARENTID) && !"".equals(request.getParam(GlobalConstant.PARENTID))) {
+			Product product = (Product) entityManagerDataSvc.getInstance().getReference(Product.class,  new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+			productTeam.setProduct(product);
+		}
+		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
+			Team team = (Team) entityManagerDataSvc.getInstance().getReference(Team.class,  new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			productTeam.setTeam(team);
+		}
 		
+		entityManagerDataSvc.getInstance().merge(productTeam);
 	}
 
 }

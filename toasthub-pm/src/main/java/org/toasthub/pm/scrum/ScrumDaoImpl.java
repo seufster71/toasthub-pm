@@ -33,6 +33,11 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
+import org.toasthub.pm.model.Backlog;
+import org.toasthub.pm.model.PMConstant;
+import org.toasthub.pm.model.Product;
+import org.toasthub.pm.model.Project;
+import org.toasthub.pm.model.Release;
 import org.toasthub.pm.model.Scrum;
 
 @Repository("PMScrumDao")
@@ -61,6 +66,27 @@ public class ScrumDaoImpl implements ScrumDao {
 	@Override
 	public void save(RestRequest request, RestResponse response) throws Exception {
 		Scrum scrum = (Scrum) request.getParam(GlobalConstant.ITEM);
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			Product product = (Product) entityManagerDataSvc.getInstance().getReference(Product.class,  new Long((Integer) request.getParam(PMConstant.PRODUCTID)));
+			if (scrum.getProduct() == null || scrum.getProduct() != null && !scrum.getProduct().getId().equals(new Long((Integer) request.getParam(PMConstant.PRODUCTID)))) {
+				scrum.setProduct(product);
+			}
+		} else if (request.containsParam(PMConstant.PROJECTID)) {
+			Project project = (Project) entityManagerDataSvc.getInstance().getReference(Project.class,  new Long((Integer) request.getParam(PMConstant.PROJECTID)));
+			if (scrum.getProject() == null || scrum.getProject() != null && !scrum.getProject().getId().equals(new Long((Integer) request.getParam(PMConstant.PROJECTID)))) {
+				scrum.setProject(project);
+			}
+		} else if (request.containsParam(PMConstant.BACKLOGID)) {
+			Backlog backlog = (Backlog) entityManagerDataSvc.getInstance().getReference(Backlog.class,  new Long((Integer) request.getParam(PMConstant.BACKLOGID)));
+			if (scrum.getBacklog() == null || scrum.getBacklog() != null && !scrum.getBacklog().getId().equals(new Long((Integer) request.getParam(PMConstant.BACKLOGID)))) {
+				scrum.setBacklog(backlog);
+			}
+		} else if (request.containsParam(PMConstant.RELEASEID)) {
+			Release release = (Release) entityManagerDataSvc.getInstance().getReference(Release.class,  new Long((Integer) request.getParam(PMConstant.RELEASEID)));
+			if (scrum.getRelease() == null || scrum.getRelease() != null && !scrum.getRelease().getId().equals(new Long((Integer) request.getParam(PMConstant.RELEASEID)))) {
+				scrum.setRelease(release);
+			}
+		}
 		entityManagerDataSvc.getInstance().merge(scrum);
 	}
 
@@ -72,6 +98,28 @@ public class ScrumDaoImpl implements ScrumDao {
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			if (!and) { queryStr += " WHERE "; }
 			queryStr += "x.active =:active ";
+			and = true;
+		}
+		
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.product.id =:productId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.PROJECTID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.project.id =:projectId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.BACKLOGID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.backlog.id =:backlogId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.RELEASEID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.release.id =:releaseId ";
+			and = true;
+		} else {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.product IS NULL AND x.project IS NULL AND x.backlog IS NULL AND x.release IS NULL";
 			and = true;
 		}
 		
@@ -173,7 +221,16 @@ public class ScrumDaoImpl implements ScrumDao {
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
 		} 
-		
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			query.setParameter("productId", new Long((Integer) request.getParam(PMConstant.PRODUCTID)));
+		} else if (request.containsParam(PMConstant.PROJECTID)) {
+			query.setParameter("projectId", new Long((Integer) request.getParam(PMConstant.PROJECTID)));
+		} else if (request.containsParam(PMConstant.BACKLOGID)) {
+			query.setParameter("backlogId", new Long((Integer) request.getParam(PMConstant.BACKLOGID)));
+		} else if (request.containsParam(PMConstant.RELEASEID)) {
+			query.setParameter("releaseId", new Long((Integer) request.getParam(PMConstant.RELEASEID)));
+		}
+	
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {  
@@ -214,6 +271,27 @@ public class ScrumDaoImpl implements ScrumDao {
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			if (!and) { queryStr += " WHERE "; }
 			queryStr += "x.active =:active ";
+			and = true;
+		}
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.product.id =:productId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.PROJECTID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.project.id =:projectId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.BACKLOGID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.backlog.id =:backlogId ";
+			and = true;
+		} else if (request.containsParam(PMConstant.RELEASEID)) {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.release.id =:releaseId ";
+			and = true;
+		} else {
+			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
+			queryStr += "x.product IS NULL AND x.project IS NULL AND x.backlog IS NULL AND x.release IS NULL";
 			and = true;
 		}
 		
@@ -269,6 +347,15 @@ public class ScrumDaoImpl implements ScrumDao {
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
 		} 
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			query.setParameter("productId", new Long((Integer) request.getParam(PMConstant.PRODUCTID)));
+		} else if (request.containsParam(PMConstant.PROJECTID)) {
+			query.setParameter("projectId", new Long((Integer) request.getParam(PMConstant.PROJECTID)));
+		} else if (request.containsParam(PMConstant.BACKLOGID)) {
+			query.setParameter("backlogId", new Long((Integer) request.getParam(PMConstant.BACKLOGID)));
+		} else if (request.containsParam(PMConstant.RELEASEID)) {
+			query.setParameter("releaseId", new Long((Integer) request.getParam(PMConstant.RELEASEID)));
+		}
 		
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {

@@ -47,6 +47,8 @@ public class Scrum extends BaseEntity implements Serializable{
 
 	protected Project project;
 	protected Product product;
+	protected Backlog backlog;
+	protected Release release;
 	
 	//Constructor
 	public Scrum() {
@@ -101,11 +103,25 @@ public class Scrum extends BaseEntity implements Serializable{
 	public void setProject(Project project) {
 		this.project = project;
 	}
-	
-	
-	
-	
-	
 
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@ManyToOne(targetEntity = Backlog.class)
+	@JoinColumn(name = "backlog_id")
+	public Backlog getBacklog() {
+		return backlog;
+	}
+	public void setBacklog(Backlog backlog) {
+		this.backlog = backlog;
+	}
+
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@ManyToOne(targetEntity = Release.class)
+	@JoinColumn(name = "release_id")
+	public Release getRelease() {
+		return release;
+	}
+	public void setRelease(Release release) {
+		this.release = release;
+	}
 	
 }
