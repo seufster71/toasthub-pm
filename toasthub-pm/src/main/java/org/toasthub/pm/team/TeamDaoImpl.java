@@ -37,13 +37,16 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
+import org.toasthub.pm.model.Backlog;
 import org.toasthub.pm.model.BacklogTeam;
 import org.toasthub.pm.model.Member;
 import org.toasthub.pm.model.MemberRole;
 import org.toasthub.pm.model.Permission;
 import org.toasthub.pm.model.Product;
 import org.toasthub.pm.model.ProductTeam;
+import org.toasthub.pm.model.Project;
 import org.toasthub.pm.model.ProjectTeam;
+import org.toasthub.pm.model.Release;
 import org.toasthub.pm.model.ReleaseTeam;
 import org.toasthub.pm.model.Role;
 import org.toasthub.pm.model.RolePermission;
@@ -562,17 +565,57 @@ public class TeamDaoImpl implements TeamDao {
 
 	@Override
 	public void linkTeamSave(RestRequest request, RestResponse response) throws Exception {
-		ProductTeam productTeam = (ProductTeam) request.getParam(GlobalConstant.ITEM);
-		if (request.containsParam(GlobalConstant.PARENTID) && !"".equals(request.getParam(GlobalConstant.PARENTID))) {
-			Product product = (Product) entityManagerDataSvc.getInstance().getReference(Product.class,  new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
-			productTeam.setProduct(product);
-		}
-		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
-			Team team = (Team) entityManagerDataSvc.getInstance().getReference(Team.class,  new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
-			productTeam.setTeam(team);
+		if (request.containsParam(GlobalConstant.PARENTTYPE) && !"".equals(request.getParam(GlobalConstant.PARENTTYPE)) 
+				&& request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
+			if ("PRODUCT".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+				ProductTeam productTeam = (ProductTeam) request.getParam(GlobalConstant.ITEM);
+				if (request.containsParam(GlobalConstant.PARENTID) && !"".equals(request.getParam(GlobalConstant.PARENTID))) {
+					Product product = (Product) entityManagerDataSvc.getInstance().getReference(Product.class,  new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+					productTeam.setProduct(product);
+				}
+				if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
+					Team team = (Team) entityManagerDataSvc.getInstance().getReference(Team.class,  new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+					productTeam.setTeam(team);
+				}
+				entityManagerDataSvc.getInstance().merge(productTeam);
+			} else if ("PROJECT".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+				ProjectTeam projectTeam = (ProjectTeam) request.getParam(GlobalConstant.ITEM);
+				if (request.containsParam(GlobalConstant.PARENTID) && !"".equals(request.getParam(GlobalConstant.PARENTID))) {
+					Project project = (Project) entityManagerDataSvc.getInstance().getReference(Project.class,  new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+					projectTeam.setProject(project);
+				}
+				if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
+					Team team = (Team) entityManagerDataSvc.getInstance().getReference(Team.class,  new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+					projectTeam.setTeam(team);
+				}
+				entityManagerDataSvc.getInstance().merge(projectTeam);
+			} else if ("BACKLOG".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+				BacklogTeam backlogTeam = (BacklogTeam) request.getParam(GlobalConstant.ITEM);
+				if (request.containsParam(GlobalConstant.PARENTID) && !"".equals(request.getParam(GlobalConstant.PARENTID))) {
+					Backlog backlog = (Backlog) entityManagerDataSvc.getInstance().getReference(Backlog.class,  new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+					backlogTeam.setBacklog(backlog);
+				}
+				if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
+					Team team = (Team) entityManagerDataSvc.getInstance().getReference(Team.class,  new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+					backlogTeam.setTeam(team);
+				}
+				entityManagerDataSvc.getInstance().merge(backlogTeam);
+			} else if ("RELEASE".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+				ReleaseTeam releaseTeam = (ReleaseTeam) request.getParam(GlobalConstant.ITEM);
+				if (request.containsParam(GlobalConstant.PARENTID) && !"".equals(request.getParam(GlobalConstant.PARENTID))) {
+					Release release = (Release) entityManagerDataSvc.getInstance().getReference(Release.class,  new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+					releaseTeam.setRelease(release);
+				}
+				if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
+					Team team = (Team) entityManagerDataSvc.getInstance().getReference(Team.class,  new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+					releaseTeam.setTeam(team);
+				}
+				entityManagerDataSvc.getInstance().merge(releaseTeam);
+			}
+		} else {
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID",prefCacheUtil.getLang(request)), response);
 		}
 		
-		entityManagerDataSvc.getInstance().merge(productTeam);
 	}
 
 }

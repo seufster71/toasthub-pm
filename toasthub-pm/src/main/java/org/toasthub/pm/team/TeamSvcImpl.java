@@ -31,7 +31,10 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
+import org.toasthub.pm.model.BacklogTeam;
 import org.toasthub.pm.model.ProductTeam;
+import org.toasthub.pm.model.ProjectTeam;
+import org.toasthub.pm.model.ReleaseTeam;
 import org.toasthub.pm.model.Team;
 import org.toasthub.pm.role.RoleSvc;
 import org.toasthub.security.model.MyUserPrincipal;
@@ -70,7 +73,7 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 			if (count != null && count > 0){
 				this.items(request, response);
 			}
-			this.addProductTeams(request, response);
+			this.addLinkTeams(request, response);
 			break;
 		case "LIST":
 			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
@@ -81,7 +84,7 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 			if (count != null && count > 0){
 				this.items(request, response);
 			}
-			this.addProductTeams(request, response);
+			this.addLinkTeams(request, response);
 			break;
 		case "ITEM":
 			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
@@ -234,17 +237,38 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 				request.addParam(GlobalConstant.ITEM, response.getParam(GlobalConstant.ITEM));
 				response.getParams().remove(GlobalConstant.ITEM);
 			} else {
-				// new Team
-				ProductTeam productTeam = new ProductTeam();
-				productTeam.setActive(true);
-				productTeam.setArchive(false);
-				productTeam.setLocked(false);
-				request.addParam(GlobalConstant.ITEM, productTeam);
-				
+				// new Team Link
+				if ("PRODUCT".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+					ProductTeam productTeam = new ProductTeam();
+					productTeam.setActive(true);
+					productTeam.setArchive(false);
+					productTeam.setLocked(false);
+					request.addParam(GlobalConstant.ITEM, productTeam);
+				} else if ("PROJECT".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+					ProjectTeam projectTeam = new ProjectTeam();
+					projectTeam.setActive(true);
+					projectTeam.setArchive(false);
+					projectTeam.setLocked(false);
+					request.addParam(GlobalConstant.ITEM, projectTeam);
+				} else if ("RELEASE".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+					ReleaseTeam releaseTeam = new ReleaseTeam();
+					releaseTeam.setActive(true);
+					releaseTeam.setArchive(false);
+					releaseTeam.setLocked(false);
+					request.addParam(GlobalConstant.ITEM, releaseTeam);
+				} else if ("BACKLOG".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+					BacklogTeam backlogTeam = new BacklogTeam();
+					backlogTeam.setActive(true);
+					backlogTeam.setArchive(false);
+					backlogTeam.setLocked(false);
+					request.addParam(GlobalConstant.ITEM, backlogTeam);
+				} else {
+					utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, "Missing parent type", response);
+					return;
+				}
 			}
 			// marshall
 			utilSvc.marshallFields(request, response);
-		
 			
 			// save
 			teamDao.linkTeamSave(request, response);
@@ -256,17 +280,56 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 		}
 	}
 	
-	private void addProductTeams (RestRequest request, RestResponse response) {
+	private void addLinkTeams (RestRequest request, RestResponse response) {
 		try {
-			if (request.containsParam(GlobalConstant.PARENTID) && !"".equals(request.getParam(GlobalConstant.PARENTID))) {
-				teamDao.linkTeams(request, response);
-				// add link to items
-				List<ProductTeam> productTeams = (List<ProductTeam>) response.getParam("linkTeams");
-				List<Team> teams = (List<Team>) response.getParam(GlobalConstant.ITEMS);
-				for (ProductTeam productTeam : productTeams) {
-					for (Team team : teams) {
-						if (productTeam.getTeamId() == team.getId()) {
-							team.setProductTeam(productTeam);
+			
+			if (request.containsParam(GlobalConstant.PARENTTYPE) && !"".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+				if ("PRODUCT".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+					teamDao.linkTeams(request, response);
+					// add link to items
+					List<ProductTeam> productTeams = (List<ProductTeam>) response.getParam("linkTeams");
+					List<Team> teams = (List<Team>) response.getParam(GlobalConstant.ITEMS);
+					for (ProductTeam productTeam : productTeams) {
+						for (Team team : teams) {
+							if (productTeam.getTeamId() == team.getId()) {
+								team.setProductTeam(productTeam);
+							}
+						}
+					}
+				} else if ("PROJECT".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+					teamDao.linkTeams(request, response);
+					// add link to items
+					List<ProjectTeam> projectTeams = (List<ProjectTeam>) response.getParam("linkTeams");
+					List<Team> teams = (List<Team>) response.getParam(GlobalConstant.ITEMS);
+					for (ProjectTeam projectTeam : projectTeams) {
+						for (Team team : teams) {
+							if (projectTeam.getTeamId() == team.getId()) {
+								team.setProjectTeam(projectTeam);
+							}
+						}
+					}
+				} else if ("BACKLOG".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+					teamDao.linkTeams(request, response);
+					// add link to items
+					List<ProductTeam> productTeams = (List<ProductTeam>) response.getParam("linkTeams");
+					List<Team> teams = (List<Team>) response.getParam(GlobalConstant.ITEMS);
+					for (ProductTeam productTeam : productTeams) {
+						for (Team team : teams) {
+							if (productTeam.getTeamId() == team.getId()) {
+								team.setProductTeam(productTeam);
+							}
+						}
+					}
+				} else if ("RELEASE".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+					teamDao.linkTeams(request, response);
+					// add link to items
+					List<ProductTeam> productTeams = (List<ProductTeam>) response.getParam("linkTeams");
+					List<Team> teams = (List<Team>) response.getParam(GlobalConstant.ITEMS);
+					for (ProductTeam productTeam : productTeams) {
+						for (Team team : teams) {
+							if (productTeam.getTeamId() == team.getId()) {
+								team.setProductTeam(productTeam);
+							}
 						}
 					}
 				}
@@ -275,4 +338,5 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 			
 		}
 	}
+
 }

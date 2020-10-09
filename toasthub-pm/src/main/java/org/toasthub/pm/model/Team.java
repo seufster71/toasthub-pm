@@ -51,6 +51,9 @@ public class Team extends BaseEntity implements Serializable{
 	
 	// Transient
 	protected ProductTeam productTeam;
+	protected ProjectTeam projectTeam;
+	protected BacklogTeam backlogTeam;
+	protected ReleaseTeam releaseTeam;
 	
 	//Constructor
 	public Team() {
@@ -85,6 +88,15 @@ public class Team extends BaseEntity implements Serializable{
 		this.ownerId = ownerId;
 	}
 
+	@JsonIgnore
+	@OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
+	public Set<Member> getMembers() {
+		return members;
+	}
+	public void setMembers(Set<Member> members) {
+		this.members = members;
+	}
+	
 	@JsonView({View.Member.class,View.Admin.class})
 	@Transient
 	public ProductTeam getProductTeam() {
@@ -94,12 +106,30 @@ public class Team extends BaseEntity implements Serializable{
 		this.productTeam = productTeam;
 	}
 
-	@JsonIgnore
-	@OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
-	public Set<Member> getMembers() {
-		return members;
+	@JsonView({View.Member.class,View.Admin.class})
+	@Transient
+	public ProjectTeam getProjectTeam() {
+		return projectTeam;
 	}
-	public void setMembers(Set<Member> members) {
-		this.members = members;
+	public void setProjectTeam(ProjectTeam projectTeam) {
+		this.projectTeam = projectTeam;
+	}
+
+	@JsonView({View.Member.class,View.Admin.class})
+	@Transient
+	public BacklogTeam getBacklogTeam() {
+		return backlogTeam;
+	}
+	public void setBacklogTeam(BacklogTeam backlogTeam) {
+		this.backlogTeam = backlogTeam;
+	}
+
+	@JsonView({View.Member.class,View.Admin.class})
+	@Transient
+	public ReleaseTeam getReleaseTeam() {
+		return releaseTeam;
+	}
+	public void setReleaseTeam(ReleaseTeam releaseTeam) {
+		this.releaseTeam = releaseTeam;
 	}
 }
