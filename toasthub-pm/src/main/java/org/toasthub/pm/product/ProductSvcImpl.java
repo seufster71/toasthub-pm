@@ -167,7 +167,6 @@ public class ProductSvcImpl implements ProductSvc, ServiceProcessor {
 			}
 			// marshall
 			utilSvc.marshallFields(request, response);
-		
 			
 			// save
 			productDao.save(request, response);
