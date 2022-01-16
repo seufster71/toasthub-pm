@@ -25,4 +25,8 @@ build/
 ### VS Code ###
 .vscode/
 
-/.DS_Store
+### MAC
+*.DS_Store
+/node_modules/
+/bin/
+/package-lock.json
