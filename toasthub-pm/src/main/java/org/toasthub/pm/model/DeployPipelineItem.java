@@ -34,26 +34,24 @@ import org.toasthub.core.general.model.Text;
 import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity
-@Table(name = "pm_deploy")
-public class Deploy extends BaseEntity implements Serializable{
+@Table(name = "pm_deploy_pipeline_item")
+public class DeployPipelineItem extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
 	protected String name;
-	protected Instant lastSuccess;
-	protected Instant lastFail;
-	protected double lastDuration;
-	protected String runStatus;
-	
-	protected long ownerId;
+	protected Integer sequence;
+	protected String branch;
+	protected String compileType; 
+	protected String commandlineScript;
 
 	
 	//Constructor
-	public Deploy() {
+	public DeployPipelineItem() {
 		super();
 	}
 	
-	public Deploy(String code, Text title, Boolean defaultLang, String dir){
+	public DeployPipelineItem(String code, Text title, Boolean defaultLang, String dir){
 		this.setActive(true);
 		this.setArchive(false);
 		this.setLocked(false);
@@ -61,6 +59,8 @@ public class Deploy extends BaseEntity implements Serializable{
 	
 		
 	}
+
+
 
 	// Methods
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
@@ -73,48 +73,40 @@ public class Deploy extends BaseEntity implements Serializable{
 	}
 
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "last_success")
-	public Instant getLastSuccess() {
-		return lastSuccess;
+	@Column(name = "sequence")
+	public Integer getSequence() {
+		return sequence;
 	}
-	public void setLastSuccess(Instant lastSuccess) {
-		this.lastSuccess = lastSuccess;
-	}
-
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "last_fail")
-	public Instant getLastFail() {
-		return lastFail;
-	}
-	public void setLastFail(Instant lastFail) {
-		this.lastFail = lastFail;
+	public void setSequence(Integer sequence) {
+		this.sequence = sequence;
 	}
 
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "last_duration")
-	public double getLastDuration() {
-		return lastDuration;
+	@Column(name = "branch")
+	public String getBranch() {
+		return branch;
 	}
-	public void setLastDuration(double lastDuration) {
-		this.lastDuration = lastDuration;
+	public void setBranch(String branch) {
+		this.branch = branch;
 	}
 
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "run_status")
-	public String getRunStatus() {
-		return runStatus;
+	@Column(name = "compile_type")
+	public String getCompileType() {
+		return compileType;
 	}
-	public void setRunStatus(String runStatus) {
-		this.runStatus = runStatus;
+	public void setCompileType(String compileType) {
+		this.compileType = compileType;
 	}
 
-	@JsonView({View.Member.class,View.Admin.class})
-	@Column(name = "owner_id")
-	public long getOwnerId() {
-		return ownerId;
+	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "commandline_script")
+	public String getCommandlineScript() {
+		return commandlineScript;
 	}
-	public void setOwnerId(long ownerId) {
-		this.ownerId = ownerId;
+	public void setCommandlineScript(String commandlineScript) {
+		this.commandlineScript = commandlineScript;
 	}
+
 	
 }
