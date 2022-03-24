@@ -34,57 +34,80 @@ import org.toasthub.core.general.api.View;
 import org.toasthub.core.general.model.BaseEntity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonView;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-
-@JsonInclude(Include.NON_NULL)
 @Entity
-@Table(name = "pm_role_permission")
-public class RolePermission extends BaseEntity implements Serializable{
+@Table(name = "pm_team_member_role")
+public class TeamMemberRole extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
+	protected Team team;
+	protected Member member;
 	protected Role role;
-	protected Permission permission;
-	protected String rights;
+	protected Integer sortOrder;
 	protected Instant startDate;
 	protected Instant endDate;
-	
-	// transient
-	protected String code;
-	protected Long permissionId;
 
-	//Constructor
-	public RolePermission(){}
+	// transient
+	protected Long roleId;
+		
+	// Constructor
+	public TeamMemberRole(){}
 	
-	public RolePermission(Role role, Permission permission) {
-		this.setRole(role);
-		this.setPermission(permission);
-	}
 	
-	public RolePermission(Long id, boolean active, boolean locked, Instant startDate, Instant endDate, Long permissionId) {
+	public TeamMemberRole(Long id, boolean active, Integer sortOrder, Instant startDate, Instant endDate, Long roleId) {
 		this.setId(id);
 		this.setActive(active);
-		this.setLocked(locked);
+		this.setSortOrder(sortOrder);
 		this.setStartDate(startDate);
 		this.setEndDate(endDate);
-		this.setPermissionId(permissionId);
+		this.setRoleId(roleId);
 	}
 	
-	public RolePermission(boolean active, boolean archive, boolean locked, Instant startDate, Instant endDate, String rights, Role role, Permission permission) {
-		this.setActive(active);
-		this.setActive(active);
-		this.setLocked(locked);
+	public TeamMemberRole(Role role, Integer sortOrder, Instant startDate, Instant endDate) {
+		this.setRole(role);
+		this.setSortOrder(sortOrder);
 		this.setStartDate(startDate);
 		this.setEndDate(endDate);
-		this.setRights(rights);
+		this.setActive(true);
+		this.setArchive(false);
+		this.setLocked(false);
+		this.setCreated(Instant.now());
+	}
+	
+	public TeamMemberRole(boolean active, boolean archive, boolean locked, Integer sortOrder, Instant startDate, Instant endDate, Member member, Role role) {
+		this.setActive(true);
+		this.setArchive(false);
+		this.setLocked(false);
+		this.setSortOrder(sortOrder);
+		this.setStartDate(startDate);
+		this.setEndDate(endDate);
+		this.setMember(member);
 		this.setRole(role);
-		this.setPermission(permission);
+	}
+	
+	
+	@JsonIgnore
+	@ManyToOne(targetEntity = Team.class)
+	@JoinColumn(name = "team_id")
+	public Team getTeam() {
+		return team;
+	}
+	public void setTeam(Team team) {
+		this.team = team;
 	}
 
-	// Methods
+	@JsonIgnore
+	@ManyToOne(targetEntity = Member.class)
+	@JoinColumn(name = "member_id")
+	public Member getMember() {
+		return member;
+	}
+	public void setMember(Member member) {
+		this.member = member;
+	}
+	
 	@JsonIgnore
 	@ManyToOne(targetEntity = Role.class)
 	@JoinColumn(name = "role_id")
@@ -95,25 +118,15 @@ public class RolePermission extends BaseEntity implements Serializable{
 		this.role = role;
 	}
 	
-	@JsonIgnore
-	@ManyToOne(targetEntity = Permission.class)
-	@JoinColumn(name = "permission_id")
-	public Permission getPermission() {
-		return permission;
-	}
-	public void setPermission(Permission permission) {
-		this.permission = permission;
-	}
-	
 	@JsonView({View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "rights")
-	public String getRights() {
-		return rights;
+	@Column(name = "sort_order")
+	public Integer getSortOrder() {
+		return sortOrder;
 	}
-	public void setRights(String rights) {
-		this.rights = rights;
+	public void setSortOrder(Integer sortOrder) {
+		this.sortOrder = sortOrder;
 	}
-	
+
 	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "start_date")
 	public Instant getStartDate() {
@@ -134,25 +147,14 @@ public class RolePermission extends BaseEntity implements Serializable{
 	
 	@JsonView({View.Admin.class})
 	@Transient
-	public Long getPermissionId() {
-		if (this.permission == null) {
-			return this.permissionId;
+	public Long getRoleId() {
+		if (this.role == null) {
+			return this.roleId;
 		} else {
-			return this.permission.getId();
+			return this.role.getId();
 		}
 	}
-	public void setPermissionId(Long permissionId) {
-		this.permissionId = permissionId;
+	public void setRoleId(Long roleId) {
+		this.roleId = roleId;
 	}
-	
-	@JsonView({View.Admin.class})
-	@Transient
-	public String getCode() {
-		if (this.permission == null) {
-			return this.code;
-		} else {
-			return permission.getCode();
-		}
-	}
-	
 }

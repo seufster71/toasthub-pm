@@ -301,9 +301,14 @@ public class PermissionDaoImpl implements PermissionDao {
 	@Override
 	public void delete(RestRequest request, RestResponse response) throws Exception {
 		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
+			// Check locked and lock owner or have override lock 
 			
-			Permission permission = (Permission) entityManagerDataSvc.getInstance().getReference(Permission.class,  new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
-			entityManagerDataSvc.getInstance().remove(permission);
+			Permission permission = (Permission) entityManagerDataSvc.getInstance().find(Permission.class, new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			if (permission.isLocked() && permission.getLockOwnerRefId() == 0) {
+				utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "The permission is locked by system and is not allowed to be deleted.", response);
+			} else {
+				entityManagerDataSvc.getInstance().remove(permission);
+			}
 			
 		} else {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "Missing ID", response);
@@ -312,13 +317,23 @@ public class PermissionDaoImpl implements PermissionDao {
 
 	@Override
 	public void save(RestRequest request, RestResponse response) throws Exception {
-		Permission permission = (Permission) request.getParam(GlobalConstant.ITEM);
-		entityManagerDataSvc.getInstance().merge(permission);
+		Permission permissionUpdate = (Permission) request.getParam(GlobalConstant.ITEM);
+		// Check if locked and you are the lock owner or have override lock 
+		if (permissionUpdate.getId() != null) {
+			Permission permission = (Permission) entityManagerDataSvc.getInstance().find(Permission.class, permissionUpdate.getId());
+			if (permission.isLocked() && permission.getLockOwnerRefId() == 0) {
+				utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "The permission is locked by system and is not allowed to be saved.", response);
+			} else {
+				entityManagerDataSvc.getInstance().merge(permissionUpdate);
+			}
+		} else {
+			entityManagerDataSvc.getInstance().merge(permissionUpdate);
+		}
 	}
 
 	@Override
 	public void rolePermissions(RestRequest request, RestResponse response) throws Exception {
-		String queryStr = "SELECT new RolePermission(x.id, x.active, x.rights, x.startDate, x.endDate, x.permission.id) FROM RolePermission AS x WHERE x.role.id =:id";
+		String queryStr = "SELECT new RolePermission(x.id, x.active, x.locked, x.startDate, x.endDate, x.permission.id) FROM RolePermission AS x WHERE x.role.id =:id";
 		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 	
 		query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.PARENTID)));

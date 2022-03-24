@@ -25,45 +25,57 @@ import java.time.Instant;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.toasthub.core.general.api.View;
 import org.toasthub.core.general.model.BaseEntity;
 import org.toasthub.core.general.model.Text;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity
-@Table(name = "pm_deploy_pipeline_item")
-public class DeployPipelineItem extends BaseEntity implements Serializable{
+@Table(name = "pm_deploy_pipeline")
+public class DeployPipeline extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
+	protected Deploy deploy;
 	protected String name;
 	protected Integer sequence;
+	protected String repositoryUrl;
 	protected String branch;
 	protected String compileType; 
 	protected String commandlineScript;
 
 	
 	//Constructor
-	public DeployPipelineItem() {
+	public DeployPipeline() {
 		super();
 	}
 	
-	public DeployPipelineItem(String code, Text title, Boolean defaultLang, String dir){
+	public DeployPipeline(String code, Text title, Boolean defaultLang, String dir){
 		this.setActive(true);
 		this.setArchive(false);
 		this.setLocked(false);
 		this.setCreated(Instant.now());
-	
-		
 	}
 
 
-
 	// Methods
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonIgnore
+	@ManyToOne(targetEntity = Deploy.class)
+	@JoinColumn(name = "deploy_id")
+	public Deploy getDeploy() {
+		return deploy;
+	}
+	public void setDeploy(Deploy deploy) {
+		this.deploy = deploy;
+	}
+	
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "name")
 	public String getName() {
 		return name;
@@ -72,7 +84,7 @@ public class DeployPipelineItem extends BaseEntity implements Serializable{
 		this.name = name;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "sequence")
 	public Integer getSequence() {
 		return sequence;
@@ -81,7 +93,16 @@ public class DeployPipelineItem extends BaseEntity implements Serializable{
 		this.sequence = sequence;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "repository_url")
+	public String getRepositoryUrl() {
+		return repositoryUrl;
+	}
+	public void setRepositoryUrl(String repositoryUrl) {
+		this.repositoryUrl = repositoryUrl;
+	}
+
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "branch")
 	public String getBranch() {
 		return branch;
@@ -90,7 +111,7 @@ public class DeployPipelineItem extends BaseEntity implements Serializable{
 		this.branch = branch;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "compile_type")
 	public String getCompileType() {
 		return compileType;
@@ -99,7 +120,7 @@ public class DeployPipelineItem extends BaseEntity implements Serializable{
 		this.compileType = compileType;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "commandline_script")
 	public String getCommandlineScript() {
 		return commandlineScript;

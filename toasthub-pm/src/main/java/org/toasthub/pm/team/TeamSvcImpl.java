@@ -32,6 +32,7 @@ import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
 import org.toasthub.pm.model.BacklogTeam;
+import org.toasthub.pm.model.DeployTeam;
 import org.toasthub.pm.model.ProductTeam;
 import org.toasthub.pm.model.ProjectTeam;
 import org.toasthub.pm.model.ReleaseTeam;
@@ -262,6 +263,12 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 					backlogTeam.setArchive(false);
 					backlogTeam.setLocked(false);
 					request.addParam(GlobalConstant.ITEM, backlogTeam);
+				} else if ("DEPLOY".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+					DeployTeam deployTeam = new DeployTeam();
+					deployTeam.setActive(true);
+					deployTeam.setArchive(false);
+					deployTeam.setLocked(false);
+					request.addParam(GlobalConstant.ITEM, deployTeam);
 				} else {
 					utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, "Missing parent type", response);
 					return;

@@ -48,12 +48,22 @@ public class RoleDaoImpl implements RoleDao {
 	@Override
 	public void items(RestRequest request, RestResponse response) throws Exception {
 
-		if ( !(request.containsParam(PMConstant.TEAMID) && !"".equals(request.getParam(PMConstant.TEAMID))) ) {
-			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "Missing Team ID", response);
+		if ( !(request.containsParam(PMConstant.PARENTID) && !"".equals(request.getParam(PMConstant.PARENTID))) ) {
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "Missing Parent ID", response);
 			return;
 		}
 		
-		String queryStr = "SELECT DISTINCT x FROM Role AS x WHERE x.team.id =:teamId ";
+		if ( !(request.containsParam(PMConstant.PARENTTYPE) && !"".equals(request.getParam(PMConstant.PARENTTYPE))) ) {
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "Missing Parent Type", response);
+			return;
+		}
+		
+		String queryStr = "";
+		if ("TEAM".equals(request.getParam(PMConstant.PARENTTYPE))) {
+			queryStr = "SELECT DISTINCT x FROM Role as x WHERE x.team.id =:parentId ";
+		} else if ("MEMBER".equals(request.getParam(PMConstant.PARENTTYPE))) {
+			queryStr = "SELECT DISTINCT x FROM MemberRole as x WHERE x.member.id =:parentId ";
+		}
 		
 		// search
 		ArrayList<LinkedHashMap<String,String>> searchCriteria = null;
@@ -132,10 +142,14 @@ public class RoleDaoImpl implements RoleDao {
 			queryStr += " ORDER BY ".concat(orderItems.toString());
 		} else {
 			// default order
-			queryStr += " ORDER BY x.name";
+			if ("TEAM".equals(request.getParam(PMConstant.PARENTTYPE))) {
+				queryStr += " ORDER BY x.name";
+			} else if ("MEMBER".equals(request.getParam(PMConstant.PARENTTYPE))) {
+				queryStr += " ORDER BY x.sortOrder";
+			}
 		}
 		
-		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr).setParameter("teamId", new Long((Integer) request.getParam(PMConstant.TEAMID)));
+		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr).setParameter("parentId", new Long((Integer) request.getParam(PMConstant.PARENTID)));
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
@@ -174,12 +188,22 @@ public class RoleDaoImpl implements RoleDao {
 	@Override
 	public void itemCount(RestRequest request, RestResponse response) throws Exception {
 		
-		if ( !(request.containsParam(PMConstant.TEAMID) && !"".equals(request.getParam(PMConstant.TEAMID))) ) {
-			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "Missing Team ID", response);
+		if ( !(request.containsParam(PMConstant.PARENTID) && !"".equals(request.getParam(PMConstant.PARENTID))) ) {
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "Missing Parent ID", response);
 			return;
 		}
 		
-		String queryStr = "SELECT COUNT(DISTINCT x) FROM Role as x WHERE x.team.id =:teamId ";
+		if ( !(request.containsParam(PMConstant.PARENTTYPE) && !"".equals(request.getParam(PMConstant.PARENTTYPE))) ) {
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "Missing Parent Type", response);
+			return;
+		}
+		
+		String queryStr = "";
+		if ("TEAM".equals(request.getParam(PMConstant.PARENTTYPE))) {
+			queryStr = "SELECT COUNT(DISTINCT x) FROM Role as x WHERE x.team.id =:parentId ";
+		} else if ("MEMBER".equals(request.getParam(PMConstant.PARENTTYPE))) {
+			queryStr = "SELECT COUNT(DISTINCT x) FROM MemberRole as x WHERE x.member.id =:parentId ";
+		}
 		
 		ArrayList<LinkedHashMap<String,String>> searchCriteria = null;
 		if (request.containsParam(GlobalConstant.SEARCHCRITERIA) && !request.getParam(GlobalConstant.SEARCHCRITERIA).equals("")) {
@@ -219,7 +243,7 @@ public class RoleDaoImpl implements RoleDao {
 			
 		}
 
-		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr).setParameter("teamId", new Long((Integer) request.getParam(PMConstant.TEAMID)));
+		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr).setParameter("parentId", new Long((Integer) request.getParam(PMConstant.PARENTID)));
 		
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
@@ -331,6 +355,20 @@ public class RoleDaoImpl implements RoleDao {
 		entityManagerDataSvc.getInstance().merge(memberRole);
 	}
 
-	
+	@Override
+	public void teamRole(RestRequest request, RestResponse response) throws Exception {
+		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
+			String queryStr = "SELECT x FROM Role AS x WHERE x.id =:id";
+			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+		
+			query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			Role role = (Role) query.getSingleResult();
+			
+			response.addParam(GlobalConstant.ITEM, role);
+		} else {
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "Missing ID", response);
+		}
+		
+	}
 
 }

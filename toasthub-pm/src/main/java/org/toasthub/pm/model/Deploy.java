@@ -44,6 +44,15 @@ public class Deploy extends BaseEntity implements Serializable{
 	protected Instant lastFail;
 	protected double lastDuration;
 	protected String runStatus;
+	protected String cronSchedule;
+	protected String scmUser;
+	protected String scmPassword;
+	protected String serverName;
+	protected String sshUsername;
+	protected String sshPassphrase;
+	protected String sshToken;
+	protected String workspace;
+	protected String stagingDir;
 	
 	protected long ownerId;
 
@@ -58,8 +67,21 @@ public class Deploy extends BaseEntity implements Serializable{
 		this.setArchive(false);
 		this.setLocked(false);
 		this.setCreated(Instant.now());
+	}
 	
-		
+	// HQL query constructor
+	public Deploy(Long id, String name, Instant lastSuccess, Instant lastFail, double lastDuration,String runStatus,Boolean active,Boolean archive,Boolean locked,Instant created,Instant modified){
+		this.setId(id);
+		this.setName(name);
+		this.setLastSuccess(lastSuccess);
+		this.setLastFail(lastFail);
+		this.setLastDuration(lastDuration);
+		this.setRunStatus(runStatus);
+		this.setActive(active);
+		this.setArchive(archive);
+		this.setLocked(locked);
+		this.setCreated(created);
+		this.setModified(modified);
 	}
 
 	// Methods
@@ -108,6 +130,87 @@ public class Deploy extends BaseEntity implements Serializable{
 		this.runStatus = runStatus;
 	}
 
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "cron_schedule")
+	public String getCronSchedule() {
+		return cronSchedule;
+	}
+	public void setCronSchedule(String cronSchedule) {
+		this.cronSchedule = cronSchedule;
+	}
+
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "scm_user")
+	public String getScmUser() {
+		return scmUser;
+	}
+	public void setScmUser(String scmUser) {
+		this.scmUser = scmUser;
+	}
+
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "scm_password")
+	public String getScmPassword() {
+		return scmPassword;
+	}
+	public void setScmPassword(String scmPassword) {
+		this.scmPassword = scmPassword;
+	}
+
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "server_name")
+	public String getServerName() {
+		return serverName;
+	}
+	public void setServerName(String serverName) {
+		this.serverName = serverName;
+	}
+
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "ssh_username")
+	public String getSshUsername() {
+		return sshUsername;
+	}
+	public void setSshUsername(String sshUsername) {
+		this.sshUsername = sshUsername;
+	}
+
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "pass_phrase")
+	public String getSshPassphrase() {
+		return sshPassphrase;
+	}
+	public void setSshPassphrase(String sshPassphrase) {
+		this.sshPassphrase = sshPassphrase;
+	}
+
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "ssh_token")
+	public String getSshToken() {
+		return sshToken;
+	}
+	public void setSshToken(String sshToken) {
+		this.sshToken = sshToken;
+	}
+
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "workspace")
+	public String getWorkspace() {
+		return workspace;
+	}
+	public void setWorkspace(String workspace) {
+		this.workspace = workspace;
+	}
+
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "staging_dir")
+	public String getStagingDir() {
+		return stagingDir;
+	}
+	public void setStagingDir(String stagingDir) {
+		this.stagingDir = stagingDir;
+	}
+	
 	@JsonView({View.Member.class,View.Admin.class})
 	@Column(name = "owner_id")
 	public long getOwnerId() {

@@ -68,7 +68,7 @@ public class DeployDaoImpl implements DeployDao {
 
 	@Override
 	public void items(RestRequest request, RestResponse response) throws Exception {
-		String queryStr = "SELECT DISTINCT x FROM Deploy AS x ";
+		String queryStr = "SELECT NEW Deploy(x.id,x.name,x.lastSuccess,x.lastFail,x.lastDuration,x.runStatus,x.active,x.archive,x.locked,x.created,x.modified) FROM Deploy AS x ";
 		
 		boolean and = false;
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
@@ -276,5 +276,6 @@ public class DeployDaoImpl implements DeployDao {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID",prefCacheUtil.getLang(request)), response);
 		}
 	}
+	
 
 }

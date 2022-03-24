@@ -23,4 +23,5 @@ import org.toasthub.pm.model.BaseSvc;
 public interface RoleSvc extends BaseSvc {
 	public void memberRole(RestRequest request, RestResponse response);
 	public void memberRoleSave(RestRequest request, RestResponse response);
+	public void teamRole(RestRequest request, RestResponse response);
 }

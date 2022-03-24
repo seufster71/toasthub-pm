@@ -39,6 +39,8 @@ import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
 import org.toasthub.pm.model.Backlog;
 import org.toasthub.pm.model.BacklogTeam;
+import org.toasthub.pm.model.Deploy;
+import org.toasthub.pm.model.DeployTeam;
 import org.toasthub.pm.model.Member;
 import org.toasthub.pm.model.MemberRole;
 import org.toasthub.pm.model.Permission;
@@ -90,9 +92,13 @@ public class TeamDaoImpl implements TeamDao {
 			member = entityManagerDataSvc.getInstance().merge(member);
 			
 			// Admin Role
-			Role role = new Role(true, false, false, "Admin", "ADMIN", team, Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS));
+			Role role = new Role(true, false, true, "Admin", "ADMIN", team, Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS));
+			role.setLockOwnerRefId(user.getId());
+			role.setLockTime(Instant.now());
 			role = entityManagerDataSvc.getInstance().merge(role);
-			MemberRole memberRole = new MemberRole(true, false, false, 1, Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS), member, role);
+			MemberRole memberRole = new MemberRole(true, false, true, 1, Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS), member, role);
+			memberRole.setLockOwnerRefId(user.getId());
+			memberRole.setLockTime(Instant.now());
 			memberRole = entityManagerDataSvc.getInstance().merge(memberRole);
 			String queryStr = "SELECT x FROM Permission AS x WHERE x.code =:code";
 			
@@ -119,6 +125,8 @@ public class TeamDaoImpl implements TeamDao {
 			for(String code : permList) {
 				permission = (Permission) entityManagerDataSvc.getInstance().createQuery(queryStr).setParameter("code", code).getSingleResult();
 				rolePermission = new RolePermission(true,false,true,Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS),"Y",role,permission);
+				rolePermission.setLockOwnerRefId(user.getId());
+				rolePermission.setLockTime(Instant.now());
 				rolePermission = entityManagerDataSvc.getInstance().merge(rolePermission);
 			}
 			
@@ -146,11 +154,11 @@ public class TeamDaoImpl implements TeamDao {
 					,"PMWORKFLOWV"));
 			for(String code : permList) {
 				permission = (Permission) entityManagerDataSvc.getInstance().createQuery(queryStr).setParameter("code", code).getSingleResult();
-				rolePermission = new RolePermission(true,false,true,Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS),"Y",role,permission);
+				rolePermission = new RolePermission(true,false,false,Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS),"Y",role,permission);
 				rolePermission = entityManagerDataSvc.getInstance().merge(rolePermission);
 			}
 			// Deny
-			permList = new ArrayList<String>(Arrays.asList(
+			/*permList = new ArrayList<String>(Arrays.asList(
 					"PMROLEC","PMROLEM","PMROLED"
 					,"PMPERMISSIONC","PMPERMISSIONM","PMPERMISSIOND"
 					,"PMTEAMC","PMTEAMM","PMTEAMD"
@@ -159,8 +167,10 @@ public class TeamDaoImpl implements TeamDao {
 			for(String code : permList) {
 				permission = (Permission) entityManagerDataSvc.getInstance().createQuery(queryStr).setParameter("code", code).getSingleResult();
 				rolePermission = new RolePermission(true,false,true,Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS),"N",role,permission);
+				rolePermission.setLockOwnerRefId(user.getId());
+				rolePermission.setLockTime(Instant.now());
 				rolePermission = entityManagerDataSvc.getInstance().merge(rolePermission);
-			}
+			}*/
 			
 			// Tester
 			role = new Role(true, false, false, "Tester", "TESTER", team, Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS));
@@ -186,11 +196,11 @@ public class TeamDaoImpl implements TeamDao {
 					,"PMWORKFLOWV"));
 			for(String code : permList) {
 				permission = (Permission) entityManagerDataSvc.getInstance().createQuery(queryStr).setParameter("code", code).getSingleResult();
-				rolePermission = new RolePermission(true,false,true,Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS),"Y",role,permission);
+				rolePermission = new RolePermission(true,false,false,Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS),"Y",role,permission);
 				rolePermission = entityManagerDataSvc.getInstance().merge(rolePermission);
 			}
 			// Deny
-			permList = new ArrayList<String>(Arrays.asList(
+		/*	permList = new ArrayList<String>(Arrays.asList(
 					"PMPRODUCTC","PMPRODUCTM","PMPRODUCTD"
 					,"PMPROJECTC","PMPROJECTM","PMPROJECTD"
 					,"PMBACKLOGC","PMBACKLOGM","PMBACKLOGD"
@@ -209,7 +219,7 @@ public class TeamDaoImpl implements TeamDao {
 				permission = (Permission) entityManagerDataSvc.getInstance().createQuery(queryStr).setParameter("code", code).getSingleResult();
 				rolePermission = new RolePermission(true,false,true,Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS),"N",role,permission);
 				rolePermission = entityManagerDataSvc.getInstance().merge(rolePermission);
-			}
+			}*/
 			
 			// Viewer
 			role = new Role(true, false, false, "Viewer", "VIEWER", team, Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS));
@@ -235,11 +245,11 @@ public class TeamDaoImpl implements TeamDao {
 					,"PMWORKFLOWV"));
 			for(String code : permList) {
 				permission = (Permission) entityManagerDataSvc.getInstance().createQuery(queryStr).setParameter("code", code).getSingleResult();
-				rolePermission = new RolePermission(true,false,true,Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS),"Y",role,permission);
+				rolePermission = new RolePermission(true,false,false,Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS),"Y",role,permission);
 				rolePermission = entityManagerDataSvc.getInstance().merge(rolePermission);
 			}
 			// Deny
-			permList = new ArrayList<String>(Arrays.asList(
+		/*	permList = new ArrayList<String>(Arrays.asList(
 					"PMPRODUCTC","PMPRODUCTM","PMPRODUCTD"
 					,"PMPROJECTC","PMPROJECTM","PMPROJECTD"
 					,"PMBACKLOGC","PMBACKLOGM","PMBACKLOGD"
@@ -261,7 +271,7 @@ public class TeamDaoImpl implements TeamDao {
 				permission = (Permission) entityManagerDataSvc.getInstance().createQuery(queryStr).setParameter("code", code).getSingleResult();
 				rolePermission = new RolePermission(true,false,true,Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS),"N",role,permission);
 				rolePermission = entityManagerDataSvc.getInstance().merge(rolePermission);
-			}
+			}*/
 		} else {
 			entityManagerDataSvc.getInstance().merge(team);
 		}
@@ -514,6 +524,12 @@ public class TeamDaoImpl implements TeamDao {
 				query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
 				List<BacklogTeam> teams = query.getResultList();
 				response.addParam("linkTeams", teams);
+			} else if ("DEPLOY".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+				String queryStr = "SELECT new DeployTeam(x.id, x.active, x.team.id) FROM DeployTeam AS x WHERE x.deploy.id =:id";
+				Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+				query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+				List<DeployTeam> teams = query.getResultList();
+				response.addParam("linkTeams", teams);
 			} else {
 				response.addParam("linkTeams", null);
 			}
@@ -554,6 +570,12 @@ public class TeamDaoImpl implements TeamDao {
 				query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
 				ReleaseTeam releaseTeam = (ReleaseTeam) query.getSingleResult();
 				response.addParam(GlobalConstant.ITEM, releaseTeam);
+			} else if ("DEPLOY".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+				queryStr = "SELECT x FROM DeployTeam AS x WHERE x.id =:id";
+				Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+				query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+				DeployTeam deployTeam = (DeployTeam) query.getSingleResult();
+				response.addParam(GlobalConstant.ITEM, deployTeam);
 			} else {
 				response.addParam(GlobalConstant.ITEM, null);
 			}
@@ -611,6 +633,17 @@ public class TeamDaoImpl implements TeamDao {
 					releaseTeam.setTeam(team);
 				}
 				entityManagerDataSvc.getInstance().merge(releaseTeam);
+			} else if ("DEPLOY".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+				DeployTeam deployTeam = (DeployTeam) request.getParam(GlobalConstant.ITEM);
+				if (request.containsParam(GlobalConstant.PARENTID) && !"".equals(request.getParam(GlobalConstant.PARENTID))) {
+					Deploy deploy = (Deploy) entityManagerDataSvc.getInstance().getReference(Deploy.class,  new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+					deployTeam.setDeploy(deploy);
+				}
+				if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
+					Team team = (Team) entityManagerDataSvc.getInstance().getReference(Team.class,  new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+					deployTeam.setTeam(team);
+				}
+				entityManagerDataSvc.getInstance().merge(deployTeam);
 			}
 		} else {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID",prefCacheUtil.getLang(request)), response);

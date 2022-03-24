@@ -25,12 +25,15 @@ import java.time.Instant;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.toasthub.core.general.api.View;
 import org.toasthub.core.general.model.BaseEntity;
 import org.toasthub.core.general.model.Text;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity
@@ -39,6 +42,7 @@ public class DeployBuild extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
+	protected Deploy deploy;
 	protected Instant startDate;
 	protected Instant endDate;
 	protected String serverName;
@@ -61,6 +65,16 @@ public class DeployBuild extends BaseEntity implements Serializable{
 	}
 
 	// Methods
+	@JsonIgnore
+	@ManyToOne(targetEntity = Deploy.class)
+	@JoinColumn(name = "deploy_id")
+	public Deploy getDeploy() {
+		return deploy;
+	}
+	public void setDeploy(Deploy deploy) {
+		this.deploy = deploy;
+	}
+	
 	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "start_date")
 	public Instant getStartDate() {

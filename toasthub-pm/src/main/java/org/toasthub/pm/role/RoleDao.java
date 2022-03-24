@@ -25,4 +25,6 @@ public interface RoleDao extends BaseDao {
 	void memberRoles(RestRequest request, RestResponse response) throws Exception;
 	void memberRole(RestRequest request, RestResponse response) throws Exception;
 	void memberRoleSave(RestRequest request, RestResponse response) throws Exception;
+	
+	void teamRole(RestRequest request, RestResponse response) throws Exception;
 }

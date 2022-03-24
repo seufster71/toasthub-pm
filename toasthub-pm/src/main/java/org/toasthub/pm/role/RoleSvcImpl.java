@@ -32,6 +32,7 @@ import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
 import org.toasthub.pm.model.MemberRole;
+import org.toasthub.pm.model.PMConstant;
 import org.toasthub.pm.model.Role;
 
 @Service("PMRoleSvc")
@@ -106,6 +107,14 @@ public class RoleSvcImpl implements ServiceProcessor, RoleSvc {
 			request.addParam(PrefCacheUtil.PREFGLOBAL, global);
 			prefCacheUtil.getPrefInfo(request,response);
 			this.memberRoleSave(request, response);
+			break;
+		case "TEAM_ROLE_ITEM":
+			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
+			prefCacheUtil.getPrefInfo(request,response);
+			this.teamRole(request, response);
+			if (request.containsParam(PMConstant.ITEMID)) {
+				response.addParam(PMConstant.ITEMID, request.getParam(PMConstant.ITEMID));
+			}
 			break;
 		default:
 			utilSvc.addStatus(RestResponse.INFO, RestResponse.ACTIONNOTEXIST, "Action not available", response);
@@ -252,6 +261,17 @@ public class RoleSvcImpl implements ServiceProcessor, RoleSvc {
 		}
 	}
 
+	@Override
+	public void teamRole(RestRequest request, RestResponse response) {
+		try {
+			roleDao.teamRole(request, response);
+			utilSvc.addStatus(RestResponse.INFO, RestResponse.SUCCESS, "Successful", response);
+		} catch (Exception e) {
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "Failed", response);
+			e.printStackTrace();
+		}
+	}
+	
 
 	private void addMemberRoles (RestRequest request, RestResponse response) {
 		try {
