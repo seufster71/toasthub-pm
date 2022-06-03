@@ -76,9 +76,9 @@ public class MemberRole extends BaseEntity implements Serializable{
 	}
 	
 	public MemberRole(boolean active, boolean archive, boolean locked, Integer sortOrder, Instant startDate, Instant endDate, Member member, Role role) {
-		this.setActive(true);
-		this.setArchive(false);
-		this.setLocked(false);
+		this.setActive(active);
+		this.setArchive(archive);
+		this.setLocked(locked);
 		this.setSortOrder(sortOrder);
 		this.setStartDate(startDate);
 		this.setEndDate(endDate);

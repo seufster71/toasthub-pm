@@ -31,9 +31,11 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
+import org.toasthub.pm.model.Member;
 import org.toasthub.pm.model.MemberRole;
 import org.toasthub.pm.model.PMConstant;
 import org.toasthub.pm.model.Role;
+import org.toasthub.pm.team.MemberSvc;
 
 @Service("PMRoleSvc")
 public class RoleSvcImpl implements ServiceProcessor, RoleSvc {
@@ -41,6 +43,10 @@ public class RoleSvcImpl implements ServiceProcessor, RoleSvc {
 	@Autowired
 	@Qualifier("PMRoleDao")
 	RoleDao roleDao;
+	
+	@Autowired
+	@Qualifier("PMMemberSvc")
+	MemberSvc memberSvc;
 	
 	@Autowired 
 	UtilSvc utilSvc;
@@ -57,6 +63,19 @@ public class RoleSvcImpl implements ServiceProcessor, RoleSvc {
 		case "INIT":
 			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
 			prefCacheUtil.getPrefInfo(request,response);
+			if ("MEMBER".equals(request.getParam(PMConstant.PARENTTYPE))) {
+				RestRequest requestMember = new RestRequest();
+				requestMember.addParam(GlobalConstant.ACTION, "ITEM");
+				requestMember.addParam(GlobalConstant.ITEMID, request.getParam(PMConstant.PARENTID));
+				RestResponse responseMember = new RestResponse();
+				memberSvc.process(requestMember, responseMember);
+				if (responseMember.containsParam(GlobalConstant.ITEM)) {
+					Member member = (Member) responseMember.getParam(GlobalConstant.ITEM);
+					request.addParam(PMConstant.PARENTID, member.getTeam().getId().intValue());
+					request.addParam(PMConstant.PARENTTYPE, "TEAM");
+				}
+				
+			}
 			this.itemCount(request, response);
 			count = (Long) response.getParam(GlobalConstant.ITEMCOUNT);
 			if (count != null && count > 0){
