@@ -37,24 +37,25 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity
-@Table(name = "pm_deploy_build")
-public class DeployBuild extends BaseEntity implements Serializable{
+@Table(name = "pm_deploy_system")
+public class DeploySystem extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
 	protected Deploy deploy;
-	protected Instant startDate;
-	protected Instant endDate;
-	protected String buildStatus;
-	protected String consoleOutputFile;
+	protected String serverName;
+	protected String sshUsername;
+	protected String sshPassword;
+	protected String sshToken;
+	protected String stagingDir;
 
 	
 	//Constructor
-	public DeployBuild() {
+	public DeploySystem() {
 		super();
 	}
 	
-	public DeployBuild(String code, Text title, Boolean defaultLang, String dir){
+	public DeploySystem(String code, Text title, Boolean defaultLang, String dir){
 		this.setActive(true);
 		this.setArchive(false);
 		this.setLocked(false);
@@ -73,41 +74,50 @@ public class DeployBuild extends BaseEntity implements Serializable{
 	public void setDeploy(Deploy deploy) {
 		this.deploy = deploy;
 	}
-	
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "start_date")
-	public Instant getStartDate() {
-		return startDate;
+
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "server_name")
+	public String getServerName() {
+		return serverName;
 	}
-	public void setStartDate(Instant startDate) {
-		this.startDate = startDate;
+	public void setServerName(String serverName) {
+		this.serverName = serverName;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "end_date")
-	public Instant getEndDate() {
-		return endDate;
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "ssh_username")
+	public String getSshUsername() {
+		return sshUsername;
 	}
-	public void setEndDate(Instant endDate) {
-		this.endDate = endDate;
-	}
-
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "build_status")
-	public String getBuildStatus() {
-		return buildStatus;
-	}
-	public void setBuildStatus(String buildStatus) {
-		this.buildStatus = buildStatus;
+	public void setSshUsername(String sshUsername) {
+		this.sshUsername = sshUsername;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "console_output_file")
-	public String getConsoleOutputFile() {
-		return consoleOutputFile;
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "ssh_password")
+	public String getSshPassword() {
+		return sshPassword;
 	}
-	public void setConsoleOutputFile(String consoleOutputFile) {
-		this.consoleOutputFile = consoleOutputFile;
+	public void setSshPassword(String sshPassword) {
+		this.sshPassword = sshPassword;
+	}
+
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "ssh_token")
+	public String getSshToken() {
+		return sshToken;
+	}
+	public void setSshToken(String sshToken) {
+		this.sshToken = sshToken;
+	}
+
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "staging_dir")
+	public String getStagingDir() {
+		return stagingDir;
+	}
+	public void setStagingDir(String stagingDir) {
+		this.stagingDir = stagingDir;
 	}
 
 }

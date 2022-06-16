@@ -45,9 +45,11 @@ public class DeployPipeline extends BaseEntity implements Serializable{
 	protected Deploy deploy;
 	protected String name;
 	protected Integer sequence;
-	protected String repositoryUrl;
+	protected String scmURL;
+	protected String scmUser;
+	protected String scmPassword;
 	protected String branch;
-	protected String compileType; 
+	protected String compiler; 
 	protected String commandlineScript;
 
 	
@@ -56,13 +58,26 @@ public class DeployPipeline extends BaseEntity implements Serializable{
 		super();
 	}
 	
-	public DeployPipeline(String code, Text title, Boolean defaultLang, String dir){
+	public DeployPipeline(String name, Text title, Boolean defaultLang, String dir){
 		this.setActive(true);
 		this.setArchive(false);
 		this.setLocked(false);
 		this.setCreated(Instant.now());
 	}
 
+	// HQL query constructor
+	public DeployPipeline(Long id, String name, Integer sequence, String scmURL, String branch,Boolean active,Boolean archive,Boolean locked,Instant created,Instant modified){
+		this.setId(id);
+		this.setName(name);
+		this.setSequence(sequence);
+		this.setScmURL(scmURL);
+		this.setBranch(branch);
+		this.setActive(active);
+		this.setArchive(archive);
+		this.setLocked(locked);
+		this.setCreated(created);
+		this.setModified(modified);
+	}
 
 	// Methods
 	@JsonIgnore
@@ -94,12 +109,30 @@ public class DeployPipeline extends BaseEntity implements Serializable{
 	}
 
 	@JsonView({View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "repository_url")
-	public String getRepositoryUrl() {
-		return repositoryUrl;
+	@Column(name = "scm_url")
+	public String getScmURL() {
+		return scmURL;
 	}
-	public void setRepositoryUrl(String repositoryUrl) {
-		this.repositoryUrl = repositoryUrl;
+	public void setScmURL(String scmURL) {
+		this.scmURL = scmURL;
+	}
+	
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "scm_user")
+	public String getScmUser() {
+		return scmUser;
+	}
+	public void setScmUser(String scmUser) {
+		this.scmUser = scmUser;
+	}
+
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "scm_password")
+	public String getScmPassword() {
+		return scmPassword;
+	}
+	public void setScmPassword(String scmPassword) {
+		this.scmPassword = scmPassword;
 	}
 
 	@JsonView({View.Member.class,View.Admin.class,View.System.class})
@@ -112,12 +145,12 @@ public class DeployPipeline extends BaseEntity implements Serializable{
 	}
 
 	@JsonView({View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "compile_type")
-	public String getCompileType() {
-		return compileType;
+	@Column(name = "compiler")
+	public String getCompiler() {
+		return compiler;
 	}
-	public void setCompileType(String compileType) {
-		this.compileType = compileType;
+	public void setCompiler(String compiler) {
+		this.compiler = compiler;
 	}
 
 	@JsonView({View.Member.class,View.Admin.class,View.System.class})
