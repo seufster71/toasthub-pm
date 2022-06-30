@@ -50,7 +50,7 @@ public class WorkflowDaoImpl implements WorkflowDao {
 	public void delete(RestRequest request, RestResponse response) throws Exception {
 		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
 			
-			Workflow workflow = (Workflow) entityManagerDataSvc.getInstance().getReference(Workflow.class,  new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			Workflow workflow = (Workflow) entityManagerDataSvc.getInstance().getReference(Workflow.class,  Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 			entityManagerDataSvc.getInstance().remove(workflow);
 			
 		} else {
@@ -307,7 +307,7 @@ public class WorkflowDaoImpl implements WorkflowDao {
 			String queryStr = "SELECT x FROM Workflow AS x WHERE x.id =:id";
 			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
-			query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 			Workflow workflow = (Workflow) query.getSingleResult();
 			
 			response.addParam(GlobalConstant.ITEM, workflow);

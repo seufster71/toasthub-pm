@@ -31,6 +31,7 @@ import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
 import org.toasthub.pm.model.Member;
+import org.toasthub.security.model.User;
 import org.toasthub.security.users.UsersDao;
 
 @Service("PMMemberSvc")
@@ -141,7 +142,9 @@ public class MemberSvcImpl implements MemberSvc, ServiceProcessor {
 	@Override
 	public void item(RestRequest request, RestResponse response) {
 		try {
-			memberDao.item(request, response);
+			if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
+				memberDao.item(request, response);
+			}
 		} catch (Exception e) {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_EXECUTION_FAIL",prefCacheUtil.getLang(request)), response);
 			e.printStackTrace();
@@ -175,6 +178,11 @@ public class MemberSvcImpl implements MemberSvc, ServiceProcessor {
 			// marshall
 			utilSvc.marshallFields(request, response);
 		
+			// update user info
+			Member member = (Member) request.getParam(GlobalConstant.ITEM);
+			User user = usersDao.findUserById(member.getUserId());
+			member.setUsername(user.getUsername());
+			member.setName(user.getFirstname()+" "+user.getLastname());
 			
 			// save
 			memberDao.save(request, response);

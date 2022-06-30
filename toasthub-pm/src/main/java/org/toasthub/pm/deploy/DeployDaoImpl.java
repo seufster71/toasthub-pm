@@ -16,7 +16,6 @@
 
 package org.toasthub.pm.deploy;
 
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -36,6 +35,7 @@ import org.toasthub.core.preference.model.PrefCacheUtil;
 import org.toasthub.pm.model.Deploy;
 import org.toasthub.pm.model.DeployPipeline;
 import org.toasthub.pm.model.DeploySystem;
+import org.toasthub.pm.model.PMConstant;
 
 
 @Repository("PMDeployDao")
@@ -75,11 +75,38 @@ public class DeployDaoImpl implements DeployDao {
 	public void save(RestRequest request, RestResponse response) throws Exception {
 		String action = (String) request.getParams().get(GlobalConstant.ACTION);
 		if (action.contains("PIPELINE")) {
-			DeployPipeline deployPipeline = (DeployPipeline) request.getParam(GlobalConstant.ITEM);
-			entityManagerDataSvc.getInstance().merge(deployPipeline);
+			if (request.containsParam(PMConstant.DEPLOYID)) {
+				DeployPipeline deployPipeline = (DeployPipeline) request.getParam(GlobalConstant.ITEM);
+				if (deployPipeline.getSortOrder() == null) {
+					// get highest order
+					Object max = entityManagerDataSvc.getInstance().createQuery("SELECT max(x.sortOrder) FROM DeployPipeline AS x WHERE x.deploy.id =: parentId").setParameter("parentId", Long.valueOf((Integer) request.getParam(PMConstant.DEPLOYID))).getSingleResult();
+					if (max != null) {
+						int order = (int) max + 1;
+						deployPipeline.setSortOrder(order);
+					} else {
+						deployPipeline.setSortOrder(1);
+					}
+				}
+				Deploy deploy = (Deploy) entityManagerDataSvc.getInstance().getReference(Deploy.class,  Long.valueOf((Integer) request.getParam(PMConstant.DEPLOYID)));
+				if (deployPipeline.getDeploy() == null || deployPipeline.getDeploy() != null && !deployPipeline.getDeploy().getId().equals(Long.valueOf((Integer) request.getParam(PMConstant.DEPLOYID)))) {
+					deployPipeline.setDeploy(deploy);
+				}
+				entityManagerDataSvc.getInstance().merge(deployPipeline);
+			} else {
+				utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID",prefCacheUtil.getLang(request)), response);
+			}
 		} else if (action.contains("SYSTEM")) {
-			DeploySystem deploySystem = (DeploySystem) request.getParam(GlobalConstant.ITEM);
-			entityManagerDataSvc.getInstance().merge(deploySystem);
+			if (request.containsParam(PMConstant.DEPLOYID)) {
+				DeploySystem deploySystem = (DeploySystem) request.getParam(GlobalConstant.ITEM);
+				
+				Deploy deploy = (Deploy) entityManagerDataSvc.getInstance().getReference(Deploy.class,  Long.valueOf((Integer) request.getParam(PMConstant.DEPLOYID)));
+				if (deploySystem.getDeploy() == null || deploySystem.getDeploy() != null && !deploySystem.getDeploy().getId().equals(Long.valueOf((Integer) request.getParam(PMConstant.DEPLOYID)))) {
+					deploySystem.setDeploy(deploy);
+				}
+				entityManagerDataSvc.getInstance().merge(deploySystem);
+			} else {
+				utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID",prefCacheUtil.getLang(request)), response);
+			}
 		} else {
 			Deploy deploy = (Deploy) request.getParam(GlobalConstant.ITEM);
 			entityManagerDataSvc.getInstance().merge(deploy);
@@ -91,14 +118,14 @@ public class DeployDaoImpl implements DeployDao {
 		String action = (String) request.getParams().get(GlobalConstant.ACTION);
 		String queryStr = "SELECT NEW Deploy(x.id,x.name,x.lastSuccess,x.lastFail,x.lastDuration,x.runStatus,x.active,x.archive,x.locked,x.created,x.modified) FROM Deploy AS x ";
 		if (action.contains("PIPELINE")) {
-			queryStr = "SELECT NEW DeployPipeline(x.id,x.name,x.sequence,x.scmURL,x.branch,x.active,x.archive,x.locked,x.created,x.modified) FROM DeployPipeline AS x ";
+			queryStr = "SELECT NEW DeployPipeline(x.id,x.name,x.sortOrder,x.scmURL,x.branch,x.active,x.archive,x.locked,x.created,x.modified) FROM DeployPipeline AS x WHERE x.deploy.id =: deployId ";
 		} else if (action.contains("SYSTEM")) {
-			queryStr = "SELECT NEW DeploySystem(x.id,x.serverName,x.sshUsername,x.stagingDir,x.active,x.archive,x.locked,x.created,x.modified) FROM DeploySystem AS x ";
+			queryStr = "SELECT NEW DeploySystem(x.id,x.serverName,x.sshUsername,x.stagingDir,x.active,x.archive,x.locked,x.created,x.modified) FROM DeploySystem AS x WHERE x.deploy.id =: deployId ";
 		}
 		
 		boolean and = false;
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
-			if (!and) { queryStr += " WHERE "; }
+		//	if (!and) { queryStr += " WHERE "; }
 			queryStr += "x.active =:active ";
 			and = true;
 		}
@@ -183,7 +210,11 @@ public class DeployDaoImpl implements DeployDao {
 			queryStr += " ORDER BY ".concat(orderItems.toString());
 		} else {
 			// default order
-			queryStr += " ORDER BY x.name";
+			if (action.contains("SYSTEM")) {
+				queryStr += " ORDER BY x.serverName";
+			} else {
+				queryStr += " ORDER BY x.name";
+			}
 		}
 		
 		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
@@ -214,7 +245,9 @@ public class DeployDaoImpl implements DeployDao {
 			query.setFirstResult((Integer) request.getParam(GlobalConstant.LISTSTART));
 			query.setMaxResults((Integer) request.getParam(GlobalConstant.LISTLIMIT));
 		}
-		
+		if (request.containsParam(PMConstant.DEPLOYID)){
+			query.setParameter("deployId", Long.valueOf((Integer) request.getParam(PMConstant.DEPLOYID)));
+		}
 		
 		if (action.contains("PIPELINE")) {
 			@SuppressWarnings("unchecked")
@@ -354,6 +387,5 @@ public class DeployDaoImpl implements DeployDao {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID",prefCacheUtil.getLang(request)), response);
 		}
 	}
-	
 
 }

@@ -35,6 +35,7 @@ import org.toasthub.pm.model.Member;
 import org.toasthub.pm.model.MemberRole;
 import org.toasthub.pm.model.PMConstant;
 import org.toasthub.pm.model.Role;
+import org.toasthub.pm.model.Team;
 
 @Repository("PMRoleDao")
 @Transactional("TransactionManagerData")
@@ -58,12 +59,8 @@ public class RoleDaoImpl implements RoleDao {
 			return;
 		}
 		
-		String queryStr = "";
-		if ("TEAM".equals(request.getParam(PMConstant.PARENTTYPE))) {
-			queryStr = "SELECT DISTINCT x FROM Role as x WHERE x.team.id =:parentId ";
-		} else if ("MEMBER".equals(request.getParam(PMConstant.PARENTTYPE))) {
-			queryStr = "SELECT DISTINCT x FROM MemberRole as x WHERE x.member.id =:parentId ";
-		}
+		String queryStr = "SELECT DISTINCT x FROM Role as x WHERE x.team.id =: parentId ";
+		
 		
 		// search
 		ArrayList<LinkedHashMap<String,String>> searchCriteria = null;
@@ -142,14 +139,15 @@ public class RoleDaoImpl implements RoleDao {
 			queryStr += " ORDER BY ".concat(orderItems.toString());
 		} else {
 			// default order
-			if ("TEAM".equals(request.getParam(PMConstant.PARENTTYPE))) {
-				queryStr += " ORDER BY x.name";
-			} else if ("MEMBER".equals(request.getParam(PMConstant.PARENTTYPE))) {
-				queryStr += " ORDER BY x.sortOrder";
-			}
+			queryStr += " ORDER BY x.name";
 		}
 		
-		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr).setParameter("parentId", new Long((Integer) request.getParam(PMConstant.PARENTID)));
+		Long parentVal = Long.valueOf((Integer) request.getParam(PMConstant.PARENTID));
+		if ("MEMBER".equals(request.getParam(PMConstant.PARENTTYPE))) {
+			parentVal = Long.valueOf((Integer) request.getParam(PMConstant.TEAMID));
+		}
+		
+		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr).setParameter("parentId", parentVal);
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
@@ -198,12 +196,7 @@ public class RoleDaoImpl implements RoleDao {
 			return;
 		}
 		
-		String queryStr = "";
-		if ("TEAM".equals(request.getParam(PMConstant.PARENTTYPE))) {
-			queryStr = "SELECT COUNT(DISTINCT x) FROM Role as x WHERE x.team.id =:parentId ";
-		} else if ("MEMBER".equals(request.getParam(PMConstant.PARENTTYPE))) {
-			queryStr = "SELECT COUNT(DISTINCT x) FROM MemberRole as x WHERE x.member.id =:parentId ";
-		}
+		String queryStr  = "SELECT COUNT(DISTINCT x) FROM Role as x WHERE x.team.id =: parentId ";
 		
 		ArrayList<LinkedHashMap<String,String>> searchCriteria = null;
 		if (request.containsParam(GlobalConstant.SEARCHCRITERIA) && !request.getParam(GlobalConstant.SEARCHCRITERIA).equals("")) {
@@ -243,7 +236,11 @@ public class RoleDaoImpl implements RoleDao {
 			
 		}
 
-		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr).setParameter("parentId", new Long((Integer) request.getParam(PMConstant.PARENTID)));
+		Long parentVal = Long.valueOf((Integer) request.getParam(PMConstant.PARENTID));
+		if ("MEMBER".equals(request.getParam(PMConstant.PARENTTYPE))) {
+			parentVal = Long.valueOf((Integer) request.getParam(PMConstant.TEAMID));
+		}
+		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr).setParameter("parentId", parentVal);
 		
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
@@ -279,7 +276,7 @@ public class RoleDaoImpl implements RoleDao {
 			String queryStr = "SELECT x FROM Role AS x WHERE x.id =:id";
 			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
-			query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 			Role role = (Role) query.getSingleResult();
 			
 			response.addParam(GlobalConstant.ITEM, role);
@@ -292,7 +289,7 @@ public class RoleDaoImpl implements RoleDao {
 	public void delete(RestRequest request, RestResponse response) throws Exception {
 		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
 			
-			Role role = (Role) entityManagerDataSvc.getInstance().getReference(Role.class,  new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			Role role = (Role) entityManagerDataSvc.getInstance().getReference(Role.class,  Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 			entityManagerDataSvc.getInstance().remove(role);
 			
 		} else {
@@ -303,6 +300,12 @@ public class RoleDaoImpl implements RoleDao {
 	@Override
 	public void save(RestRequest request, RestResponse response) throws Exception {
 		Role role = (Role) request.getParam(GlobalConstant.ITEM);
+		if (request.containsParam(GlobalConstant.PARENTID) && !"".equals(request.getParam(GlobalConstant.PARENTID))) {
+			if (request.containsParam(GlobalConstant.PARENTTYPE) && "TEAM".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+				Team team = (Team) entityManagerDataSvc.getInstance().getReference(Team.class,  Long.valueOf((Integer) request.getParam(GlobalConstant.PARENTID)));
+				role.setTeam(team);
+			}
+		}
 		entityManagerDataSvc.getInstance().merge(role);
 	}
 
@@ -310,10 +313,10 @@ public class RoleDaoImpl implements RoleDao {
 	@Override
 	public void memberRoles(RestRequest request, RestResponse response) throws Exception {
 		if (request.containsParam(GlobalConstant.PARENTID) && !"".equals(request.getParam(GlobalConstant.PARENTID))) {
-			String queryStr = "SELECT new MemberRole(x.id, x.active, x.sortOrder, x.startDate, x.endDate, x.role.id) FROM MemberRole AS x WHERE x.member.id =:id";
+			String queryStr = "SELECT new MemberRole(x.id, x.active, x.locked, x.sortOrder, x.startDate, x.endDate, x.role.id) FROM MemberRole AS x WHERE x.member.id =:id";
 			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
-			query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+			query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.PARENTID)));
 			List<MemberRole> roles = query.getResultList();
 			
 			response.addParam("memberRoles", roles);
@@ -329,7 +332,7 @@ public class RoleDaoImpl implements RoleDao {
 			String queryStr = "SELECT r FROM MemberRole AS r WHERE r.id =:id";
 			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
-			query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 			MemberRole memberRole = (MemberRole) query.getSingleResult();
 			
 			response.addParam(GlobalConstant.ITEM, memberRole);
@@ -344,11 +347,11 @@ public class RoleDaoImpl implements RoleDao {
 		MemberRole memberRole = (MemberRole) request.getParam(GlobalConstant.ITEM);
 		
 		if (memberRole.getRole() == null) {
-			Role role = (Role) entityManagerDataSvc.getInstance().getReference(Role.class,  new Long((Integer) request.getParam("roleId")));
+			Role role = (Role) entityManagerDataSvc.getInstance().getReference(Role.class,  Long.valueOf((Integer) request.getParam("roleId")));
 			memberRole.setRole(role);
 		}
 		if (memberRole.getMember() == null) {
-			Member member = (Member) entityManagerDataSvc.getInstance().getReference(Member.class,  new Long((Integer) request.getParam("memberId")));
+			Member member = (Member) entityManagerDataSvc.getInstance().getReference(Member.class,  Long.valueOf((Integer) request.getParam("memberId")));
 			memberRole.setMember(member);
 		}
 		
@@ -361,7 +364,7 @@ public class RoleDaoImpl implements RoleDao {
 			String queryStr = "SELECT x FROM Role AS x WHERE x.id =:id";
 			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
-			query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 			Role role = (Role) query.getSingleResult();
 			
 			response.addParam(GlobalConstant.ITEM, role);

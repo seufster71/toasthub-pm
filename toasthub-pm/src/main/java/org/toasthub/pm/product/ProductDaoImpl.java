@@ -51,7 +51,7 @@ public class ProductDaoImpl implements ProductDao {
 	public void delete(RestRequest request, RestResponse response) throws Exception {
 		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
 			
-			Product product = (Product) entityManagerDataSvc.getInstance().getReference(Product.class,  new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			Product product = (Product) entityManagerDataSvc.getInstance().getReference(Product.class,  Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 			entityManagerDataSvc.getInstance().remove(product);
 			
 		} else {
@@ -267,7 +267,7 @@ public class ProductDaoImpl implements ProductDao {
 			String queryStr = "SELECT x FROM Product AS x WHERE x.id =:id";
 			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
-			query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 			Product product = (Product) query.getSingleResult();
 			
 			response.addParam(GlobalConstant.ITEM, product);

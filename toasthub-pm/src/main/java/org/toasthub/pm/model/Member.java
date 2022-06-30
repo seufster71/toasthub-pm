@@ -47,7 +47,7 @@ public class Member extends BaseEntity implements Serializable{
 	private static final long serialVersionUID = 1L;
 	
 	protected Team team;
-	protected long userId;
+	protected Long userId;
 	protected String name;
 	protected String username;
 	protected String type; // INTERNAL, EXTERNAL
@@ -69,7 +69,7 @@ public class Member extends BaseEntity implements Serializable{
 		this.endDate = endDate;
 	}
 	
-	public Member(boolean active, boolean archive, boolean locked, String type, Team team, long userId, String name, String username, Instant startDate, Instant endDate) {
+	public Member(boolean active, boolean archive, boolean locked, String type, Team team, Long userId, String name, String username, Instant startDate, Instant endDate) {
 		this.setActive(active);
 		this.setArchive(archive);
 		this.setLocked(locked);
@@ -95,10 +95,10 @@ public class Member extends BaseEntity implements Serializable{
 
 	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "user_id")
-	public long getUserId() {
+	public Long getUserId() {
 		return userId;
 	}
-	public void setUserId(long userId) {
+	public void setUserId(Long userId) {
 		this.userId = userId;
 	}
 
@@ -129,6 +129,13 @@ public class Member extends BaseEntity implements Serializable{
 		this.type = type;
 	}
 	
+	@Transient
+	public void setType(Map map) {
+		if (map.containsKey("value")) {
+			this.setType((String)map.get("value"));
+		}
+	}
+	
 	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "start_date")
 	public Instant getStartDate() {
@@ -146,19 +153,6 @@ public class Member extends BaseEntity implements Serializable{
 	public void setEndDate(Instant endDate) {
 		this.endDate = endDate;
 	}
-	
-	@Transient
-	public void setUser(Map<String,?> map) {
-		if (map.containsKey("label")) {
-			this.setUsername((String)map.get("label"));
-		}
-		if (map.containsKey("value")) {
-			this.setId( new Long((Integer) map.get("value")));
-		}
-		if (map.containsKey("extra")) {
-			this.setName((String)map.get("extra"));
-		}
-	}
 
 	@JsonIgnore
 	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
@@ -168,4 +162,5 @@ public class Member extends BaseEntity implements Serializable{
 	public void setMemberRoles(Set<MemberRole> memberRoles) {
 		this.memberRoles = memberRoles;
 	}
+
 }

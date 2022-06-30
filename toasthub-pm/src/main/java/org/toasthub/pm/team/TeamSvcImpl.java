@@ -111,7 +111,19 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 			break;
 		case "LINK_PARENT_SAVE":
 			if (!request.containsParam(PrefCacheUtil.PREFFORMKEYS)) {
-				List<String> forms =  new ArrayList<String>(Arrays.asList("PM_TEAM_PRODUCT_FORM"));
+				
+				List<String> forms =  new ArrayList<String>();
+				if ("PRODUCT".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+					forms.add("PM_TEAM_PRODUCT_FORM");
+				} else if ("PROJECT".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+					forms.add("PM_TEAM_PROJECT_FORM");
+				} else if ("RELEASE".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+					forms.add("PM_TEAM_RELEASE_FORM");
+				} else if ("BACKLOG".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+					forms.add("PM_TEAM_BACKLOG_FORM");
+				} else if ("DEPLOY".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+					forms.add("PM_TEAM_DEPLOY_FORM");
+				}
 				request.addParam(PrefCacheUtil.PREFFORMKEYS, forms);
 			}
 			prefCacheUtil.getPrefInfo(request,response);
@@ -161,7 +173,9 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 	@Override
 	public void item(RestRequest request, RestResponse response) {
 		try {
-			teamDao.item(request, response);
+			if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
+				teamDao.item(request, response);
+			}
 		} catch (Exception e) {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_EXECUTION_FAIL",prefCacheUtil.getLang(request)), response);
 			e.printStackTrace();
@@ -287,7 +301,7 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 		}
 	}
 	
-	private void addLinkTeams (RestRequest request, RestResponse response) {
+	private void addLinkTeams(RestRequest request, RestResponse response) {
 		try {
 			
 			if (request.containsParam(GlobalConstant.PARENTTYPE) && !"".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
@@ -318,24 +332,36 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 				} else if ("BACKLOG".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
 					teamDao.linkTeams(request, response);
 					// add link to items
-					List<ProductTeam> productTeams = (List<ProductTeam>) response.getParam("linkTeams");
+					List<BacklogTeam> backlogTeams = (List<BacklogTeam>) response.getParam("linkTeams");
 					List<Team> teams = (List<Team>) response.getParam(GlobalConstant.ITEMS);
-					for (ProductTeam productTeam : productTeams) {
+					for (BacklogTeam backlogTeam : backlogTeams) {
 						for (Team team : teams) {
-							if (productTeam.getTeamId() == team.getId()) {
-								team.setProductTeam(productTeam);
+							if (backlogTeam.getTeamId() == team.getId()) {
+								team.setBacklogTeam(backlogTeam);
 							}
 						}
 					}
 				} else if ("RELEASE".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
 					teamDao.linkTeams(request, response);
 					// add link to items
-					List<ProductTeam> productTeams = (List<ProductTeam>) response.getParam("linkTeams");
+					List<ReleaseTeam> releaseTeams = (List<ReleaseTeam>) response.getParam("linkTeams");
 					List<Team> teams = (List<Team>) response.getParam(GlobalConstant.ITEMS);
-					for (ProductTeam productTeam : productTeams) {
+					for (ReleaseTeam releaseTeam : releaseTeams) {
 						for (Team team : teams) {
-							if (productTeam.getTeamId() == team.getId()) {
-								team.setProductTeam(productTeam);
+							if (releaseTeam.getTeamId() == team.getId()) {
+								team.setReleaseTeam(releaseTeam);
+							}
+						}
+					}
+				} else if ("DEPLOY".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+					teamDao.linkTeams(request, response);
+					// add link to items
+					List<DeployTeam> deployTeams = (List<DeployTeam>) response.getParam("linkTeams");
+					List<Team> teams = (List<Team>) response.getParam(GlobalConstant.ITEMS);
+					for (DeployTeam deployTeam : deployTeams) {
+						for (Team team : teams) {
+							if (deployTeam.getTeamId() == team.getId()) {
+								team.setDeployTeam(deployTeam);
 							}
 						}
 					}

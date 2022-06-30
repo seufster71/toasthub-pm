@@ -44,7 +44,7 @@ public class DeployPipeline extends BaseEntity implements Serializable{
 	
 	protected Deploy deploy;
 	protected String name;
-	protected Integer sequence;
+	protected Integer sortOrder;
 	protected String scmURL;
 	protected String scmUser;
 	protected String scmPassword;
@@ -66,10 +66,10 @@ public class DeployPipeline extends BaseEntity implements Serializable{
 	}
 
 	// HQL query constructor
-	public DeployPipeline(Long id, String name, Integer sequence, String scmURL, String branch,Boolean active,Boolean archive,Boolean locked,Instant created,Instant modified){
+	public DeployPipeline(Long id, String name, Integer sortOrder, String scmURL, String branch,Boolean active,Boolean archive,Boolean locked,Instant created,Instant modified){
 		this.setId(id);
 		this.setName(name);
-		this.setSequence(sequence);
+		this.setSortOrder(sortOrder);
 		this.setScmURL(scmURL);
 		this.setBranch(branch);
 		this.setActive(active);
@@ -100,12 +100,12 @@ public class DeployPipeline extends BaseEntity implements Serializable{
 	}
 
 	@JsonView({View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "sequence")
-	public Integer getSequence() {
-		return sequence;
+	@Column(name = "sort_order")
+	public Integer getSortOrder() {
+		return sortOrder;
 	}
-	public void setSequence(Integer sequence) {
-		this.sequence = sequence;
+	public void setSortOrder(Integer sortOrder) {
+		this.sortOrder = sortOrder;
 	}
 
 	@JsonView({View.Member.class,View.Admin.class,View.System.class})

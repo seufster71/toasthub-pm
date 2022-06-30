@@ -45,6 +45,7 @@ public class Team extends BaseEntity implements Serializable{
 	private static final long serialVersionUID = 1L;
 
 	protected String name;
+	protected String type;
 	protected long ownerId;
 	
 	protected Set<Member> members;
@@ -54,6 +55,7 @@ public class Team extends BaseEntity implements Serializable{
 	protected ProjectTeam projectTeam;
 	protected BacklogTeam backlogTeam;
 	protected ReleaseTeam releaseTeam;
+	protected DeployTeam deployTeam;
 	
 	//Constructor
 	public Team() {
@@ -70,13 +72,22 @@ public class Team extends BaseEntity implements Serializable{
 
 	// Methods
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class})
 	@Column(name = "name")
 	public String getName() {
 		return name;
 	}
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	@JsonView({View.Admin.class})
+	@Column(name = "type")
+	public String getType() {
+		return type;
+	}
+	public void setType(String type) {
+		this.type = type;
 	}
 
 	@JsonView({View.Member.class,View.Admin.class})
@@ -132,4 +143,14 @@ public class Team extends BaseEntity implements Serializable{
 	public void setReleaseTeam(ReleaseTeam releaseTeam) {
 		this.releaseTeam = releaseTeam;
 	}
+
+	@JsonView({View.Member.class,View.Admin.class})
+	@Transient
+	public DeployTeam getDeployTeam() {
+		return deployTeam;
+	}
+	public void setDeployTeam(DeployTeam deployTeam) {
+		this.deployTeam = deployTeam;
+	}
+	
 }

@@ -50,7 +50,7 @@ public class SprintDaoImpl implements SprintDao {
 	public void delete(RestRequest request, RestResponse response) throws Exception {
 		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
 			
-			Sprint sprint = (Sprint) entityManagerDataSvc.getInstance().getReference(Sprint.class,  new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			Sprint sprint = (Sprint) entityManagerDataSvc.getInstance().getReference(Sprint.class,  Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 			entityManagerDataSvc.getInstance().remove(sprint);
 			
 		} else {
@@ -370,7 +370,7 @@ public class SprintDaoImpl implements SprintDao {
 			String queryStr = "SELECT x FROM Sprint AS x WHERE x.id =:id";
 			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
-			query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 			Sprint sprint = (Sprint) query.getSingleResult();
 			
 			response.addParam(GlobalConstant.ITEM, sprint);

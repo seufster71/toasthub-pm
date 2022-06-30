@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The ToastHub Project
+ * Copyright (C) 2016-2022 The ToastHub Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ public class MemberDaoImpl implements MemberDao {
 	public void delete(RestRequest request, RestResponse response) throws Exception {
 		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
 			
-			Member member = (Member) entityManagerDataSvc.getInstance().getReference(Member.class,  new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			Member member = (Member) entityManagerDataSvc.getInstance().getReference(Member.class,  Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 			entityManagerDataSvc.getInstance().remove(member);
 			
 		} else {
@@ -68,7 +68,7 @@ public class MemberDaoImpl implements MemberDao {
 		Member member = (Member) request.getParam(GlobalConstant.ITEM);
 		MemberRole memberRole = null;
 		if (member.getTeam() == null) {
-			Team team = (Team) entityManagerDataSvc.getInstance().getReference(Team.class, new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+			Team team = (Team) entityManagerDataSvc.getInstance().getReference(Team.class, Long.valueOf((Integer) request.getParam(GlobalConstant.PARENTID)));
 			member.setTeam(team);
 
 			String queryStr = "SELECT x FROM Role AS x WHERE x.code =:code AND x.team.id =:teamId ";
@@ -171,7 +171,7 @@ public class MemberDaoImpl implements MemberDao {
 		}
 		
 		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
-		query.setParameter("teamId", new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+		query.setParameter("teamId", Long.valueOf((Integer) request.getParam(GlobalConstant.PARENTID)));
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
@@ -252,7 +252,7 @@ public class MemberDaoImpl implements MemberDao {
 		}
 
 		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
-		query.setParameter("teamId", new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+		query.setParameter("teamId", Long.valueOf((Integer) request.getParam(GlobalConstant.PARENTID)));
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
@@ -289,7 +289,7 @@ public class MemberDaoImpl implements MemberDao {
 			String queryStr = "SELECT x FROM Member AS x WHERE x.id =:id";
 			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
-			query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 			Member member = (Member) query.getSingleResult();
 			
 			response.addParam(GlobalConstant.ITEM, member);

@@ -390,8 +390,9 @@ public class DeploySvcImpl implements DeploySvc, ServiceProcessor {
 	    	//		getForEntity(resourceUrl, String.class);
 	        
 	        Object[] productsJson = responseJson.getBody();
-	        
-	       // System.out.println(productsJson);
+	        for (Object item : productsJson) {
+	        	System.out.println(item.toString());
+	        }
 	        
 	        // test download
 	        //String githubSourceUrl, String accessToken

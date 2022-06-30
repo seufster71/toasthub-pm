@@ -50,7 +50,7 @@ public class TestScenarioDaoImpl implements TestScenarioDao {
 	public void delete(RestRequest request, RestResponse response) throws Exception {
 		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
 			
-			TestScenario testScenario = (TestScenario) entityManagerDataSvc.getInstance().getReference(TestScenario.class,  new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			TestScenario testScenario = (TestScenario) entityManagerDataSvc.getInstance().getReference(TestScenario.class,  Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 			entityManagerDataSvc.getInstance().remove(testScenario);
 			
 		} else {
@@ -307,7 +307,7 @@ public class TestScenarioDaoImpl implements TestScenarioDao {
 			String queryStr = "SELECT x FROM TestScenario AS x WHERE x.id =:id";
 			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
-			query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 			TestScenario testScenario = (TestScenario) query.getSingleResult();
 			
 			response.addParam(GlobalConstant.ITEM, testScenario);

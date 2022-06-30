@@ -55,9 +55,11 @@ public class MemberRole extends BaseEntity implements Serializable{
 	public MemberRole(){}
 	
 	
-	public MemberRole(Long id, boolean active, Integer sortOrder, Instant startDate, Instant endDate, Long roleId) {
+	// HQL constructors
+	public MemberRole(Long id, boolean active, boolean locked, Integer sortOrder, Instant startDate, Instant endDate, Long roleId) {
 		this.setId(id);
 		this.setActive(active);
+		this.setLocked(locked);
 		this.setSortOrder(sortOrder);
 		this.setStartDate(startDate);
 		this.setEndDate(endDate);

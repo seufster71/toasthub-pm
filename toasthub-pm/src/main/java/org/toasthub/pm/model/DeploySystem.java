@@ -60,8 +60,19 @@ public class DeploySystem extends BaseEntity implements Serializable{
 		this.setArchive(false);
 		this.setLocked(false);
 		this.setCreated(Instant.now());
+	}
 	
-		
+	// HQL query constructor
+	public DeploySystem(Long id, String serverName, String sshUsername, String stagingDir, Boolean active, Boolean archive, Boolean locked, Instant created, Instant modified){
+		this.setId(id);
+		this.setServerName(serverName);
+		this.setSshUsername(sshUsername);
+		this.setStagingDir(stagingDir);
+		this.setActive(active);
+		this.setArchive(archive);
+		this.setLocked(locked);
+		this.setCreated(created);
+		this.setModified(modified);
 	}
 
 	// Methods

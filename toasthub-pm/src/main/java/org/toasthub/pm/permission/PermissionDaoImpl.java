@@ -289,7 +289,7 @@ public class PermissionDaoImpl implements PermissionDao {
 			String queryStr = "SELECT x FROM Permission AS x WHERE x.id =:id";
 			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
-			query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 			Permission permission = (Permission) query.getSingleResult();
 			
 			response.addParam(GlobalConstant.ITEM, permission);
@@ -303,7 +303,7 @@ public class PermissionDaoImpl implements PermissionDao {
 		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
 			// Check locked and lock owner or have override lock 
 			
-			Permission permission = (Permission) entityManagerDataSvc.getInstance().find(Permission.class, new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			Permission permission = (Permission) entityManagerDataSvc.getInstance().find(Permission.class, Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 			if (permission.isLocked() && permission.getLockOwnerRefId() == 0) {
 				utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "The permission is locked by system and is not allowed to be deleted.", response);
 			} else {
@@ -336,7 +336,7 @@ public class PermissionDaoImpl implements PermissionDao {
 		String queryStr = "SELECT new RolePermission(x.id, x.active, x.locked, x.startDate, x.endDate, x.permission.id) FROM RolePermission AS x WHERE x.role.id =:id";
 		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 	
-		query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+		query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.PARENTID)));
 		List<RolePermission> rolePermissions = query.getResultList();
 		
 		response.addParam("rolePermissions", rolePermissions);
@@ -348,7 +348,7 @@ public class PermissionDaoImpl implements PermissionDao {
 			String queryStr = "SELECT x FROM RolePermission AS x WHERE x.id =:id";
 			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
-			query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 			RolePermission rolePermission = (RolePermission) query.getSingleResult();
 			
 			response.addParam(GlobalConstant.ITEM, rolePermission);
@@ -362,11 +362,11 @@ public class PermissionDaoImpl implements PermissionDao {
 		RolePermission rolePermission = (RolePermission) request.getParam(GlobalConstant.ITEM);
 		
 		if (rolePermission.getRole() == null) {
-			Role role = (Role) entityManagerDataSvc.getInstance().getReference(Role.class,  new Long((Integer) request.getParam("roleId")));
+			Role role = (Role) entityManagerDataSvc.getInstance().getReference(Role.class,  Long.valueOf((Integer) request.getParam("roleId")));
 			rolePermission.setRole(role);
 		}
 		if (rolePermission.getPermission() == null) {
-			Permission permission = (Permission) entityManagerDataSvc.getInstance().getReference(Permission.class,  new Long((Integer) request.getParam("permissionId")));
+			Permission permission = (Permission) entityManagerDataSvc.getInstance().getReference(Permission.class,  Long.valueOf((Integer) request.getParam("permissionId")));
 			rolePermission.setPermission(permission);
 		}
 		

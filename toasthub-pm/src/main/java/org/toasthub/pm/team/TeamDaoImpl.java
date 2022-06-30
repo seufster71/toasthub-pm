@@ -71,7 +71,7 @@ public class TeamDaoImpl implements TeamDao {
 	public void delete(RestRequest request, RestResponse response) throws Exception {
 		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
 			
-			Team team = (Team) entityManagerDataSvc.getInstance().getReference(Team.class,  new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			Team team = (Team) entityManagerDataSvc.getInstance().getReference(Team.class,  Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 			entityManagerDataSvc.getInstance().remove(team);
 			
 		} else {
@@ -82,12 +82,20 @@ public class TeamDaoImpl implements TeamDao {
 	@Override
 	public void save(RestRequest request, RestResponse response) throws Exception {
 		Team team = (Team) request.getParam(GlobalConstant.ITEM);
-		
+
 		if (team.getId() == null) {
+			User user = ((MyUserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+			
+			// check for default
+			Long count = (Long) entityManagerDataSvc.getInstance().createQuery("SELECT COUNT(DISTINCT x) FROM Team as x WHERE x.ownerId =: userId AND x.type = 'Default' ").setParameter("userId",user.getId()).getSingleResult();
+			if (count == null || count == 0l){
+				team.setType("Default");
+			}
+			
+			team.setOwnerId(user.getId());
 			team = entityManagerDataSvc.getInstance().merge(team);
 			
 			// add yourself as member
-			User user = ((MyUserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
 			Member member = new Member(true, false, false, "INTERNAL", team, user.getId(), user.getFirstname()+" "+user.getLastname(), user.getUsername(), Instant.now().plus(-3650,ChronoUnit.DAYS),Instant.now().plus(21900, ChronoUnit.DAYS));
 			member = entityManagerDataSvc.getInstance().merge(member);
 			
@@ -100,7 +108,7 @@ public class TeamDaoImpl implements TeamDao {
 			memberRole.setLockOwnerRefId(user.getId());
 			memberRole.setLockTime(Instant.now());
 			memberRole = entityManagerDataSvc.getInstance().merge(memberRole);
-			String queryStr = "SELECT x FROM Permission AS x WHERE x.code =:code";
+			String queryStr = "SELECT x FROM Permission AS x WHERE x.code =: code";
 			
 			Permission permission = null;
 			RolePermission rolePermission = null;
@@ -277,7 +285,7 @@ public class TeamDaoImpl implements TeamDao {
 		}
 		
 		if (request.containsParam(GlobalConstant.PARENTID) && !"".equals(request.getParam(GlobalConstant.PARENTID))) {
-			Product product = (Product) entityManagerDataSvc.getInstance().getReference(Product.class,  new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+			Product product = (Product) entityManagerDataSvc.getInstance().getReference(Product.class,  Long.valueOf((Integer) request.getParam(GlobalConstant.PARENTID)));
 			ProductTeam productTeam = new ProductTeam(product,team);
 			entityManagerDataSvc.getInstance().merge(productTeam);
 		}
@@ -486,7 +494,7 @@ public class TeamDaoImpl implements TeamDao {
 			String queryStr = "SELECT x FROM Team AS x WHERE x.id =:id";
 			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
-			query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 			Team team = (Team) query.getSingleResult();
 			
 			response.addParam(GlobalConstant.ITEM, team);
@@ -503,31 +511,31 @@ public class TeamDaoImpl implements TeamDao {
 			if ("PRODUCT".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
 				String queryStr = "SELECT new ProductTeam(x.id, x.active, x.team.id) FROM ProductTeam AS x WHERE x.product.id =:id";
 				Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
-				query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+				query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.PARENTID)));
 				List<ProductTeam> teams = query.getResultList();
 				response.addParam("linkTeams", teams);
 			} else if ("PROJECT".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
 				String queryStr = "SELECT new ProjectTeam(x.id, x.active, x.team.id) FROM ProjectTeam AS x WHERE x.project.id =:id";
 				Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
-				query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+				query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.PARENTID)));
 				List<ProjectTeam> teams = query.getResultList();
 				response.addParam("linkTeams", teams);
 			} else if ("RELEASE".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
 				String queryStr = "SELECT new ReleaseTeam(x.id, x.active, x.team.id) FROM ReleaseTeam AS x WHERE x.release.id =:id";
 				Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
-				query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+				query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.PARENTID)));
 				List<ReleaseTeam> teams = query.getResultList();
 				response.addParam("linkTeams", teams);
 			} else if ("BACKLOG".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
 				String queryStr = "SELECT new BacklogTeam(x.id, x.active, x.team.id) FROM BacklogTeam AS x WHERE x.backlog.id =:id";
 				Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
-				query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+				query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.PARENTID)));
 				List<BacklogTeam> teams = query.getResultList();
 				response.addParam("linkTeams", teams);
 			} else if ("DEPLOY".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
 				String queryStr = "SELECT new DeployTeam(x.id, x.active, x.team.id) FROM DeployTeam AS x WHERE x.deploy.id =:id";
 				Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
-				query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+				query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.PARENTID)));
 				List<DeployTeam> teams = query.getResultList();
 				response.addParam("linkTeams", teams);
 			} else {
@@ -549,31 +557,31 @@ public class TeamDaoImpl implements TeamDao {
 			if ("PRODUCT".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
 				queryStr = "SELECT x FROM ProductTeam AS x WHERE x.id =:id";
 				Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
-				query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+				query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 				ProductTeam productTeam = (ProductTeam) query.getSingleResult();
 				response.addParam(GlobalConstant.ITEM, productTeam);
 			} else if ("PROJECT".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
 				queryStr = "SELECT x FROM ProjectTeam AS x WHERE x.id =:id";
 				Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
-				query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+				query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 				ProjectTeam projectTeam = (ProjectTeam) query.getSingleResult();
 				response.addParam(GlobalConstant.ITEM, projectTeam);
 			} else if ("BACKLOG".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
 				queryStr = "SELECT x FROM BacklogTeam AS x WHERE x.id =:id";
 				Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
-				query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+				query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 				BacklogTeam backlogTeam = (BacklogTeam) query.getSingleResult();
 				response.addParam(GlobalConstant.ITEM, backlogTeam);
 			} else if ("RELEASE".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
 				queryStr = "SELECT x FROM ReleaseTeam AS x WHERE x.id =:id";
 				Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
-				query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+				query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 				ReleaseTeam releaseTeam = (ReleaseTeam) query.getSingleResult();
 				response.addParam(GlobalConstant.ITEM, releaseTeam);
 			} else if ("DEPLOY".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
 				queryStr = "SELECT x FROM DeployTeam AS x WHERE x.id =:id";
 				Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
-				query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+				query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 				DeployTeam deployTeam = (DeployTeam) query.getSingleResult();
 				response.addParam(GlobalConstant.ITEM, deployTeam);
 			} else {
@@ -592,55 +600,55 @@ public class TeamDaoImpl implements TeamDao {
 			if ("PRODUCT".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
 				ProductTeam productTeam = (ProductTeam) request.getParam(GlobalConstant.ITEM);
 				if (request.containsParam(GlobalConstant.PARENTID) && !"".equals(request.getParam(GlobalConstant.PARENTID))) {
-					Product product = (Product) entityManagerDataSvc.getInstance().getReference(Product.class,  new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+					Product product = (Product) entityManagerDataSvc.getInstance().getReference(Product.class,  Long.valueOf((Integer) request.getParam(GlobalConstant.PARENTID)));
 					productTeam.setProduct(product);
 				}
 				if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
-					Team team = (Team) entityManagerDataSvc.getInstance().getReference(Team.class,  new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+					Team team = (Team) entityManagerDataSvc.getInstance().getReference(Team.class,  Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 					productTeam.setTeam(team);
 				}
 				entityManagerDataSvc.getInstance().merge(productTeam);
 			} else if ("PROJECT".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
 				ProjectTeam projectTeam = (ProjectTeam) request.getParam(GlobalConstant.ITEM);
 				if (request.containsParam(GlobalConstant.PARENTID) && !"".equals(request.getParam(GlobalConstant.PARENTID))) {
-					Project project = (Project) entityManagerDataSvc.getInstance().getReference(Project.class,  new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+					Project project = (Project) entityManagerDataSvc.getInstance().getReference(Project.class,  Long.valueOf((Integer) request.getParam(GlobalConstant.PARENTID)));
 					projectTeam.setProject(project);
 				}
 				if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
-					Team team = (Team) entityManagerDataSvc.getInstance().getReference(Team.class,  new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+					Team team = (Team) entityManagerDataSvc.getInstance().getReference(Team.class,  Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 					projectTeam.setTeam(team);
 				}
 				entityManagerDataSvc.getInstance().merge(projectTeam);
 			} else if ("BACKLOG".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
 				BacklogTeam backlogTeam = (BacklogTeam) request.getParam(GlobalConstant.ITEM);
 				if (request.containsParam(GlobalConstant.PARENTID) && !"".equals(request.getParam(GlobalConstant.PARENTID))) {
-					Backlog backlog = (Backlog) entityManagerDataSvc.getInstance().getReference(Backlog.class,  new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+					Backlog backlog = (Backlog) entityManagerDataSvc.getInstance().getReference(Backlog.class,  Long.valueOf((Integer) request.getParam(GlobalConstant.PARENTID)));
 					backlogTeam.setBacklog(backlog);
 				}
 				if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
-					Team team = (Team) entityManagerDataSvc.getInstance().getReference(Team.class,  new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+					Team team = (Team) entityManagerDataSvc.getInstance().getReference(Team.class,  Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 					backlogTeam.setTeam(team);
 				}
 				entityManagerDataSvc.getInstance().merge(backlogTeam);
 			} else if ("RELEASE".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
 				ReleaseTeam releaseTeam = (ReleaseTeam) request.getParam(GlobalConstant.ITEM);
 				if (request.containsParam(GlobalConstant.PARENTID) && !"".equals(request.getParam(GlobalConstant.PARENTID))) {
-					Release release = (Release) entityManagerDataSvc.getInstance().getReference(Release.class,  new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+					Release release = (Release) entityManagerDataSvc.getInstance().getReference(Release.class,  Long.valueOf((Integer) request.getParam(GlobalConstant.PARENTID)));
 					releaseTeam.setRelease(release);
 				}
 				if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
-					Team team = (Team) entityManagerDataSvc.getInstance().getReference(Team.class,  new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+					Team team = (Team) entityManagerDataSvc.getInstance().getReference(Team.class,  Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 					releaseTeam.setTeam(team);
 				}
 				entityManagerDataSvc.getInstance().merge(releaseTeam);
 			} else if ("DEPLOY".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
 				DeployTeam deployTeam = (DeployTeam) request.getParam(GlobalConstant.ITEM);
 				if (request.containsParam(GlobalConstant.PARENTID) && !"".equals(request.getParam(GlobalConstant.PARENTID))) {
-					Deploy deploy = (Deploy) entityManagerDataSvc.getInstance().getReference(Deploy.class,  new Long((Integer) request.getParam(GlobalConstant.PARENTID)));
+					Deploy deploy = (Deploy) entityManagerDataSvc.getInstance().getReference(Deploy.class,  Long.valueOf((Integer) request.getParam(GlobalConstant.PARENTID)));
 					deployTeam.setDeploy(deploy);
 				}
 				if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
-					Team team = (Team) entityManagerDataSvc.getInstance().getReference(Team.class,  new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+					Team team = (Team) entityManagerDataSvc.getInstance().getReference(Team.class,  Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 					deployTeam.setTeam(team);
 				}
 				entityManagerDataSvc.getInstance().merge(deployTeam);

@@ -54,7 +54,7 @@ public class WorkflowStepDaoImpl implements WorkflowStepDao {
 	public void delete(RestRequest request, RestResponse response) throws Exception {
 		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
 			
-			WorkflowStep workflowStep = (WorkflowStep) entityManagerDataSvc.getInstance().getReference(WorkflowStep.class,  new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			WorkflowStep workflowStep = (WorkflowStep) entityManagerDataSvc.getInstance().getReference(WorkflowStep.class,  Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 			entityManagerDataSvc.getInstance().remove(workflowStep);
 			
 		} else {
@@ -76,8 +76,8 @@ public class WorkflowStepDaoImpl implements WorkflowStepDao {
 				workflowStep.setSortOrder(1);
 			}
 			
-			Workflow workflow = (Workflow) entityManagerDataSvc.getInstance().getReference(Workflow.class,  new Long((Integer) request.getParam(PMConstant.WORKFLOWID)));
-			if (workflowStep.getWorkflow() == null || workflowStep.getWorkflow() != null && !workflowStep.getWorkflow().getId().equals(new Long((Integer) request.getParam(PMConstant.WORKFLOWID)))) {
+			Workflow workflow = (Workflow) entityManagerDataSvc.getInstance().getReference(Workflow.class,  Long.valueOf((Integer) request.getParam(PMConstant.WORKFLOWID)));
+			if (workflowStep.getWorkflow() == null || workflowStep.getWorkflow() != null && !workflowStep.getWorkflow().getId().equals(Long.valueOf((Integer) request.getParam(PMConstant.WORKFLOWID)))) {
 				workflowStep.setWorkflow(workflow);
 			}
 			entityManagerDataSvc.getInstance().merge(workflowStep);
@@ -203,7 +203,7 @@ public class WorkflowStepDaoImpl implements WorkflowStepDao {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
 		}
 		if (request.containsParam(PMConstant.WORKFLOWID)) {
-			query.setParameter("workflowId", new Long((Integer) request.getParam(PMConstant.WORKFLOWID)));
+			query.setParameter("workflowId", Long.valueOf((Integer) request.getParam(PMConstant.WORKFLOWID)));
 		}
 		
 		if (searchCriteria != null){
@@ -308,7 +308,7 @@ public class WorkflowStepDaoImpl implements WorkflowStepDao {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
 		}
 		if (request.containsParam(PMConstant.WORKFLOWID)) {
-			query.setParameter("workflowId", new Long((Integer) request.getParam(PMConstant.WORKFLOWID)));
+			query.setParameter("workflowId", Long.valueOf((Integer) request.getParam(PMConstant.WORKFLOWID)));
 		}
 		
 		if (searchCriteria != null){
@@ -348,7 +348,7 @@ public class WorkflowStepDaoImpl implements WorkflowStepDao {
 			String queryStr = "SELECT x FROM WorkflowStep AS x WHERE x.id =:id";
 			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
-			query.setParameter("id", new Long((Integer) request.getParam(GlobalConstant.ITEMID)));
+			query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
 			WorkflowStep workflowStep = (WorkflowStep) query.getSingleResult();
 			
 			response.addParam(GlobalConstant.ITEM, workflowStep);
@@ -360,11 +360,11 @@ public class WorkflowStepDaoImpl implements WorkflowStepDao {
 	@Override
 	public void moveSave(RestRequest request, RestResponse response) {
 		// get list of id and current order
-		List<Long> list = entityManagerDataSvc.getInstance().createQuery("SELECT x.id FROM WorkflowStep AS x WHERE x.workflow.id =:workflowId ORDER BY x.sortOrder").setParameter("workflowId", new Long((Integer) request.getParam(PMConstant.WORKFLOWID))).getResultList();
+		List<Long> list = entityManagerDataSvc.getInstance().createQuery("SELECT x.id FROM WorkflowStep AS x WHERE x.workflow.id =:workflowId ORDER BY x.sortOrder").setParameter("workflowId", Long.valueOf((Integer) request.getParam(PMConstant.WORKFLOWID))).getResultList();
 		
 		// update order
-		Long moveSelectedItemId = new Long((Integer) request.getParam(GlobalConstant.MOVESELECTEDITEMID));
-		Long itemId = new Long((Integer) request.getParam(GlobalConstant.ITEMID));
+		Long moveSelectedItemId = Long.valueOf((Integer) request.getParam(GlobalConstant.MOVESELECTEDITEMID));
+		Long itemId = Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID));
 		List<Long> updatedList = new ArrayList<Long>();
 		for(Long item : list) {
 			if ( item.equals(itemId) ){

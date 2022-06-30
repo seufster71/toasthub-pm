@@ -22,12 +22,14 @@ package org.toasthub.pm.model;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.Map;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.toasthub.core.general.api.View;
 import org.toasthub.core.general.model.BaseEntity;
@@ -299,4 +301,10 @@ public class Defect extends BaseEntity implements Serializable{
 		this.sprint = sprint;
 	}
 	
+	@Transient
+	public void updateAssignee(Map<String,?> map) {
+		if (map != null && map.containsKey("value")) {
+			this.setAssignee( Long.valueOf((Integer) map.get("value")));
+		}
+	}
 }

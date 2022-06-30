@@ -63,25 +63,27 @@ public class RoleSvcImpl implements ServiceProcessor, RoleSvc {
 		case "INIT":
 			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
 			prefCacheUtil.getPrefInfo(request,response);
-			if ("MEMBER".equals(request.getParam(PMConstant.PARENTTYPE))) {
-				RestRequest requestMember = new RestRequest();
-				requestMember.addParam(GlobalConstant.ACTION, "ITEM");
-				requestMember.addParam(GlobalConstant.ITEMID, request.getParam(PMConstant.PARENTID));
-				RestResponse responseMember = new RestResponse();
-				memberSvc.process(requestMember, responseMember);
-				if (responseMember.containsParam(GlobalConstant.ITEM)) {
-					Member member = (Member) responseMember.getParam(GlobalConstant.ITEM);
-					request.addParam(PMConstant.PARENTID, member.getTeam().getId().intValue());
-					request.addParam(PMConstant.PARENTTYPE, "TEAM");
-				}
+			// if ("MEMBER".equals(request.getParam(PMConstant.PARENTTYPE))) {
+				//RestRequest requestMember = new RestRequest();
+				//requestMember.addParam(GlobalConstant.ACTION, "ITEM");
+				//requestMember.addParam(GlobalConstant.ITEMID, request.getParam(PMConstant.PARENTID));
+				//RestResponse responseMember = new RestResponse();
+				//memberSvc.process(requestMember, responseMember);
+				//if (responseMember.containsParam(GlobalConstant.ITEM)) {
+				//	Member member = (Member) responseMember.getParam(GlobalConstant.ITEM);
+				//	request.addParam(PMConstant.PARENTID, member.getId().intValue());
+				//	request.addParam(PMConstant.PARENTTYPE, "MEMBER");
+				//}
 				
-			}
+			// }
 			this.itemCount(request, response);
 			count = (Long) response.getParam(GlobalConstant.ITEMCOUNT);
 			if (count != null && count > 0){
 				this.items(request, response);
 			}
-			this.addMemberRoles(request, response);
+			if ("MEMBER".equals(request.getParam(PMConstant.PARENTTYPE))) {
+				this.addMemberRoles(request, response);
+			}
 			break;
 		case "LIST":
 			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
@@ -91,7 +93,9 @@ public class RoleSvcImpl implements ServiceProcessor, RoleSvc {
 			if (count != null && count > 0){
 				this.items(request, response);
 			}
-			this.addMemberRoles(request, response);
+			if ("MEMBER".equals(request.getParam(PMConstant.PARENTTYPE))) {
+				this.addMemberRoles(request, response);
+			}
 			break;
 		case "ITEM":
 			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
@@ -103,7 +107,7 @@ public class RoleSvcImpl implements ServiceProcessor, RoleSvc {
 			break;
 		case "SAVE":
 			if (!request.containsParam(PrefCacheUtil.PREFFORMKEYS)) {
-				List<String> forms =  new ArrayList<String>(Arrays.asList("PM_ROLE_FORM"));
+				List<String> forms =  new ArrayList<String>(Arrays.asList("PM_TEAM_ROLE_FORM"));
 				request.addParam(PrefCacheUtil.PREFFORMKEYS, forms);
 			}
 			request.addParam(PrefCacheUtil.PREFGLOBAL, global);
@@ -154,7 +158,9 @@ public class RoleSvcImpl implements ServiceProcessor, RoleSvc {
 	@Override
 	public void item(RestRequest request, RestResponse response) {
 		try {
-			roleDao.item(request, response);
+			if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
+				roleDao.item(request, response);
+			}
 		} catch (Exception e) {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_EXECUTION_FAIL",prefCacheUtil.getLang(request)), response);
 			e.printStackTrace();
