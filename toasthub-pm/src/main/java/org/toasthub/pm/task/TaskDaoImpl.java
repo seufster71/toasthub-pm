@@ -56,7 +56,7 @@ public class TaskDaoImpl implements TaskDao {
 	public void delete(RestRequest request, RestResponse response) throws Exception {
 		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
 			
-			Task task = (Task) entityManagerDataSvc.getInstance().getReference(Task.class,  Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
+			Task task = (Task) entityManagerDataSvc.getInstance().getReference(Task.class,  request.getParamLong(GlobalConstant.ITEMID));
 			entityManagerDataSvc.getInstance().remove(task);
 			
 		} else {
@@ -69,28 +69,28 @@ public class TaskDaoImpl implements TaskDao {
 		Task task = (Task) request.getParam(GlobalConstant.ITEM);
 		
 		if (request.containsParam(PMConstant.PRODUCTID)) {
-			Product product = (Product) entityManagerDataSvc.getInstance().getReference(Product.class,  Long.valueOf((Integer) request.getParam(PMConstant.PRODUCTID)));
-			if (task.getProduct() == null || task.getProduct() != null && !task.getProduct().getId().equals(Long.valueOf((Integer) request.getParam(PMConstant.PRODUCTID)))) {
+			Product product = (Product) entityManagerDataSvc.getInstance().getReference(Product.class,  request.getParamLong(PMConstant.PRODUCTID));
+			if (task.getProduct() == null || task.getProduct() != null && !task.getProduct().getId().equals(request.getParamLong(PMConstant.PRODUCTID))) {
 				task.setProduct(product);
 			}
 		} else if (request.containsParam(PMConstant.PROJECTID)) {
-			Project project = (Project) entityManagerDataSvc.getInstance().getReference(Project.class,  Long.valueOf((Integer) request.getParam(PMConstant.PROJECTID)));
-			if (task.getProject() == null || task.getProject() != null && !task.getProject().getId().equals(Long.valueOf((Integer) request.getParam(PMConstant.PROJECTID)))) {
+			Project project = (Project) entityManagerDataSvc.getInstance().getReference(Project.class,  request.getParamLong(PMConstant.PROJECTID));
+			if (task.getProject() == null || task.getProject() != null && !task.getProject().getId().equals(request.getParamLong(PMConstant.PROJECTID))) {
 				task.setProject(project);
 			}
 		} else if (request.containsParam(PMConstant.RELEASEID)) {
-			Release release = (Release) entityManagerDataSvc.getInstance().getReference(Release.class,  Long.valueOf((Integer) request.getParam(PMConstant.RELEASEID)));
-			if (task.getRelease() == null || task.getRelease() != null && !task.getRelease().getId().equals(Long.valueOf((Integer) request.getParam(PMConstant.RELEASEID)))) {
+			Release release = (Release) entityManagerDataSvc.getInstance().getReference(Release.class,  request.getParamLong(PMConstant.RELEASEID));
+			if (task.getRelease() == null || task.getRelease() != null && !task.getRelease().getId().equals(request.getParamLong(PMConstant.RELEASEID))) {
 				task.setRelease(release);
 			}
 		} else if (request.containsParam(PMConstant.BACKLOGID)) {
-			Backlog backlog = (Backlog) entityManagerDataSvc.getInstance().getReference(Backlog.class,  Long.valueOf((Integer) request.getParam(PMConstant.BACKLOGID)));
-			if (task.getBacklog() == null || task.getBacklog() != null && !task.getBacklog().getId().equals(Long.valueOf((Integer) request.getParam(PMConstant.BACKLOGID)))) {
+			Backlog backlog = (Backlog) entityManagerDataSvc.getInstance().getReference(Backlog.class,  request.getParamLong(PMConstant.BACKLOGID));
+			if (task.getBacklog() == null || task.getBacklog() != null && !task.getBacklog().getId().equals(request.getParamLong(PMConstant.BACKLOGID))) {
 				task.setBacklog(backlog);
 			}
 		} else if (request.containsParam(PMConstant.SPRINTID)) {
-			Sprint sprint = (Sprint) entityManagerDataSvc.getInstance().getReference(Sprint.class,  Long.valueOf((Integer) request.getParam(PMConstant.SPRINTID)));
-			if (task.getSprint() == null || task.getSprint() != null && !task.getSprint().getId().equals(Long.valueOf((Integer) request.getParam(PMConstant.SPRINTID)))) {
+			Sprint sprint = (Sprint) entityManagerDataSvc.getInstance().getReference(Sprint.class,  request.getParamLong(PMConstant.SPRINTID));
+			if (task.getSprint() == null || task.getSprint() != null && !task.getSprint().getId().equals(request.getParamLong(PMConstant.SPRINTID))) {
 				task.setSprint(sprint);
 			}
 		}
@@ -253,15 +253,15 @@ public class TaskDaoImpl implements TaskDao {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
 		}
 		if (request.containsParam(PMConstant.PRODUCTID)) {
-			query.setParameter("productId", Long.valueOf((Integer) request.getParam(PMConstant.PRODUCTID)));
+			query.setParameter("productId", request.getParamLong(PMConstant.PRODUCTID));
 		} else if (request.containsParam(PMConstant.PROJECTID)) {
-			query.setParameter("projectId", Long.valueOf((Integer) request.getParam(PMConstant.PROJECTID)));
+			query.setParameter("projectId", request.getParamLong(PMConstant.PROJECTID));
 		} else if (request.containsParam(PMConstant.RELEASEID)) {
-			query.setParameter("releaseId", Long.valueOf((Integer) request.getParam(PMConstant.RELEASEID)));
+			query.setParameter("releaseId", request.getParamLong(PMConstant.RELEASEID));
 		} else if (request.containsParam(PMConstant.BACKLOGID)) {
-			query.setParameter("backlogId", Long.valueOf((Integer) request.getParam(PMConstant.BACKLOGID)));
+			query.setParameter("backlogId", request.getParamLong(PMConstant.BACKLOGID));
 		} else if (request.containsParam(PMConstant.SPRINTID)) {
-			query.setParameter("sprintId", Long.valueOf((Integer) request.getParam(PMConstant.SPRINTID)));
+			query.setParameter("sprintId", request.getParamLong(PMConstant.SPRINTID));
 		}
 		
 		if (searchCriteria != null){
@@ -403,15 +403,15 @@ public class TaskDaoImpl implements TaskDao {
 		} 
 		
 		if (request.containsParam(PMConstant.PRODUCTID)) {
-			query.setParameter("productId", Long.valueOf((Integer) request.getParam(PMConstant.PRODUCTID)));
+			query.setParameter("productId", request.getParamLong(PMConstant.PRODUCTID));
 		} else if (request.containsParam(PMConstant.PROJECTID)) {
-			query.setParameter("projectId", Long.valueOf((Integer) request.getParam(PMConstant.PROJECTID)));
+			query.setParameter("projectId", request.getParamLong(PMConstant.PROJECTID));
 		} else if (request.containsParam(PMConstant.RELEASEID)) {
-			query.setParameter("releaseId", Long.valueOf((Integer) request.getParam(PMConstant.RELEASEID)));
+			query.setParameter("releaseId", request.getParamLong(PMConstant.RELEASEID));
 		} else if (request.containsParam(PMConstant.BACKLOGID)) {
-			query.setParameter("backlogId", Long.valueOf((Integer) request.getParam(PMConstant.BACKLOGID)));
+			query.setParameter("backlogId", request.getParamLong(PMConstant.BACKLOGID));
 		} else if (request.containsParam(PMConstant.SPRINTID)) {
-			query.setParameter("sprintId", Long.valueOf((Integer) request.getParam(PMConstant.SPRINTID)));
+			query.setParameter("sprintId", request.getParamLong(PMConstant.SPRINTID));
 		}
 		
 		if (searchCriteria != null){
@@ -457,7 +457,7 @@ public class TaskDaoImpl implements TaskDao {
 			String queryStr = "SELECT x FROM Task AS x WHERE x.id =:id";
 			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
-			query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
+			query.setParameter("id", request.getParamLong(GlobalConstant.ITEMID));
 			Task task = (Task) query.getSingleResult();
 			
 			response.addParam(GlobalConstant.ITEM, task);

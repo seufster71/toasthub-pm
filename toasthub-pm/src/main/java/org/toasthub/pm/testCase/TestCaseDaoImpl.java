@@ -50,7 +50,7 @@ public class TestCaseDaoImpl implements TestCaseDao {
 	public void delete(RestRequest request, RestResponse response) throws Exception {
 		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
 			
-			TestCase testCase = (TestCase) entityManagerDataSvc.getInstance().getReference(TestCase.class,  Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
+			TestCase testCase = (TestCase) entityManagerDataSvc.getInstance().getReference(TestCase.class,  request.getParamLong(GlobalConstant.ITEMID));
 			entityManagerDataSvc.getInstance().remove(testCase);
 			
 		} else {
@@ -286,7 +286,7 @@ public class TestCaseDaoImpl implements TestCaseDao {
 			String queryStr = "SELECT x FROM TestCase AS x WHERE x.id =:id";
 			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
-			query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
+			query.setParameter("id", request.getParamLong(GlobalConstant.ITEMID));
 			TestCase testCase = (TestCase) query.getSingleResult();
 			
 			response.addParam(GlobalConstant.ITEM, testCase);
