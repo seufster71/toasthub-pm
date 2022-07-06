@@ -52,7 +52,7 @@ public class ProjectDaoImpl implements ProjectDao {
 	public void delete(RestRequest request, RestResponse response) throws Exception {
 		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
 			
-			Project project = (Project) entityManagerDataSvc.getInstance().getReference(Project.class,  Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
+			Project project = (Project) entityManagerDataSvc.getInstance().getReference(Project.class,  request.getParamLong(GlobalConstant.ITEMID));
 			entityManagerDataSvc.getInstance().remove(project);
 			
 		} else {
@@ -65,8 +65,8 @@ public class ProjectDaoImpl implements ProjectDao {
 		Project project = (Project) request.getParam(GlobalConstant.ITEM);
 		
 		if (request.containsParam(PMConstant.PRODUCTID)) {
-			Product product = (Product) entityManagerDataSvc.getInstance().getReference(Product.class,  Long.valueOf((Integer) request.getParam(PMConstant.PRODUCTID)));
-			if (project.getProduct() == null || project.getProduct() != null && !project.getProduct().getId().equals(Long.valueOf((Integer) request.getParam(PMConstant.PRODUCTID)))) {
+			Product product = (Product) entityManagerDataSvc.getInstance().getReference(Product.class,  request.getParamLong(PMConstant.PRODUCTID));
+			if (project.getProduct() == null || project.getProduct() != null && !project.getProduct().getId().equals(request.getParamLong(PMConstant.PRODUCTID))) {
 				project.setProduct(product);
 			}
 		}
@@ -203,7 +203,7 @@ public class ProjectDaoImpl implements ProjectDao {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
 		} 
 		if (request.containsParam(PMConstant.PRODUCTID)) {
-			query.setParameter("productId", Long.valueOf((Integer) request.getParam(PMConstant.PRODUCTID)));
+			query.setParameter("productId", request.getParamLong(PMConstant.PRODUCTID));
 		}
 		
 		if (searchCriteria != null){
@@ -320,7 +320,7 @@ public class ProjectDaoImpl implements ProjectDao {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
 		}
 		if (request.containsParam(PMConstant.PRODUCTID)) {
-			query.setParameter("productId", Long.valueOf((Integer) request.getParam(PMConstant.PRODUCTID)));
+			query.setParameter("productId", request.getParamLong(PMConstant.PRODUCTID));
 		}
 		
 		if (searchCriteria != null){
@@ -363,7 +363,7 @@ public class ProjectDaoImpl implements ProjectDao {
 			String queryStr = "SELECT x FROM Project AS x WHERE x.id =:id";
 			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
-			query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
+			query.setParameter("id", request.getParamLong(GlobalConstant.ITEMID));
 			Project project = (Project) query.getSingleResult();
 			
 			response.addParam(GlobalConstant.ITEM, project);

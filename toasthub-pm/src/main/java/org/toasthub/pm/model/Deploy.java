@@ -47,7 +47,7 @@ public class Deploy extends BaseEntity implements Serializable{
 	protected String cronSchedule;
 	protected String workspace;
 	
-	protected long ownerId;
+	protected long userId;
 
 	
 	//Constructor
@@ -142,12 +142,12 @@ public class Deploy extends BaseEntity implements Serializable{
 	}
 	
 	@JsonView({View.Member.class,View.Admin.class})
-	@Column(name = "owner_id")
-	public long getOwnerId() {
-		return ownerId;
+	@Column(name = "user_id")
+	public long getUserId() {
+		return userId;
 	}
-	public void setOwnerId(long ownerId) {
-		this.ownerId = ownerId;
+	public void setUserId(long userId) {
+		this.userId = userId;
 	}
 	
 }

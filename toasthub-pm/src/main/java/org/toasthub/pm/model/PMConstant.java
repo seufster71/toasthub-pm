@@ -24,4 +24,5 @@ public class PMConstant {
 	public static final String PARENTID = "parentId";
 	public static final String PARENTTYPE = "parentType";
 	public static final String ITEMID = "itemId";
+	public static final String USERID = "userId";
 }

@@ -53,7 +53,7 @@ public class BacklogDaoImpl implements BacklogDao {
 	public void delete(RestRequest request, RestResponse response) throws Exception {
 		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
 			
-			Backlog backlog = (Backlog) entityManagerDataSvc.getInstance().getReference(Backlog.class,  Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
+			Backlog backlog = (Backlog) entityManagerDataSvc.getInstance().getReference(Backlog.class,  request.getParamLong(GlobalConstant.ITEMID));
 			entityManagerDataSvc.getInstance().remove(backlog);
 			
 		} else {
@@ -66,13 +66,13 @@ public class BacklogDaoImpl implements BacklogDao {
 		Backlog backlog = (Backlog) request.getParam(GlobalConstant.ITEM);
 		
 		if (request.containsParam(PMConstant.PRODUCTID)) {
-			Product product = (Product) entityManagerDataSvc.getInstance().getReference(Product.class,  Long.valueOf((Integer) request.getParam(PMConstant.PRODUCTID)));
-			if (backlog.getProduct() == null || backlog.getProduct() != null && !backlog.getProduct().getId().equals(Long.valueOf((Integer) request.getParam(PMConstant.PRODUCTID)))) {
+			Product product = (Product) entityManagerDataSvc.getInstance().getReference(Product.class,  request.getParamLong(PMConstant.PRODUCTID));
+			if (backlog.getProduct() == null || backlog.getProduct() != null && !backlog.getProduct().getId().equals(request.getParamLong(PMConstant.PRODUCTID))) {
 				backlog.setProduct(product);
 			}
 		} else if (request.containsParam(PMConstant.PROJECTID)) {
-			Project project = (Project) entityManagerDataSvc.getInstance().getReference(Project.class,  Long.valueOf((Integer) request.getParam(PMConstant.PROJECTID)));
-			if (backlog.getProject() == null || backlog.getProject() != null && !backlog.getProject().getId().equals(Long.valueOf((Integer) request.getParam(PMConstant.PROJECTID)))) {
+			Project project = (Project) entityManagerDataSvc.getInstance().getReference(Project.class,  request.getParamLong(PMConstant.PROJECTID));
+			if (backlog.getProject() == null || backlog.getProject() != null && !backlog.getProject().getId().equals(request.getParamLong(PMConstant.PROJECTID))) {
 				backlog.setProject(project);
 			}
 		}
@@ -202,9 +202,9 @@ public class BacklogDaoImpl implements BacklogDao {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
 		}
 		if (request.containsParam(PMConstant.PRODUCTID)) {
-			query.setParameter("productId", Long.valueOf((Integer) request.getParam(PMConstant.PRODUCTID)));
+			query.setParameter("productId", request.getParamLong(PMConstant.PRODUCTID));
 		} else if (request.containsParam(PMConstant.PROJECTID)) {
-			query.setParameter("projectId", Long.valueOf((Integer) request.getParam(PMConstant.PROJECTID)));
+			query.setParameter("projectId", request.getParamLong(PMConstant.PROJECTID));
 		}
 		
 		if (searchCriteria != null){
@@ -317,9 +317,9 @@ public class BacklogDaoImpl implements BacklogDao {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
 		}
 		if (request.containsParam(PMConstant.PRODUCTID)) {
-			query.setParameter("productId", Long.valueOf((Integer) request.getParam(PMConstant.PRODUCTID)));
+			query.setParameter("productId", request.getParamLong(PMConstant.PRODUCTID));
 		} else if (request.containsParam(PMConstant.PROJECTID)) {
-			query.setParameter("projectId", Long.valueOf((Integer) request.getParam(PMConstant.PROJECTID)));
+			query.setParameter("projectId", request.getParamLong(PMConstant.PROJECTID));
 		}
 		
 		if (searchCriteria != null){
@@ -359,7 +359,7 @@ public class BacklogDaoImpl implements BacklogDao {
 			String queryStr = "SELECT x FROM Backlog AS x WHERE x.id =:id";
 			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
-			query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
+			query.setParameter("id", request.getParamLong(GlobalConstant.ITEMID));
 			Backlog backlog = (Backlog) query.getSingleResult();
 			
 			response.addParam(GlobalConstant.ITEM, backlog);

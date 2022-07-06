@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.toasthub.core.common.UtilSvc;
 import org.toasthub.core.general.handler.ServiceProcessor;
@@ -30,7 +31,10 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
+import org.toasthub.pm.model.PMConstant;
 import org.toasthub.pm.model.Product;
+import org.toasthub.security.model.MyUserPrincipal;
+import org.toasthub.security.model.User;
 
 @Service("PMProductSvc")
 public class ProductSvcImpl implements ProductSvc, ServiceProcessor {
@@ -48,6 +52,9 @@ public class ProductSvcImpl implements ProductSvc, ServiceProcessor {
 	
 	@Override
 	public void process(RestRequest request, RestResponse response) {
+		User user = ((MyUserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+		request.addParam(PMConstant.USERID, user.getId());
+		
 		String action = (String) request.getParams().get(GlobalConstant.ACTION);
 		List<String> global =  new ArrayList<String>(Arrays.asList("LANGUAGES"));
 		
@@ -163,6 +170,7 @@ public class ProductSvcImpl implements ProductSvc, ServiceProcessor {
 				product.setActive(true);
 				product.setArchive(false);
 				product.setLocked(false);
+				product.setUserId(((MyUserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().getId());
 				request.addParam(GlobalConstant.ITEM, product);
 			}
 			// marshall

@@ -33,6 +33,7 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
+import org.toasthub.pm.model.PMConstant;
 import org.toasthub.pm.model.Product;
 
 @Repository("PMProductDao")
@@ -51,7 +52,7 @@ public class ProductDaoImpl implements ProductDao {
 	public void delete(RestRequest request, RestResponse response) throws Exception {
 		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
 			
-			Product product = (Product) entityManagerDataSvc.getInstance().getReference(Product.class,  Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
+			Product product = (Product) entityManagerDataSvc.getInstance().getReference(Product.class,  request.getParamLong(GlobalConstant.ITEMID));
 			entityManagerDataSvc.getInstance().remove(product);
 			
 		} else {
@@ -67,7 +68,7 @@ public class ProductDaoImpl implements ProductDao {
 
 	@Override
 	public void items(RestRequest request, RestResponse response) throws Exception {
-		String queryStr = "SELECT DISTINCT x FROM Product AS x ";
+		String queryStr = "SELECT DISTINCT x FROM Product as x WHERE x.userId = :userId OR x.id IN (SELECT dt.product.id FROM ProductTeam AS dt WHERE dt.team.id IN (SELECT DISTINCT t.id FROM Team AS t LEFT JOIN t.members as m WHERE m.userId = :userId))";
 		
 		boolean and = false;
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
@@ -172,6 +173,7 @@ public class ProductDaoImpl implements ProductDao {
 				}
 			}
 		}
+		query.setParameter("userId", request.getParamLong(PMConstant.USERID));
 		if (request.containsParam(GlobalConstant.LISTLIMIT) && (Integer) request.getParam(GlobalConstant.LISTLIMIT) != 0){
 			query.setFirstResult((Integer) request.getParam(GlobalConstant.LISTSTART));
 			query.setMaxResults((Integer) request.getParam(GlobalConstant.LISTLIMIT));
@@ -185,7 +187,7 @@ public class ProductDaoImpl implements ProductDao {
 
 	@Override
 	public void itemCount(RestRequest request, RestResponse response) throws Exception {
-		String queryStr = "SELECT COUNT(DISTINCT x) FROM Product as x ";
+		String queryStr = "SELECT COUNT(DISTINCT x) FROM Product as x WHERE x.userId = :userId OR x.id IN (SELECT dt.product.id FROM ProductTeam AS dt WHERE dt.team.id IN (SELECT DISTINCT t.id FROM Team AS t LEFT JOIN t.members as m WHERE m.userId = :userId))";
 		boolean and = false;
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			if (!and) { queryStr += " WHERE "; }
@@ -252,7 +254,7 @@ public class ProductDaoImpl implements ProductDao {
 				}
 			}
 		}
-		
+		query.setParameter("userId", request.getParamLong(PMConstant.USERID));
 		Long count = (Long) query.getSingleResult();
 		if (count == null){
 			count = 0l;
@@ -267,7 +269,7 @@ public class ProductDaoImpl implements ProductDao {
 			String queryStr = "SELECT x FROM Product AS x WHERE x.id =:id";
 			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
-			query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
+			query.setParameter("id", request.getParamLong(GlobalConstant.ITEMID));
 			Product product = (Product) query.getSingleResult();
 			
 			response.addParam(GlobalConstant.ITEM, product);

@@ -53,7 +53,7 @@ public class ReleaseDaoImpl implements ReleaseDao {
 	public void delete(RestRequest request, RestResponse response) throws Exception {
 		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
 			
-			Release release = (Release) entityManagerDataSvc.getInstance().getReference(Release.class,  Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
+			Release release = (Release) entityManagerDataSvc.getInstance().getReference(Release.class,  request.getParamLong(GlobalConstant.ITEMID));
 			entityManagerDataSvc.getInstance().remove(release);
 			
 		} else {
@@ -66,13 +66,13 @@ public class ReleaseDaoImpl implements ReleaseDao {
 		Release release = (Release) request.getParam(GlobalConstant.ITEM);
 		
 		if (request.containsParam(PMConstant.PRODUCTID)) {
-			Product product = (Product) entityManagerDataSvc.getInstance().getReference(Product.class,  Long.valueOf((Integer) request.getParam(PMConstant.PRODUCTID)));
-			if (release.getProduct() == null || release.getProduct() != null && !release.getProduct().getId().equals(Long.valueOf((Integer) request.getParam(PMConstant.PRODUCTID)))) {
+			Product product = (Product) entityManagerDataSvc.getInstance().getReference(Product.class,  request.getParamLong(PMConstant.PRODUCTID));
+			if (release.getProduct() == null || release.getProduct() != null && !release.getProduct().getId().equals(request.getParamLong(PMConstant.PRODUCTID))) {
 				release.setProduct(product);
 			}
 		} else if (request.containsParam(PMConstant.PROJECTID)) {
-			Project project = (Project) entityManagerDataSvc.getInstance().getReference(Project.class,  Long.valueOf((Integer) request.getParam(PMConstant.PROJECTID)));
-			if (release.getProject() == null || release.getProject() != null && !release.getProject().getId().equals(Long.valueOf((Integer) request.getParam(PMConstant.PROJECTID)))) {
+			Project project = (Project) entityManagerDataSvc.getInstance().getReference(Project.class,  request.getParamLong(PMConstant.PROJECTID));
+			if (release.getProject() == null || release.getProject() != null && !release.getProject().getId().equals(request.getParamLong(PMConstant.PROJECTID))) {
 				release.setProject(project);
 			}
 		}
@@ -223,9 +223,9 @@ public class ReleaseDaoImpl implements ReleaseDao {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
 		}
 		if (request.containsParam(PMConstant.PRODUCTID)) {
-			query.setParameter("productId", Long.valueOf((Integer) request.getParam(PMConstant.PRODUCTID)));
+			query.setParameter("productId", request.getParamLong(PMConstant.PRODUCTID));
 		} else if (request.containsParam(PMConstant.PROJECTID)) {
-			query.setParameter("projectId", Long.valueOf((Integer) request.getParam(PMConstant.PROJECTID)));
+			query.setParameter("projectId", request.getParamLong(PMConstant.PROJECTID));
 		}
 		
 		if (searchCriteria != null){
@@ -354,9 +354,9 @@ public class ReleaseDaoImpl implements ReleaseDao {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
 		}
 		if (request.containsParam(PMConstant.PRODUCTID)) {
-			query.setParameter("productId", Long.valueOf((Integer) request.getParam(PMConstant.PRODUCTID)));
+			query.setParameter("productId", request.getParamLong(PMConstant.PRODUCTID));
 		} else if (request.containsParam(PMConstant.PROJECTID)) {
-			query.setParameter("projectId", Long.valueOf((Integer) request.getParam(PMConstant.PROJECTID)));
+			query.setParameter("projectId", request.getParamLong(PMConstant.PROJECTID));
 		}
 		
 		if (searchCriteria != null){
@@ -402,7 +402,7 @@ public class ReleaseDaoImpl implements ReleaseDao {
 			String queryStr = "SELECT x FROM Release AS x WHERE x.id =:id";
 			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
-			query.setParameter("id", Long.valueOf((Integer) request.getParam(GlobalConstant.ITEMID)));
+			query.setParameter("id", request.getParamLong(GlobalConstant.ITEMID));
 			Release release = (Release) query.getSingleResult();
 			
 			response.addParam(GlobalConstant.ITEM, release);

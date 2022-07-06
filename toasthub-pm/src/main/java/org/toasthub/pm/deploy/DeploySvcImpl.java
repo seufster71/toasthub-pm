@@ -52,6 +52,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.toasthub.core.common.UtilSvc;
@@ -63,6 +64,9 @@ import org.toasthub.core.preference.model.PrefCacheUtil;
 import org.toasthub.pm.model.Deploy;
 import org.toasthub.pm.model.DeployPipeline;
 import org.toasthub.pm.model.DeploySystem;
+import org.toasthub.pm.model.PMConstant;
+import org.toasthub.security.model.MyUserPrincipal;
+import org.toasthub.security.model.User;
 
 @Service("PMDeploySvc")
 public class DeploySvcImpl implements DeploySvc, ServiceProcessor {
@@ -80,6 +84,9 @@ public class DeploySvcImpl implements DeploySvc, ServiceProcessor {
 	
 	@Override
 	public void process(RestRequest request, RestResponse response) {
+		User user = ((MyUserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+		request.addParam(PMConstant.USERID, user.getId());
+		
 		String action = (String) request.getParams().get(GlobalConstant.ACTION);
 		List<String> global =  new ArrayList<String>(Arrays.asList("LANGUAGES"));
 		
@@ -289,6 +296,7 @@ public class DeploySvcImpl implements DeploySvc, ServiceProcessor {
 					deploy.setActive(true);
 					deploy.setArchive(false);
 					deploy.setLocked(false);
+					deploy.setUserId(((MyUserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().getId());
 					request.addParam(GlobalConstant.ITEM, deploy);
 				}
 			}
