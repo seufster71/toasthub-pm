@@ -68,14 +68,15 @@ public class WorkflowStepDaoImpl implements WorkflowStepDao {
 		
 		if (request.containsParam(PMConstant.WORKFLOWID)) {
 			// get highest order
-			Object max = entityManagerDataSvc.getInstance().createQuery("SELECT max(x.sortOrder) FROM WorkflowStep AS x ").getSingleResult();
-			if (max != null) {
-				int order = (int) max + 1;
-				workflowStep.setSortOrder(order);
-			} else {
-				workflowStep.setSortOrder(1);
+			if (workflowStep.getSortOrder() == 0) {
+				Object max = entityManagerDataSvc.getInstance().createQuery("SELECT max(x.sortOrder) FROM WorkflowStep AS x WHERE x.workflow.id = :workflowid").setParameter("workflowid", request.getParamLong(PMConstant.WORKFLOWID)).getSingleResult();
+				if (max != null) {
+					int order = (int) max + 1;
+					workflowStep.setSortOrder(order);
+				} else {
+					workflowStep.setSortOrder(1);
+				}
 			}
-			
 			Workflow workflow = (Workflow) entityManagerDataSvc.getInstance().getReference(Workflow.class, request.getParamLong(PMConstant.WORKFLOWID));
 			if (workflowStep.getWorkflow() == null || workflowStep.getWorkflow() != null && !workflowStep.getWorkflow().getId().equals(request.getParamLong(PMConstant.WORKFLOWID))) {
 				workflowStep.setWorkflow(workflow);
@@ -151,51 +152,10 @@ public class WorkflowStepDaoImpl implements WorkflowStepDao {
 			}
 			
 		}
+		
 		// order by
-		ArrayList<LinkedHashMap<String,String>> orderCriteria = null;
-		StringBuilder orderItems = new StringBuilder();
-		if (request.containsParam(GlobalConstant.ORDERCRITERIA) && !request.getParam(GlobalConstant.ORDERCRITERIA).equals("")) {
-			if (request.getParam(GlobalConstant.ORDERCRITERIA) instanceof Map) {
-				orderCriteria = new ArrayList<>();
-				orderCriteria.add((LinkedHashMap<String, String>) request.getParam(GlobalConstant.ORDERCRITERIA));
-			} else {
-				orderCriteria = (ArrayList<LinkedHashMap<String, String>>) request.getParam(GlobalConstant.ORDERCRITERIA);
-			}
-			
-			// Loop through all the criteria
-			boolean comma = false;
-			
-			for (LinkedHashMap<String,String> item : orderCriteria) {
-				if (item.containsKey(GlobalConstant.ORDERCOLUMN) && item.containsKey(GlobalConstant.ORDERDIR)) {
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_WORKFLOW_TABLE_NAME")){
-						if (comma) { orderItems.append(","); }
-						orderItems.append("x.name ").append(item.get(GlobalConstant.ORDERDIR));
-						comma = true;
-					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_WORKFLOW_TABLE_PRODUCT")){
-						if (comma) { orderItems.append(","); }
-						orderItems.append("x.product.name ").append(item.get(GlobalConstant.ORDERDIR));
-						comma = true;
-					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_WORKFLOW_TABLE_PROJECT")){
-						if (comma) { orderItems.append(","); }
-						orderItems.append("x.project.name ").append(item.get(GlobalConstant.ORDERDIR));
-						comma = true;
-					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_WORKFLOW_TABLE_STATUS")){
-						if (comma) { orderItems.append(","); }
-						orderItems.append("x.active ").append(item.get(GlobalConstant.ORDERDIR));
-						comma = true;
-					}
-				}
-			}
-		}
-		if (!"".equals(orderItems.toString())) {
-			queryStr += " ORDER BY ".concat(orderItems.toString());
-		} else {
-			// default order
-			queryStr += " ORDER BY x.sortOrder";
-		}
+		// default order
+		queryStr += " ORDER BY x.sortOrder";
 		
 		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		

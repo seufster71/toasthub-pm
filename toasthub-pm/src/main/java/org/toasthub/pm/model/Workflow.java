@@ -56,7 +56,7 @@ public class Workflow extends BaseEntity implements Serializable{
 	}
 
 	// Methods
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "name")
 	public String getName() {
 		return name;
@@ -65,7 +65,7 @@ public class Workflow extends BaseEntity implements Serializable{
 		this.name = name;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "description")
 	public String getDescription() {
 		return description;

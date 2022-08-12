@@ -163,8 +163,6 @@ public class WorkflowStepSvcImpl implements WorkflowStepSvc, ServiceProcessor {
 				response.getParams().remove(GlobalConstant.ITEM);
 			} else {
 				WorkflowStep workflowStep = new WorkflowStep();
-				workflowStep.setArchive(false);
-				workflowStep.setLocked(false);
 				request.addParam(GlobalConstant.ITEM, workflowStep);
 			}
 			// marshall

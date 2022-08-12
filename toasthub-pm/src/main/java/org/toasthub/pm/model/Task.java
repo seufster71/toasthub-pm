@@ -52,8 +52,6 @@ public class Task extends BaseEntity implements Serializable{
 	protected String externalRef;
 	protected String internalRef;
 	
-	protected WorkflowStep workflowStep;
-	
 	protected double workEstimate;
 	protected double testEstimate;
 	
@@ -69,7 +67,9 @@ public class Task extends BaseEntity implements Serializable{
 	protected Backlog backlog;
 	protected Sprint sprint;
 	
-
+	protected WorkflowStep workflowStep;
+	
+	protected Task parent;
 
 
 	//Constructor
@@ -88,7 +88,7 @@ public class Task extends BaseEntity implements Serializable{
 	}
 	// Methods
 	
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "summary")
 	public String getSummary() {
 		return summary;
@@ -97,7 +97,7 @@ public class Task extends BaseEntity implements Serializable{
 		this.summary = summary;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "description")
 	public String getDescription() {
 		return description;
@@ -106,7 +106,7 @@ public class Task extends BaseEntity implements Serializable{
 		this.description = description;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "reported_by_id")
 	public Long getReportedBy() {
 		return reportedBy;
@@ -115,7 +115,7 @@ public class Task extends BaseEntity implements Serializable{
 		this.reportedBy = reportedBy;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "assignee_id")
 	public Long getAssignee() {
 		return assignee;
@@ -124,7 +124,7 @@ public class Task extends BaseEntity implements Serializable{
 		this.assignee = assignee;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "severity")
 	public String getSeverity() {
 		return severity;
@@ -133,7 +133,7 @@ public class Task extends BaseEntity implements Serializable{
 		this.severity = severity;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "priority")
 	public int getPriority() {
 		return priority;
@@ -142,7 +142,7 @@ public class Task extends BaseEntity implements Serializable{
 		this.priority = priority;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "item_version")
 	public String getItemVersion() {
 		return itemVersion;
@@ -151,7 +151,7 @@ public class Task extends BaseEntity implements Serializable{
 		this.itemVersion = itemVersion;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "external_ref")
 	public String getExternalRef() {
 		return externalRef;
@@ -160,7 +160,7 @@ public class Task extends BaseEntity implements Serializable{
 		this.externalRef = externalRef;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "internal_ref")
 	public String getInternalRef() {
 		return internalRef;
@@ -169,16 +169,7 @@ public class Task extends BaseEntity implements Serializable{
 		this.internalRef = internalRef;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "workflowstep_id")
-	public WorkflowStep setWorkflowStep() {
-		return workflowStep;
-	}
-	public void setWorkflowStep(WorkflowStep workflowStep) {
-		this.workflowStep = workflowStep;
-	}
-
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "work_estimate")
 	public double getWorkEstimate() {
 		return workEstimate;
@@ -187,7 +178,7 @@ public class Task extends BaseEntity implements Serializable{
 		this.workEstimate = workEstimate;
 	}
 	
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "test_estimate")
 	public double getTestEstimate() {
 		return testEstimate;
@@ -196,7 +187,7 @@ public class Task extends BaseEntity implements Serializable{
 		this.testEstimate = testEstimate;
 	}
 	
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "work_actual")
 	public double getWorkActual() {
 		return workActual;
@@ -205,7 +196,7 @@ public class Task extends BaseEntity implements Serializable{
 		this.workActual = workActual;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "test_Actual")
 	public double getTestActual() {
 		return testActual;
@@ -214,7 +205,7 @@ public class Task extends BaseEntity implements Serializable{
 		this.testActual = testActual;
 	}
 	
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "start_date")
 	public Instant getStartDate() {
 		return startDate;
@@ -223,7 +214,7 @@ public class Task extends BaseEntity implements Serializable{
 		this.startDate = startDate;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "complete_date")
 	public Instant getCompleteDate() {
 		return completeDate;
@@ -232,7 +223,7 @@ public class Task extends BaseEntity implements Serializable{
 		this.completeDate = completeDate;
 	}
 		
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@ManyToOne(targetEntity = Project.class)
 	@JoinColumn(name = "project_id")
 	public Project getProject() {
@@ -242,7 +233,7 @@ public class Task extends BaseEntity implements Serializable{
 		this.project = project;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@ManyToOne(targetEntity = Product.class)
 	@JoinColumn(name = "product_id")
 	public Product getProduct() {
@@ -252,7 +243,7 @@ public class Task extends BaseEntity implements Serializable{
 		this.product = product;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@ManyToOne(targetEntity = Release.class)
 	@JoinColumn(name = "release_id")
 	public Release getRelease() {
@@ -262,7 +253,7 @@ public class Task extends BaseEntity implements Serializable{
 		this.release = release;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@ManyToOne(targetEntity = Backlog.class)
 	@JoinColumn(name = "backlog_id")
 	public Backlog getBacklog() {
@@ -272,7 +263,7 @@ public class Task extends BaseEntity implements Serializable{
 		this.backlog = backlog;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@ManyToOne(targetEntity = Sprint.class)
 	@JoinColumn(name = "sprint_id")
 	public Sprint getSprint() {
@@ -282,5 +273,22 @@ public class Task extends BaseEntity implements Serializable{
 		this.sprint = sprint;
 	}
 
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "workflowstep_id")
+	public WorkflowStep setWorkflowStep() {
+		return workflowStep;
+	}
+	public void setWorkflowStep(WorkflowStep workflowStep) {
+		this.workflowStep = workflowStep;
+	}
 	
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	@ManyToOne(targetEntity = Task.class)
+	@JoinColumn(name = "parent_id")
+	public Task getParent() {
+		return parent;
+	}
+	public void setParent(Task parent) {
+		this.parent = parent;
+	}
 }
