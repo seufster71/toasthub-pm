@@ -66,7 +66,7 @@ public class TestCase extends BaseEntity implements Serializable{
 	}
 
 	// Methods
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "summary")
 	public String getSummary() {
 		return summary;
@@ -75,7 +75,7 @@ public class TestCase extends BaseEntity implements Serializable{
 		this.summary = summary;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "description")
 	public String getDescription() {
 		return description;
@@ -84,7 +84,7 @@ public class TestCase extends BaseEntity implements Serializable{
 		this.description = description;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "environment")
 	public String getEnvironment() {
 		return environment;
@@ -93,7 +93,7 @@ public class TestCase extends BaseEntity implements Serializable{
 		this.environment = environment;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "user_info")
 	public String getUserInfo() {
 		return userInfo;
@@ -102,7 +102,7 @@ public class TestCase extends BaseEntity implements Serializable{
 		this.userInfo = userInfo;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "setup_info")
 	public String getSetupInfo() {
 		return setupInfo;
@@ -111,7 +111,7 @@ public class TestCase extends BaseEntity implements Serializable{
 		this.setupInfo = setupInfo;
 	}
 	
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@ManyToOne(targetEntity = TestScenario.class)
 	@JoinColumn(name = "test_scenario_id")
 	public TestScenario getTestScenario() {
@@ -120,13 +120,5 @@ public class TestCase extends BaseEntity implements Serializable{
 	public void setTestScenario(TestScenario testScenario) {
 		this.testScenario = testScenario;
 	}
-	
-	
-	
-	
-	
-	
-	
-
 	
 }

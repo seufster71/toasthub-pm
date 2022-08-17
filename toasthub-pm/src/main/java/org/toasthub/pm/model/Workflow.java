@@ -40,7 +40,8 @@ public class Workflow extends BaseEntity implements Serializable{
 	
 	protected String name;
 	protected String description;
-
+	protected Long userId;
+	
 	//Constructor
 	public Workflow() {
 		super();
@@ -74,5 +75,12 @@ public class Workflow extends BaseEntity implements Serializable{
 		this.description = description;
 	}
 
-	
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "user_id")
+	public Long getUserId() {
+		return userId;
+	}
+	public void setUserId(Long userId) {
+		this.userId = userId;
+	}
 }

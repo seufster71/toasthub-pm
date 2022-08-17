@@ -25,6 +25,8 @@ import java.time.Instant;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.toasthub.core.general.api.View;
@@ -49,6 +51,8 @@ public class Deploy extends BaseEntity implements Serializable{
 	
 	protected long userId;
 
+	protected Product product;
+	protected Project project;
 	
 	//Constructor
 	public Deploy() {
@@ -78,7 +82,7 @@ public class Deploy extends BaseEntity implements Serializable{
 	}
 
 	// Methods
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "name")
 	public String getName() {
 		return name;
@@ -87,7 +91,7 @@ public class Deploy extends BaseEntity implements Serializable{
 		this.name = name;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "last_success")
 	public Instant getLastSuccess() {
 		return lastSuccess;
@@ -96,7 +100,7 @@ public class Deploy extends BaseEntity implements Serializable{
 		this.lastSuccess = lastSuccess;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "last_fail")
 	public Instant getLastFail() {
 		return lastFail;
@@ -105,7 +109,7 @@ public class Deploy extends BaseEntity implements Serializable{
 		this.lastFail = lastFail;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "last_duration")
 	public double getLastDuration() {
 		return lastDuration;
@@ -114,7 +118,7 @@ public class Deploy extends BaseEntity implements Serializable{
 		this.lastDuration = lastDuration;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "run_status")
 	public String getRunStatus() {
 		return runStatus;
@@ -149,5 +153,24 @@ public class Deploy extends BaseEntity implements Serializable{
 	public void setUserId(long userId) {
 		this.userId = userId;
 	}
-	
+
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	@ManyToOne(targetEntity = Product.class)
+	@JoinColumn(name = "product_id")
+	public Product getProduct() {
+		return product;
+	}
+	public void setProduct(Product product) {
+		this.product = product;
+	}
+
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	@ManyToOne(targetEntity = Project.class)
+	@JoinColumn(name = "project_id")
+	public Project getProject() {
+		return project;
+	}
+	public void setProject(Project project) {
+		this.project = project;
+	}
 }

@@ -28,6 +28,7 @@ import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.toasthub.core.general.api.View;
 import org.toasthub.core.general.model.BaseEntity;
@@ -43,11 +44,12 @@ public class Backlog extends BaseEntity implements Serializable{
 	
 	protected String name;
 	protected String description;
+	protected Long userId;
 	
-	protected Workflow workflow;
 	protected Product product;
 	protected Project project;
 	
+	protected Boolean allowShare = true;
 
 	//Constructor
 	public Backlog() {
@@ -84,6 +86,15 @@ public class Backlog extends BaseEntity implements Serializable{
 	}
 
 	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "user_id")
+	public Long getUserId() {
+		return userId;
+	}
+	public void setUserId(Long userId) {
+		this.userId = userId;
+	}
+	
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@ManyToOne(targetEntity = Product.class)
 	@JoinColumn(name = "product_id")
 	public Product getProduct() {
@@ -104,13 +115,11 @@ public class Backlog extends BaseEntity implements Serializable{
 	}
 	
 	@JsonView({View.Member.class,View.Admin.class,View.System.class})
-	@ManyToOne(targetEntity = Workflow.class)
-	@JoinColumn(name = "workflow_id")
-	public Workflow getWorkflow() {
-		return workflow;
+	@Transient
+	public Boolean getAllowShare() {
+		return allowShare;
 	}
-	public void setWorkflow(Workflow workflow) {
-		this.workflow = workflow;
+	public void setAllowShare(Boolean allowShare) {
+		this.allowShare = allowShare;
 	}
-	
 }

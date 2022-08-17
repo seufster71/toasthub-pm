@@ -33,6 +33,7 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
+import org.toasthub.pm.model.PMConstant;
 import org.toasthub.pm.model.Workflow;
 
 @Repository("WorkflowDao")
@@ -66,13 +67,16 @@ public class WorkflowDaoImpl implements WorkflowDao {
 
 	@Override
 	public void items(RestRequest request, RestResponse response) throws Exception {
-		String queryStr = "SELECT DISTINCT x FROM Workflow AS x ";
+		String queryStr = "SELECT DISTINCT x FROM Workflow AS x WHERE x.active = :active AND ";
 		
-		boolean and = false;
-		if (request.containsParam(GlobalConstant.ACTIVE)) {
-			if (!and) { queryStr += " WHERE "; }
-			queryStr += "x.active =:active ";
-			and = true;
+		boolean and = true;
+		
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			queryStr += "x.product.id = :productId ";
+		} else if (request.containsParam(PMConstant.PROJECTID)) {
+			queryStr += "x.project.id = :projectId ";
+		} else {
+			queryStr += "x.product IS NULL AND x.project IS NULL AND (x.userId = :userId OR x.id IN (SELECT dt.workflow.id FROM WorkflowTeam AS dt WHERE dt.team.id IN (SELECT DISTINCT t.id FROM Team AS t LEFT JOIN t.members as m WHERE m.userId = :userId))) ";
 		}
 		
 		// search
@@ -172,7 +176,9 @@ public class WorkflowDaoImpl implements WorkflowDao {
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
-		} 
+		} else {
+			query.setParameter("active", true);
+		}
 		
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
@@ -196,6 +202,15 @@ public class WorkflowDaoImpl implements WorkflowDao {
 				}
 			}
 		}
+		
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			query.setParameter("productId", request.getParamLong(PMConstant.PRODUCTID));
+		} else if (request.containsParam(PMConstant.PROJECTID)) {
+			query.setParameter("projectId", request.getParamLong(PMConstant.PROJECTID));
+		} else {
+			query.setParameter("userId", request.getParamLong(PMConstant.USERID));
+		}
+		
 		if (request.containsParam(GlobalConstant.LISTLIMIT) && (Integer) request.getParam(GlobalConstant.LISTLIMIT) != 0){
 			query.setFirstResult((Integer) request.getParam(GlobalConstant.LISTSTART));
 			query.setMaxResults((Integer) request.getParam(GlobalConstant.LISTLIMIT));
@@ -209,12 +224,15 @@ public class WorkflowDaoImpl implements WorkflowDao {
 
 	@Override
 	public void itemCount(RestRequest request, RestResponse response) throws Exception {
-		String queryStr = "SELECT COUNT(DISTINCT x) FROM Workflow as x ";
-		boolean and = false;
-		if (request.containsParam(GlobalConstant.ACTIVE)) {
-			if (!and) { queryStr += " WHERE "; }
-			queryStr += "x.active =:active ";
-			and = true;
+		String queryStr = "SELECT COUNT(DISTINCT x) FROM Workflow as x WHERE x.active = :active AND ";
+		boolean and = true;
+		
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			queryStr += "x.product.id = :productId ";
+		} else if (request.containsParam(PMConstant.PROJECTID)) {
+			queryStr += "x.project.id = :projectId ";
+		} else {
+			queryStr += "x.product IS NULL AND x.project IS NULL AND (x.userId = :userId OR x.id IN (SELECT dt.workflow.id FROM WorkflowTeam AS dt WHERE dt.team.id IN (SELECT DISTINCT t.id FROM Team AS t LEFT JOIN t.members as m WHERE m.userId = :userId))) ";
 		}
 		
 		ArrayList<LinkedHashMap<String,String>> searchCriteria = null;
@@ -268,7 +286,9 @@ public class WorkflowDaoImpl implements WorkflowDao {
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
-		} 
+		} else {
+			query.setParameter("active", true);
+		}
 		
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
@@ -293,6 +313,14 @@ public class WorkflowDaoImpl implements WorkflowDao {
 			}
 		}
 		
+		if (request.containsParam(PMConstant.PRODUCTID)) {
+			query.setParameter("productId", request.getParamLong(PMConstant.PRODUCTID));
+		} else if (request.containsParam(PMConstant.PROJECTID)) {
+			query.setParameter("projectId", request.getParamLong(PMConstant.PROJECTID));
+		} else {
+			query.setParameter("userId", request.getParamLong(PMConstant.USERID));
+		}
+		
 		Long count = (Long) query.getSingleResult();
 		if (count == null){
 			count = 0l;
@@ -304,7 +332,7 @@ public class WorkflowDaoImpl implements WorkflowDao {
 	@Override
 	public void item(RestRequest request, RestResponse response) throws Exception {
 		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
-			String queryStr = "SELECT x FROM Workflow AS x WHERE x.id =:id";
+			String queryStr = "SELECT x FROM Workflow AS x WHERE x.id = :id";
 			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
 			query.setParameter("id", request.getParamLong(GlobalConstant.ITEMID));

@@ -51,6 +51,7 @@ public class TestScenario extends BaseEntity implements Serializable{
 	
 	protected Defect defect;
 	protected Enhancement enhancement;
+	protected Task task;
 	
 
 
@@ -72,7 +73,7 @@ public class TestScenario extends BaseEntity implements Serializable{
 
 
 	// Methods
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "summary")
 	public String getSummary() {
 		return summary;
@@ -81,7 +82,7 @@ public class TestScenario extends BaseEntity implements Serializable{
 		this.summary = summary;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "description")
 	public String getDescription() {
 		return description;
@@ -90,7 +91,7 @@ public class TestScenario extends BaseEntity implements Serializable{
 		this.description = description;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "type")
 	public String getType() {
 		return type;
@@ -99,7 +100,7 @@ public class TestScenario extends BaseEntity implements Serializable{
 		this.type = type;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "environment")
 	public String getEnvironment() {
 		return environment;
@@ -108,7 +109,7 @@ public class TestScenario extends BaseEntity implements Serializable{
 		this.environment = environment;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "user_info")
 	public String getUserInfo() {
 		return userInfo;
@@ -117,7 +118,7 @@ public class TestScenario extends BaseEntity implements Serializable{
 		this.userInfo = userInfo;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "setup_info")
 	public String getSetupInfo() {
 		return setupInfo;
@@ -126,7 +127,7 @@ public class TestScenario extends BaseEntity implements Serializable{
 		this.setupInfo = setupInfo;
 	}
 	
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@ManyToOne(targetEntity = Defect.class)
 	@JoinColumn(name = "defect_id")
 	public Defect getDefect() {
@@ -136,7 +137,7 @@ public class TestScenario extends BaseEntity implements Serializable{
 		this.defect = defect;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@ManyToOne(targetEntity = Enhancement.class)
 	@JoinColumn(name = "enhancement_id")
 	public Enhancement getEnhancement() {
@@ -146,5 +147,14 @@ public class TestScenario extends BaseEntity implements Serializable{
 		this.enhancement = enhancement;
 	}
 
-	
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	@ManyToOne(targetEntity = Task.class)
+	@JoinColumn(name = "task_id")
+	public Task getTask() {
+		return task;
+	}
+	public void setTask(Task task) {
+		this.task = task;
+	}
+
 }

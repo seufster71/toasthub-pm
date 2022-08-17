@@ -33,6 +33,7 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
+import org.toasthub.pm.model.Backlog;
 import org.toasthub.pm.model.PMConstant;
 import org.toasthub.pm.model.Product;
 import org.toasthub.pm.model.Project;
@@ -81,27 +82,16 @@ public class ReleaseDaoImpl implements ReleaseDao {
 
 	@Override
 	public void items(RestRequest request, RestResponse response) throws Exception {
-		String queryStr = "SELECT DISTINCT x FROM Release AS x ";
+		String queryStr = "SELECT DISTINCT x FROM Release AS x WHERE x.active = :active AND ";
 		
-		boolean and = false;
-		if (request.containsParam(GlobalConstant.ACTIVE)) {
-			if (!and) { queryStr += " WHERE "; }
-			queryStr += "x.active =:active ";
-			and = true;
-		}
+		boolean and = true;
 		
 		if (request.containsParam(PMConstant.PRODUCTID)) {
-			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
-			queryStr += "x.product.id =:productId ";
-			and = true;
+			queryStr += "x.product.id = :productId ";
 		} else if (request.containsParam(PMConstant.PROJECTID)) {
-			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
-			queryStr += "x.project.id =:projectId ";
-			and = true;
+			queryStr += "x.project.id = :projectId ";
 		} else {
-			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
-			queryStr += "x.product IS NULL AND x.project IS NULL ";
-			and = true;
+			queryStr += "x.product IS NULL AND x.project IS NULL AND (x.userId = :userId OR x.id IN (SELECT dt.release.id FROM ReleaseTeam AS dt WHERE dt.team.id IN (SELECT DISTINCT t.id FROM Team AS t LEFT JOIN t.members as m WHERE m.userId = :userId))) ";
 		}
 		
 		// search
@@ -221,11 +211,16 @@ public class ReleaseDaoImpl implements ReleaseDao {
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
+		} else {
+			query.setParameter("active", true);
 		}
+		
 		if (request.containsParam(PMConstant.PRODUCTID)) {
 			query.setParameter("productId", request.getParamLong(PMConstant.PRODUCTID));
 		} else if (request.containsParam(PMConstant.PROJECTID)) {
 			query.setParameter("projectId", request.getParamLong(PMConstant.PROJECTID));
+		} else {
+			query.setParameter("userId", request.getParamLong(PMConstant.USERID));
 		}
 		
 		if (searchCriteria != null){
@@ -263,32 +258,60 @@ public class ReleaseDaoImpl implements ReleaseDao {
 		@SuppressWarnings("unchecked")
 		List<Release> releases = query.getResultList();
 
+		// check to see if it can be shared
+		for (Release release : releases) {
+			if (release.getProduct() != null) {
+				queryStr = "SELECT COUNT(x) FROM ProductTeam AS x WHERE x.product.id = :id ";
+				query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+				query.setParameter("id", release.getProduct().getId());
+				Long count = (Long) query.getSingleResult();
+				if (count == null){
+					count = 0l;
+				}
+				if (count > 0) {
+					release.setAllowShare(false);
+				}
+			} else if (release.getProject() != null) {
+				if (release.getProject().getProduct() != null) {
+					queryStr = "SELECT COUNT(x) FROM ProductTeam AS x WHERE x.product.id = :id ";
+					query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+					query.setParameter("id", release.getProject().getProduct().getId());
+					Long count = (Long) query.getSingleResult();
+					if (count == null){
+						count = 0l;
+					}
+					if (count > 0) {
+						release.setAllowShare(false);
+					}
+				} else {
+					queryStr = "SELECT COUNT(x) FROM ProjectTeam AS x WHERE x.project.id = :id ";
+					query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+					query.setParameter("id", release.getProject().getId());
+					Long count = (Long) query.getSingleResult();
+					if (count == null){
+						count = 0l;
+					}
+					if (count > 0) {
+						release.setAllowShare(false);
+					}
+				}
+			}
+		}
 		response.addParam(GlobalConstant.ITEMS, releases);
 		
 	}
 
 	@Override
 	public void itemCount(RestRequest request, RestResponse response) throws Exception {
-		String queryStr = "SELECT COUNT(DISTINCT x) FROM Release as x ";
-		boolean and = false;
-		if (request.containsParam(GlobalConstant.ACTIVE)) {
-			if (!and) { queryStr += " WHERE "; }
-			queryStr += "x.active =:active ";
-			and = true;
-		}
+		String queryStr = "SELECT COUNT(DISTINCT x) FROM Release as x WHERE x.active = :active AND ";
+		boolean and = true;
 		
 		if (request.containsParam(PMConstant.PRODUCTID)) {
-			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
 			queryStr += "x.product.id =:productId ";
-			and = true;
 		} else if (request.containsParam(PMConstant.PROJECTID)) {
-			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
 			queryStr += "x.project.id =:projectId ";
-			and = true;
 		} else {
-			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
-			queryStr += "x.product IS NULL AND x.project IS NULL ";
-			and = true;
+			queryStr += "x.product IS NULL AND x.project IS NULL AND (x.userId = :userId OR x.id IN (SELECT dt.release.id FROM ReleaseTeam AS dt WHERE dt.team.id IN (SELECT DISTINCT t.id FROM Team AS t LEFT JOIN t.members as m WHERE m.userId = :userId))) ";
 		}
 		
 		ArrayList<LinkedHashMap<String,String>> searchCriteria = null;
@@ -352,11 +375,16 @@ public class ReleaseDaoImpl implements ReleaseDao {
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
+		} else {
+			query.setParameter("active", true);
 		}
+		
 		if (request.containsParam(PMConstant.PRODUCTID)) {
 			query.setParameter("productId", request.getParamLong(PMConstant.PRODUCTID));
 		} else if (request.containsParam(PMConstant.PROJECTID)) {
 			query.setParameter("projectId", request.getParamLong(PMConstant.PROJECTID));
+		} else {
+			query.setParameter("userId", request.getParamLong(PMConstant.USERID));
 		}
 		
 		if (searchCriteria != null){
