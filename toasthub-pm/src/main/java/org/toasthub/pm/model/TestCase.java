@@ -40,16 +40,14 @@ public class TestCase extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
-	protected String summary;
+	protected String name;
 	protected String description;
 	protected String environment;
 	protected String userInfo;
 	protected String setupInfo;
-	
-	protected TestScenario testScenario;
-	
+	// protected String type; // Acceptance, System, Integeration, Unit
 
-
+	protected Deploy deploy;
 
 	//Constructor
 	public TestCase() {
@@ -61,18 +59,18 @@ public class TestCase extends BaseEntity implements Serializable{
 		this.setArchive(false);
 		this.setLocked(false);
 		this.setCreated(Instant.now());
-		this.setSummary(summary);
+		this.setName(name);
 		this.setDescription(description);
 	}
 
 	// Methods
 	@JsonView({View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "summary")
-	public String getSummary() {
-		return summary;
+	@Column(name = "name")
+	public String getName() {
+		return name;
 	}
-	public void setSummary(String summary) {
-		this.summary = summary;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	@JsonView({View.Member.class,View.Admin.class,View.System.class})
@@ -110,15 +108,15 @@ public class TestCase extends BaseEntity implements Serializable{
 	public void setSetupInfo(String setupInfo) {
 		this.setupInfo = setupInfo;
 	}
-	
+
 	@JsonView({View.Member.class,View.Admin.class,View.System.class})
-	@ManyToOne(targetEntity = TestScenario.class)
-	@JoinColumn(name = "test_scenario_id")
-	public TestScenario getTestScenario() {
-		return testScenario;
+	@ManyToOne(targetEntity = Deploy.class)
+	@JoinColumn(name = "deploy_id")
+	public Deploy getDeploy() {
+		return deploy;
 	}
-	public void setTestScenario(TestScenario testScenario) {
-		this.testScenario = testScenario;
+	public void setDeploy(Deploy deploy) {
+		this.deploy = deploy;
 	}
 	
 }

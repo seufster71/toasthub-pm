@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.toasthub.core.common.UtilSvc;
 import org.toasthub.core.general.handler.ServiceProcessor;
@@ -30,13 +31,16 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
+import org.toasthub.pm.model.PMConstant;
 import org.toasthub.pm.model.TestCase;
+import org.toasthub.security.model.MyUserPrincipal;
+import org.toasthub.security.model.User;
 
-@Service("TestCaseSvc")
+@Service("PMTestCaseSvc")
 public class TestCaseSvcImpl implements TestCaseSvc, ServiceProcessor {
 
 	@Autowired
-	@Qualifier("TestCaseDao")
+	@Qualifier("PMTestCaseDao")
 	TestCaseDao testCaseDao;
 	
 	@Autowired
@@ -134,7 +138,9 @@ public class TestCaseSvcImpl implements TestCaseSvc, ServiceProcessor {
 	@Override
 	public void item(RestRequest request, RestResponse response) {
 		try {
-			testCaseDao.item(request, response);
+			if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
+				testCaseDao.item(request, response);
+			}
 		} catch (Exception e) {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_EXECUTION_FAIL",prefCacheUtil.getLang(request)), response);
 			e.printStackTrace();

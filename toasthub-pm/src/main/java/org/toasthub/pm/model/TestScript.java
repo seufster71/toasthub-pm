@@ -35,51 +35,42 @@ import org.toasthub.core.general.model.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity
-@Table(name = "pm_test_scenario")
-public class TestScenario extends BaseEntity implements Serializable{
+@Table(name = "pm_test_script")
+public class TestScript extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
-	protected String summary;
+	protected String name;
 	protected String description;
 	protected String environment;
 	protected String userInfo;
 	protected String setupInfo;
 	
-	
-	protected String type; // Acceptance, System, Integeration, Unit
-	
-	protected Defect defect;
-	protected Enhancement enhancement;
-	protected Task task;
-	
-
-
+	protected TestCase testCase;
 
 	//Constructor
-	public TestScenario() {
+	public TestScript() {
 		super();
 	}
 	
-	public TestScenario(String summary, String description, String type){
+	public TestScript(String name, String description, String type){
 		this.setActive(true);
 		this.setArchive(false);
 		this.setLocked(false);
 		this.setCreated(Instant.now());
-		this.setSummary(summary);
+		this.setName(name);
 		this.setDescription(description);
-		this.setType(type);
 	}
 
 
 	// Methods
 	@JsonView({View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "summary")
-	public String getSummary() {
-		return summary;
+	@Column(name = "name")
+	public String getName() {
+		return name;
 	}
-	public void setSummary(String summary) {
-		this.summary = summary;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	@JsonView({View.Member.class,View.Admin.class,View.System.class})
@@ -89,15 +80,6 @@ public class TestScenario extends BaseEntity implements Serializable{
 	}
 	public void setDescription(String description) {
 		this.description = description;
-	}
-
-	@JsonView({View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "type")
-	public String getType() {
-		return type;
-	}
-	public void setType(String type) {
-		this.type = type;
 	}
 
 	@JsonView({View.Member.class,View.Admin.class,View.System.class})
@@ -126,35 +108,16 @@ public class TestScenario extends BaseEntity implements Serializable{
 	public void setSetupInfo(String setupInfo) {
 		this.setupInfo = setupInfo;
 	}
+
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	@ManyToOne(targetEntity = TestCase.class)
+	@JoinColumn(name = "test_case_id")
+	public TestCase getTestCase() {
+		return testCase;
+	}
+	public void setTestCase(TestCase testCase) {
+		this.testCase = testCase;
+	}
+
 	
-	@JsonView({View.Member.class,View.Admin.class,View.System.class})
-	@ManyToOne(targetEntity = Defect.class)
-	@JoinColumn(name = "defect_id")
-	public Defect getDefect() {
-		return defect;
-	}
-	public void setDefect(Defect defect) {
-		this.defect = defect;
-	}
-
-	@JsonView({View.Member.class,View.Admin.class,View.System.class})
-	@ManyToOne(targetEntity = Enhancement.class)
-	@JoinColumn(name = "enhancement_id")
-	public Enhancement getEnhancement() {
-		return enhancement;
-	}
-	public void setEnhancement(Enhancement enhancement) {
-		this.enhancement = enhancement;
-	}
-
-	@JsonView({View.Member.class,View.Admin.class,View.System.class})
-	@ManyToOne(targetEntity = Task.class)
-	@JoinColumn(name = "task_id")
-	public Task getTask() {
-		return task;
-	}
-	public void setTask(Task task) {
-		this.task = task;
-	}
-
 }

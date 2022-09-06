@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package org.toasthub.pm.testScenario;
+package org.toasthub.pm.testCase;
 
-import org.toasthub.pm.model.BaseDao;
+import org.toasthub.pm.model.BaseSvc;
 
-public interface TestScenarioDao extends BaseDao {
-	
+public interface TestScriptSvc extends BaseSvc {
+
 }

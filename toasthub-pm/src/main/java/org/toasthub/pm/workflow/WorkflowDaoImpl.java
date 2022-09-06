@@ -76,7 +76,7 @@ public class WorkflowDaoImpl implements WorkflowDao {
 		} else if (request.containsParam(PMConstant.PROJECTID)) {
 			queryStr += "x.project.id = :projectId ";
 		} else {
-			queryStr += "x.product IS NULL AND x.project IS NULL AND (x.userId = :userId OR x.id IN (SELECT dt.workflow.id FROM WorkflowTeam AS dt WHERE dt.team.id IN (SELECT DISTINCT t.id FROM Team AS t LEFT JOIN t.members as m WHERE m.userId = :userId))) ";
+			queryStr += "(x.userId = :userId OR x.id IN (SELECT dt.workflow.id FROM WorkflowTeam AS dt WHERE dt.team.id IN (SELECT DISTINCT t.id FROM Team AS t LEFT JOIN t.members as m WHERE m.userId = :userId))) ";
 		}
 		
 		// search
@@ -232,7 +232,7 @@ public class WorkflowDaoImpl implements WorkflowDao {
 		} else if (request.containsParam(PMConstant.PROJECTID)) {
 			queryStr += "x.project.id = :projectId ";
 		} else {
-			queryStr += "x.product IS NULL AND x.project IS NULL AND (x.userId = :userId OR x.id IN (SELECT dt.workflow.id FROM WorkflowTeam AS dt WHERE dt.team.id IN (SELECT DISTINCT t.id FROM Team AS t LEFT JOIN t.members as m WHERE m.userId = :userId))) ";
+			queryStr += "(x.userId = :userId OR x.id IN (SELECT dt.workflow.id FROM WorkflowTeam AS dt WHERE dt.team.id IN (SELECT DISTINCT t.id FROM Team AS t LEFT JOIN t.members as m WHERE m.userId = :userId))) ";
 		}
 		
 		ArrayList<LinkedHashMap<String,String>> searchCriteria = null;
