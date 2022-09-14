@@ -23,73 +23,65 @@ package org.toasthub.pm.model;
 import java.io.Serializable;
 import java.time.Instant;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.toasthub.core.general.api.View;
 import org.toasthub.core.general.model.BaseEntity;
-import org.toasthub.core.general.model.Text;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity
-@Table(name = "pm_product")
-public class Product extends BaseEntity implements Serializable{
+@Table(name = "pm_workflow_team")
+public class WorkflowTeam extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
-	protected String name;
-	protected String description;
-	protected Long userId;
-
 	protected Workflow workflow;
+	protected Team team;
+
+	// Transient
+	protected Long teamId;
 	
-	//Constructor
-	public Product() {
-		super();
+	// Constructor
+	public WorkflowTeam(){}
+	
+	
+	public WorkflowTeam(Long id, boolean active, Long teamId) {
+		this.setId(id);
+		this.setActive(active);
+		this.setTeamId(teamId);
 	}
 	
-	public Product(String code, Text title, Boolean defaultLang, String dir){
+	public WorkflowTeam(Team team) {
+		this.setTeam(team);
 		this.setActive(true);
 		this.setArchive(false);
 		this.setLocked(false);
 		this.setCreated(Instant.now());
+	}
 	
-		
+	public WorkflowTeam(boolean active, boolean archive, boolean locked, Workflow workflow, Team team) {
+		this.setActive(active);
+		this.setArchive(archive);
+		this.setLocked(locked);
+		this.setWorkflow(workflow);
+		this.setTeam(team);
 	}
-
-	// Methods
-	@JsonView({View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "name")
-	public String getName() {
-		return name;
+	
+	public WorkflowTeam(Workflow workflow, Team team) {
+		this.setActive(true);
+		this.setArchive(false);
+		this.setLocked(false);
+		this.setWorkflow(workflow);
+		this.setTeam(team);
 	}
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	@JsonView({View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "description")
-	public String getDescription() {
-		return description;
-	}
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	@JsonView({View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "user_id")
-	public Long getUserId() {
-		return userId;
-	}
-	public void setUserId(Long userId) {
-		this.userId = userId;
-	}
-
-	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	
+	@JsonIgnore
 	@ManyToOne(targetEntity = Workflow.class)
 	@JoinColumn(name = "workflow_id")
 	public Workflow getWorkflow() {
@@ -97,6 +89,29 @@ public class Product extends BaseEntity implements Serializable{
 	}
 	public void setWorkflow(Workflow workflow) {
 		this.workflow = workflow;
+	}
+
+	@JsonIgnore
+	@ManyToOne(targetEntity = Team.class)
+	@JoinColumn(name = "team_id")
+	public Team getTeam() {
+		return team;
+	}
+	public void setTeam(Team team) {
+		this.team = team;
+	}
+
+	@JsonView({View.Admin.class})
+	@Transient
+	public Long getTeamId() {
+		if (this.team == null) {
+			return this.teamId;
+		} else {
+			return this.team.getId();
+		}
+	}
+	public void setTeamId(Long teamId) {
+		this.teamId = teamId;
 	}
 
 	

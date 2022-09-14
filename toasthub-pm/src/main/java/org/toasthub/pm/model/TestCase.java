@@ -25,9 +25,8 @@ import java.time.Instant;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.toasthub.core.general.api.View;
 import org.toasthub.core.general.model.BaseEntity;
@@ -40,17 +39,18 @@ public class TestCase extends BaseEntity implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
-	protected String summary;
+	protected String name;
 	protected String description;
 	protected String environment;
 	protected String userInfo;
 	protected String setupInfo;
+	// protected String type; // Acceptance, System, Integeration, Unit
+
+	protected Long userId;
 	
-	protected TestScenario testScenario;
+	// Transient
+	protected TestCaseDeploy testCaseDeploy;
 	
-
-
-
 	//Constructor
 	public TestCase() {
 		super();
@@ -61,21 +61,21 @@ public class TestCase extends BaseEntity implements Serializable{
 		this.setArchive(false);
 		this.setLocked(false);
 		this.setCreated(Instant.now());
-		this.setSummary(summary);
+		this.setName(name);
 		this.setDescription(description);
 	}
 
 	// Methods
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@Column(name = "summary")
-	public String getSummary() {
-		return summary;
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "name")
+	public String getName() {
+		return name;
 	}
-	public void setSummary(String summary) {
-		this.summary = summary;
+	public void setName(String name) {
+		this.name = name;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "description")
 	public String getDescription() {
 		return description;
@@ -84,7 +84,7 @@ public class TestCase extends BaseEntity implements Serializable{
 		this.description = description;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "environment")
 	public String getEnvironment() {
 		return environment;
@@ -93,7 +93,7 @@ public class TestCase extends BaseEntity implements Serializable{
 		this.environment = environment;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "user_info")
 	public String getUserInfo() {
 		return userInfo;
@@ -102,7 +102,7 @@ public class TestCase extends BaseEntity implements Serializable{
 		this.userInfo = userInfo;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "setup_info")
 	public String getSetupInfo() {
 		return setupInfo;
@@ -111,22 +111,22 @@ public class TestCase extends BaseEntity implements Serializable{
 		this.setupInfo = setupInfo;
 	}
 	
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@ManyToOne(targetEntity = TestScenario.class)
-	@JoinColumn(name = "test_scenario_id")
-	public TestScenario getTestScenario() {
-		return testScenario;
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "user_id")
+	public Long getUserId() {
+		return userId;
 	}
-	public void setTestScenario(TestScenario testScenario) {
-		this.testScenario = testScenario;
+	public void setUserId(Long userId) {
+		this.userId = userId;
 	}
 	
-	
-	
-	
-	
-	
-	
-
+	@JsonView({View.Member.class,View.Admin.class})
+	@Transient
+	public TestCaseDeploy getTestCaseDeploy() {
+		return testCaseDeploy;
+	}
+	public void setTestCaseDeploy(TestCaseDeploy testCaseDeploy) {
+		this.testCaseDeploy = testCaseDeploy;
+	}
 	
 }

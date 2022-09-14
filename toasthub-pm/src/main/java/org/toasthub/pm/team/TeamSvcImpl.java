@@ -37,6 +37,7 @@ import org.toasthub.pm.model.ProductTeam;
 import org.toasthub.pm.model.ProjectTeam;
 import org.toasthub.pm.model.ReleaseTeam;
 import org.toasthub.pm.model.Team;
+import org.toasthub.pm.model.TestCaseTeam;
 import org.toasthub.pm.role.RoleSvc;
 import org.toasthub.security.model.MyUserPrincipal;
 import org.toasthub.security.model.User;
@@ -123,6 +124,8 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 					forms.add("PM_TEAM_BACKLOG_FORM");
 				} else if ("DEPLOY".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
 					forms.add("PM_TEAM_DEPLOY_FORM");
+				} else if ("TESTCASE".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+					forms.add("PM_TEAM_TESTCASE_FORM");
 				}
 				request.addParam(PrefCacheUtil.PREFFORMKEYS, forms);
 			}
@@ -283,6 +286,12 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 					deployTeam.setArchive(false);
 					deployTeam.setLocked(false);
 					request.addParam(GlobalConstant.ITEM, deployTeam);
+				} else if ("TESTCASE".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+					TestCaseTeam testCaseTeam = new TestCaseTeam();
+					testCaseTeam.setActive(true);
+					testCaseTeam.setArchive(false);
+					testCaseTeam.setLocked(false);
+					request.addParam(GlobalConstant.ITEM, testCaseTeam);
 				} else {
 					utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, "Missing parent type", response);
 					return;
@@ -362,6 +371,18 @@ public class TeamSvcImpl implements TeamSvc, ServiceProcessor {
 						for (Team team : teams) {
 							if (deployTeam.getTeamId() == team.getId()) {
 								team.setDeployTeam(deployTeam);
+							}
+						}
+					}
+				} else if ("TESTCASE".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+					teamDao.linkTeams(request, response);
+					// add link to items
+					List<TestCaseTeam> testCaseTeams = (List<TestCaseTeam>) response.getParam("linkTeams");
+					List<Team> teams = (List<Team>) response.getParam(GlobalConstant.ITEMS);
+					for (TestCaseTeam testCaseTeam : testCaseTeams) {
+						for (Team team : teams) {
+							if (testCaseTeam.getTeamId() == team.getId()) {
+								team.setTestCaseTeam(testCaseTeam);
 							}
 						}
 					}

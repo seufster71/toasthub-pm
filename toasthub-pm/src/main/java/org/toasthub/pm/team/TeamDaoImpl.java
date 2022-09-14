@@ -53,6 +53,8 @@ import org.toasthub.pm.model.ReleaseTeam;
 import org.toasthub.pm.model.Role;
 import org.toasthub.pm.model.RolePermission;
 import org.toasthub.pm.model.Team;
+import org.toasthub.pm.model.TestCase;
+import org.toasthub.pm.model.TestCaseTeam;
 import org.toasthub.security.model.MyUserPrincipal;
 import org.toasthub.security.model.User;
 
@@ -538,6 +540,12 @@ public class TeamDaoImpl implements TeamDao {
 				query.setParameter("id", request.getParamLong(GlobalConstant.PARENTID));
 				List<DeployTeam> teams = query.getResultList();
 				response.addParam("linkTeams", teams);
+			} else if ("TESTCASE".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+				String queryStr = "SELECT new TestCaseTeam(x.id, x.active, x.team.id) FROM TestCaseTeam AS x WHERE x.testCase.id =:id";
+				Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+				query.setParameter("id", request.getParamLong(GlobalConstant.PARENTID));
+				List<TestCaseTeam> teams = query.getResultList();
+				response.addParam("linkTeams", teams);
 			} else {
 				response.addParam("linkTeams", null);
 			}
@@ -584,6 +592,12 @@ public class TeamDaoImpl implements TeamDao {
 				query.setParameter("id", request.getParamLong(GlobalConstant.ITEMID));
 				DeployTeam deployTeam = (DeployTeam) query.getSingleResult();
 				response.addParam(GlobalConstant.ITEM, deployTeam);
+			} else if ("TESTCASE".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+				queryStr = "SELECT x FROM TestCaseTeam AS x WHERE x.id =:id";
+				Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+				query.setParameter("id", request.getParamLong(GlobalConstant.ITEMID));
+				TestCaseTeam testCaseTeam = (TestCaseTeam) query.getSingleResult();
+				response.addParam(GlobalConstant.ITEM, testCaseTeam);
 			} else {
 				response.addParam(GlobalConstant.ITEM, null);
 			}
@@ -652,6 +666,17 @@ public class TeamDaoImpl implements TeamDao {
 					deployTeam.setTeam(team);
 				}
 				entityManagerDataSvc.getInstance().merge(deployTeam);
+			} else if ("TESTCASE".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+				TestCaseTeam testCaseTeam = (TestCaseTeam) request.getParam(GlobalConstant.ITEM);
+				if (request.containsParam(GlobalConstant.PARENTID) && !"".equals(request.getParam(GlobalConstant.PARENTID))) {
+					TestCase testCase = (TestCase) entityManagerDataSvc.getInstance().getReference(TestCase.class,  request.getParamLong(GlobalConstant.PARENTID));
+					testCaseTeam.setTestCase(testCase);
+				}
+				if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
+					Team team = (Team) entityManagerDataSvc.getInstance().getReference(Team.class,  request.getParamLong(GlobalConstant.ITEMID));
+					testCaseTeam.setTeam(team);
+				}
+				entityManagerDataSvc.getInstance().merge(testCaseTeam);
 			}
 		} else {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID",prefCacheUtil.getLang(request)), response);

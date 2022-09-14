@@ -116,18 +116,23 @@ public class DeployDaoImpl implements DeployDao {
 	@Override
 	public void items(RestRequest request, RestResponse response) throws Exception {
 		String action = (String) request.getParams().get(GlobalConstant.ACTION);
-		String queryStr = "SELECT NEW Deploy(x.id,x.name,x.lastSuccess,x.lastFail,x.lastDuration,x.runStatus,x.active,x.archive,x.locked,x.created,x.modified) FROM Deploy as x WHERE x.userId = :userId OR x.id IN (SELECT dt.deploy.id FROM DeployTeam AS dt WHERE dt.team.id IN (SELECT DISTINCT t.id FROM Team AS t LEFT JOIN t.members as m WHERE m.userId = :userId))";
+		
+		boolean and = true;
+		
+		String queryStr = "";
 		if (action.contains("PIPELINE")) {
 			queryStr = "SELECT NEW DeployPipeline(x.id,x.name,x.sortOrder,x.scmURL,x.branch,x.active,x.archive,x.locked,x.created,x.modified) FROM DeployPipeline AS x WHERE x.deploy.id = :deployId ";
 		} else if (action.contains("SYSTEM")) {
 			queryStr = "SELECT NEW DeploySystem(x.id,x.serverName,x.sshUsername,x.stagingDir,x.active,x.archive,x.locked,x.created,x.modified) FROM DeploySystem AS x WHERE x.deploy.id = :deployId ";
-		}
-		
-		boolean and = false;
-		if (request.containsParam(GlobalConstant.ACTIVE)) {
-		//	if (!and) { queryStr += " WHERE "; }
-			queryStr += "x.active =:active ";
-			and = true;
+		} else {
+			queryStr = "SELECT NEW Deploy(x.id,x.name,x.lastSuccess,x.lastFail,x.lastDuration,x.runStatus,x.active,x.archive,x.locked,x.created,x.modified) FROM Deploy as x WHERE x.active = :active AND ";
+			if (request.containsParam(PMConstant.PRODUCTID)) {
+				queryStr += "x.product.id = :productId ";
+			} else if (request.containsParam(PMConstant.PROJECTID)) {
+				queryStr += "x.project.id = :projectId ";
+			} else {
+				queryStr += "x.product IS NULL AND x.project IS NULL AND (x.userId = :userId OR x.id IN (SELECT dt.deploy.id FROM DeployTeam AS dt WHERE dt.team.id IN (SELECT DISTINCT t.id FROM Team AS t LEFT JOIN t.members as m WHERE m.userId = :userId))) ";
+			}
 		}
 		
 		// search
@@ -221,7 +226,9 @@ public class DeployDaoImpl implements DeployDao {
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
-		} 
+		}  else {
+			query.setParameter("active", true);
+		}
 		
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
@@ -275,18 +282,23 @@ public class DeployDaoImpl implements DeployDao {
 	public void itemCount(RestRequest request, RestResponse response) throws Exception {
 		String action = (String) request.getParams().get(GlobalConstant.ACTION);
 
-		String queryStr = "SELECT COUNT(DISTINCT x) FROM Deploy as x WHERE x.userId = :userId OR x.id IN (SELECT dt.deploy.id FROM DeployTeam AS dt WHERE dt.team.id IN (SELECT DISTINCT t.id FROM Team AS t LEFT JOIN t.members as m WHERE m.userId = :userId))";
+		boolean and = true;
+		
+		String queryStr = "";
+
 		if (action.contains("PIPELINE")) {
 			queryStr = "SELECT COUNT(DISTINCT x) FROM DeployPipeline as x WHERE x.deploy.id = :deployId ";
 		} else if (action.contains("SYSTEM")) {
 			queryStr = "SELECT COUNT(DISTINCT x) FROM DeploySystem as x WHERE x.deploy.id = :deployId ";
-		}
-
-		boolean and = false;
-		if (request.containsParam(GlobalConstant.ACTIVE)) {
-			if (!and) { queryStr += " WHERE "; }
-			queryStr += "x.active =:active ";
-			and = true;
+		} else {
+			queryStr = "SELECT COUNT(DISTINCT x) FROM Deploy as x WHERE x.active = :active AND ";
+			if (request.containsParam(PMConstant.PRODUCTID)) {
+				queryStr += "x.product.id = :productId ";
+			} else if (request.containsParam(PMConstant.PROJECTID)) {
+				queryStr += "x.project.id = :projectId ";
+			} else {
+				queryStr += "x.product IS NULL AND x.project IS NULL AND (x.userId = :userId OR x.id IN (SELECT dt.deploy.id FROM DeployTeam AS dt WHERE dt.team.id IN (SELECT DISTINCT t.id FROM Team AS t LEFT JOIN t.members as m WHERE m.userId = :userId))) ";
+			}
 		}
 		
 		ArrayList<LinkedHashMap<String,String>> searchCriteria = null;
@@ -335,7 +347,9 @@ public class DeployDaoImpl implements DeployDao {
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
-		} 
+		}  else {
+			query.setParameter("active", true);
+		}
 		
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
@@ -366,7 +380,13 @@ public class DeployDaoImpl implements DeployDao {
 				query.setParameter("deployId", request.getParamLong(PMConstant.DEPLOYID));
 			}
 		} else {
-			query.setParameter("userId", request.getParamLong(PMConstant.USERID));
+			if (request.containsParam(PMConstant.PRODUCTID)) {
+				query.setParameter("productId", request.getParamLong(PMConstant.PRODUCTID));
+			} else if (request.containsParam(PMConstant.PROJECTID)) {
+				query.setParameter("projectId", request.getParamLong(PMConstant.PROJECTID));
+			} else {
+				query.setParameter("userId", request.getParamLong(PMConstant.USERID));
+			}
 		}
 		
 		Long count = (Long) query.getSingleResult();
