@@ -25,9 +25,8 @@ import java.time.Instant;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.toasthub.core.general.api.View;
 import org.toasthub.core.general.model.BaseEntity;
@@ -47,8 +46,11 @@ public class TestCase extends BaseEntity implements Serializable{
 	protected String setupInfo;
 	// protected String type; // Acceptance, System, Integeration, Unit
 
-	protected Deploy deploy;
-
+	protected Long userId;
+	
+	// Transient
+	protected TestCaseDeploy testCaseDeploy;
+	
 	//Constructor
 	public TestCase() {
 		super();
@@ -108,15 +110,23 @@ public class TestCase extends BaseEntity implements Serializable{
 	public void setSetupInfo(String setupInfo) {
 		this.setupInfo = setupInfo;
 	}
-
+	
 	@JsonView({View.Member.class,View.Admin.class,View.System.class})
-	@ManyToOne(targetEntity = Deploy.class)
-	@JoinColumn(name = "deploy_id")
-	public Deploy getDeploy() {
-		return deploy;
+	@Column(name = "user_id")
+	public Long getUserId() {
+		return userId;
 	}
-	public void setDeploy(Deploy deploy) {
-		this.deploy = deploy;
+	public void setUserId(Long userId) {
+		this.userId = userId;
+	}
+	
+	@JsonView({View.Member.class,View.Admin.class})
+	@Transient
+	public TestCaseDeploy getTestCaseDeploy() {
+		return testCaseDeploy;
+	}
+	public void setTestCaseDeploy(TestCaseDeploy testCaseDeploy) {
+		this.testCaseDeploy = testCaseDeploy;
 	}
 	
 }

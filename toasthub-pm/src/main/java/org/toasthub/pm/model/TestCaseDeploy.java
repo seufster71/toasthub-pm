@@ -46,6 +46,7 @@ public class TestCaseDeploy extends BaseEntity implements Serializable{
 
 	// Transient
 	protected Long deployId;
+	protected Long testCaseId;
 	
 	// Constructor
 	public TestCaseDeploy(){}
@@ -55,6 +56,13 @@ public class TestCaseDeploy extends BaseEntity implements Serializable{
 		this.setId(id);
 		this.setActive(active);
 		this.setDeployId(deployId);
+	}
+	
+	public TestCaseDeploy(Long id, boolean active, Long deployId, Long testCaseId) {
+		this.setId(id);
+		this.setActive(active);
+		this.setDeployId(deployId);
+		this.setTestCaseId(testCaseId);
 	}
 	
 	public TestCaseDeploy(Deploy deploy) {
@@ -73,7 +81,7 @@ public class TestCaseDeploy extends BaseEntity implements Serializable{
 		this.setDeploy(deploy);
 	}
 	
-	public TestCaseDeploy(Product product, Deploy deploy) {
+	public TestCaseDeploy(TestCase testCase, Deploy deploy) {
 		this.setActive(true);
 		this.setArchive(false);
 		this.setLocked(false);
@@ -114,5 +122,16 @@ public class TestCaseDeploy extends BaseEntity implements Serializable{
 		this.deployId = deployId;
 	}
 
-	
+	@JsonView({View.Admin.class})
+	@Transient
+	public Long getTestCaseId() {
+		if (this.testCase == null) {
+			return this.testCaseId;
+		} else {
+			return this.testCase.getId();
+		}
+	}
+	public void setTestCaseId(Long testCaseId) {
+		this.testCaseId = testCaseId;
+	}
 }

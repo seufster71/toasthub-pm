@@ -33,9 +33,21 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
+import org.toasthub.pm.model.Backlog;
+import org.toasthub.pm.model.BacklogTeam;
 import org.toasthub.pm.model.Deploy;
+import org.toasthub.pm.model.DeployTeam;
 import org.toasthub.pm.model.PMConstant;
+import org.toasthub.pm.model.Product;
+import org.toasthub.pm.model.ProductTeam;
+import org.toasthub.pm.model.Project;
+import org.toasthub.pm.model.ProjectTeam;
+import org.toasthub.pm.model.Release;
+import org.toasthub.pm.model.ReleaseTeam;
+import org.toasthub.pm.model.Team;
 import org.toasthub.pm.model.TestCase;
+import org.toasthub.pm.model.TestCaseDeploy;
+import org.toasthub.pm.model.TestCaseTeam;
 
 @Repository("PMTestCaseDao")
 @Transactional("TransactionManagerData")
@@ -63,25 +75,22 @@ public class TestCaseDaoImpl implements TestCaseDao {
 	@Override
 	public void save(RestRequest request, RestResponse response) throws Exception {
 		TestCase testCase = (TestCase) request.getParam(GlobalConstant.ITEM);
-		if (request.containsParam(PMConstant.DEPLOYID)) {
-			Deploy deploy = (Deploy) entityManagerDataSvc.getInstance().getReference(Deploy.class,  request.getParamLong(PMConstant.DEPLOYID));
-			if (testCase.getDeploy() == null || testCase.getDeploy() != null && !testCase.getDeploy().getId().equals(request.getParamLong(PMConstant.DEPLOYID))) {
-				testCase.setDeploy(deploy);
-			}
+		boolean idEmpty = false;
+		if (testCase.getId() == null) {
+			idEmpty = true;
+			testCase = entityManagerDataSvc.getInstance().merge(testCase);
 		}
-		entityManagerDataSvc.getInstance().merge(testCase);
+		if (idEmpty && request.containsParam(PMConstant.PARENTID)) {
+			Deploy deploy = (Deploy) entityManagerDataSvc.getInstance().getReference(Deploy.class,  request.getParamLong(PMConstant.PARENTID));
+			TestCaseDeploy testCaseDeploy = new TestCaseDeploy(testCase,deploy);
+			entityManagerDataSvc.getInstance().merge(testCaseDeploy);
+		}
+		
 	}
 
 	@Override
 	public void items(RestRequest request, RestResponse response) throws Exception {
-		String queryStr = "SELECT DISTINCT x FROM TestCase AS x ";
-		
-		boolean and = false;
-		if (request.containsParam(GlobalConstant.ACTIVE)) {
-			if (!and) { queryStr += " WHERE "; }
-			queryStr += "x.active =:active ";
-			and = true;
-		}
+		String queryStr = "SELECT DISTINCT x FROM TestCase AS x WHERE x.archive = :archive AND (x.userId = :userId OR x.id IN (SELECT tct.testCase.id FROM TestCaseTeam AS tct WHERE tct.team.id IN (SELECT DISTINCT t.id FROM Team AS t LEFT JOIN t.members as m WHERE m.userId = :userId))) ";
 		
 		// search
 		ArrayList<LinkedHashMap<String,String>> searchCriteria = null;
@@ -112,11 +121,7 @@ public class TestCaseDaoImpl implements TestCaseDao {
 				}
 			}
 			if (!"".equals(lookupStr)) {
-				if (!and) { 
-					queryStr += " WHERE ( " + lookupStr + " ) ";
-				} else {
-					queryStr += " AND ( " + lookupStr + " ) ";
-				}
+				queryStr += " AND ( " + lookupStr + " ) ";
 			}
 			
 		}
@@ -158,9 +163,12 @@ public class TestCaseDaoImpl implements TestCaseDao {
 		
 		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
-		if (request.containsParam(GlobalConstant.ACTIVE)) {
-			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
-		} 
+		Boolean archive = false;
+		if (request.containsParam(GlobalConstant.ARCHIVE)) {
+			archive = (Boolean) request.getParam(GlobalConstant.ARCHIVE);
+			
+		}
+		query.setParameter("archive", archive);
 		
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
@@ -178,10 +186,12 @@ public class TestCaseDaoImpl implements TestCaseDao {
 				}
 			}
 		}
+		query.setParameter("userId", request.getParamLong(PMConstant.USERID));
 		if (request.containsParam(GlobalConstant.LISTLIMIT) && (Integer) request.getParam(GlobalConstant.LISTLIMIT) != 0){
 			query.setFirstResult((Integer) request.getParam(GlobalConstant.LISTSTART));
 			query.setMaxResults((Integer) request.getParam(GlobalConstant.LISTLIMIT));
 		}
+		
 		@SuppressWarnings("unchecked")
 		List<TestCase> results = query.getResultList();
 
@@ -191,13 +201,8 @@ public class TestCaseDaoImpl implements TestCaseDao {
 
 	@Override
 	public void itemCount(RestRequest request, RestResponse response) throws Exception {
-		String queryStr = "SELECT COUNT(DISTINCT x) FROM TestCase as x ";
-		boolean and = false;
-		if (request.containsParam(GlobalConstant.ACTIVE)) {
-			if (!and) { queryStr += " WHERE "; }
-			queryStr += "x.active =:active ";
-			and = true;
-		}
+		String queryStr = "SELECT COUNT(DISTINCT x) FROM TestCase as x WHERE x.archive = :archive AND (x.userId = :userId OR x.id IN (SELECT tct.testCase.id FROM TestCaseTeam AS tct WHERE tct.team.id IN (SELECT DISTINCT t.id FROM Team AS t LEFT JOIN t.members as m WHERE m.userId = :userId))) ";
+	
 		
 		ArrayList<LinkedHashMap<String,String>> searchCriteria = null;
 		if (request.containsParam(GlobalConstant.SEARCHCRITERIA) && !request.getParam(GlobalConstant.SEARCHCRITERIA).equals("")) {
@@ -227,20 +232,19 @@ public class TestCaseDaoImpl implements TestCaseDao {
 				}
 			}
 			if (!"".equals(lookupStr)) {
-				if (!and) { 
-					queryStr += " WHERE ( " + lookupStr + " ) ";
-				} else {
-					queryStr += " AND ( " + lookupStr + " ) ";
-				}
+				queryStr += " AND ( " + lookupStr + " ) ";
 			}
 			
 		}
 
 		Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
-		if (request.containsParam(GlobalConstant.ACTIVE)) {
-			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
-		} 
+		Boolean archive = false;
+		if (request.containsParam(GlobalConstant.ARCHIVE)) {
+			archive = (Boolean) request.getParam(GlobalConstant.ARCHIVE);
+			
+		}
+		query.setParameter("archive", archive);
 		
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
@@ -258,7 +262,7 @@ public class TestCaseDaoImpl implements TestCaseDao {
 				}
 			}
 		}
-		
+		query.setParameter("userId", request.getParamLong(PMConstant.USERID));
 		Long count = (Long) query.getSingleResult();
 		if (count == null){
 			count = 0l;
@@ -282,4 +286,66 @@ public class TestCaseDaoImpl implements TestCaseDao {
 		}
 	}
 
+	@Override
+	public void linkDeploys(RestRequest request, RestResponse response) throws Exception {
+		if (request.containsParam(GlobalConstant.PARENTTYPE) && !"".equals(request.getParam(GlobalConstant.PARENTTYPE)) 
+				&& request.containsParam(GlobalConstant.PARENTID) && !"".equals(request.getParam(GlobalConstant.PARENTID))) {
+			if ("DEPLOY".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+				String queryStr = "SELECT new TestCaseDeploy(x.id, x.active, x.deploy.id, x.testCase.id) FROM TestCaseDeploy AS x WHERE x.deploy.id =:id";
+				Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+				query.setParameter("id", request.getParamLong(GlobalConstant.PARENTID));
+				List<TestCaseDeploy> testCaseDeploys = query.getResultList();
+				response.addParam("linkDeploys", testCaseDeploys);
+			} else {
+				response.addParam("linkDeploys", null);
+			}
+			
+			
+			
+		} else {
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "Missing ID", response);
+		}
+	}
+
+	@Override
+	public void linkDeploy(RestRequest request, RestResponse response) throws Exception {
+		if (request.containsParam(GlobalConstant.PARENTTYPE) && !"".equals(request.getParam(GlobalConstant.PARENTTYPE)) 
+				&& request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
+			String queryStr = "";
+			if ("DEPLOY".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+				queryStr = "SELECT x FROM TestCaseDeploy AS x WHERE x.id =:id";
+				Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+				query.setParameter("id", request.getParamLong(GlobalConstant.ITEMID));
+				TestCaseDeploy testCaseDeploy = (TestCaseDeploy) query.getSingleResult();
+				response.addParam(GlobalConstant.ITEM, testCaseDeploy);
+			} else {
+				response.addParam(GlobalConstant.ITEM, null);
+			}
+		} else {
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID",prefCacheUtil.getLang(request)), response);
+		}
+		
+	}
+
+	@Override
+	public void linkDeploySave(RestRequest request, RestResponse response) throws Exception {
+		if (request.containsParam(GlobalConstant.PARENTTYPE) && !"".equals(request.getParam(GlobalConstant.PARENTTYPE)) 
+				&& request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
+			if ("DEPLOY".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+				TestCaseDeploy testCaseDeploy = (TestCaseDeploy) request.getParam(GlobalConstant.ITEM);
+				if (request.containsParam(GlobalConstant.PARENTID) && !"".equals(request.getParam(GlobalConstant.PARENTID))) {
+					Deploy deploy = (Deploy) entityManagerDataSvc.getInstance().getReference(Deploy.class,  request.getParamLong(GlobalConstant.PARENTID));
+					testCaseDeploy.setDeploy(deploy);
+				}
+				if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
+					TestCase testCase = (TestCase) entityManagerDataSvc.getInstance().getReference(TestCase.class,  request.getParamLong(GlobalConstant.ITEMID));
+					testCaseDeploy.setTestCase(testCase);
+				}
+				entityManagerDataSvc.getInstance().merge(testCaseDeploy);
+			}
+		} else {
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID",prefCacheUtil.getLang(request)), response);
+		}
+		
+	}
 }
