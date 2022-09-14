@@ -81,28 +81,17 @@ public class BacklogDaoImpl implements BacklogDao {
 
 	@Override
 	public void items(RestRequest request, RestResponse response) throws Exception {
-		String queryStr = "SELECT DISTINCT x FROM Backlog AS x ";
-		
-		boolean and = false;
-		if (request.containsParam(GlobalConstant.ACTIVE)) {
-			if (!and) { queryStr += " WHERE "; }
-			queryStr += "x.active =:active ";
-			and = true;
-		}
+		String queryStr = "SELECT DISTINCT x FROM Backlog AS x WHERE x.active =:active AND ";
+		boolean and = true;
 		
 		if (request.containsParam(PMConstant.PRODUCTID)) {
-			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
 			queryStr += "x.product.id =:productId ";
-			and = true;
 		} else if (request.containsParam(PMConstant.PROJECTID)) {
-			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
 			queryStr += "x.project.id =:projectId ";
-			and = true;
 		} else {
-			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
-			queryStr += "x.product IS NULL AND x.project IS NULL ";
-			and = true;
+			queryStr += "x.product IS NULL AND x.project IS NULL AND (x.userId = :userId OR x.id IN (SELECT dt.backlog.id FROM BacklogTeam AS dt WHERE dt.team.id IN (SELECT DISTINCT t.id FROM Team AS t LEFT JOIN t.members as m WHERE m.userId = :userId))) ";
 		}
+		
 		// search
 		ArrayList<LinkedHashMap<String,String>> searchCriteria = null;
 		if (request.containsParam(GlobalConstant.SEARCHCRITERIA) && !request.getParam(GlobalConstant.SEARCHCRITERIA).equals("")) {
@@ -200,11 +189,16 @@ public class BacklogDaoImpl implements BacklogDao {
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
+		} else {
+			query.setParameter("active", true);
 		}
+		
 		if (request.containsParam(PMConstant.PRODUCTID)) {
 			query.setParameter("productId", request.getParamLong(PMConstant.PRODUCTID));
 		} else if (request.containsParam(PMConstant.PROJECTID)) {
 			query.setParameter("projectId", request.getParamLong(PMConstant.PROJECTID));
+		} else {
+			query.setParameter("userId", request.getParamLong(PMConstant.USERID));
 		}
 		
 		if (searchCriteria != null){
@@ -235,6 +229,47 @@ public class BacklogDaoImpl implements BacklogDao {
 		}
 		@SuppressWarnings("unchecked")
 		List<Backlog> backlogs = query.getResultList();
+		
+		// check to see if it can be shared
+		for (Backlog backlog : backlogs) {
+			if (backlog.getProduct() != null) {
+				queryStr = "SELECT COUNT(x) FROM ProductTeam AS x WHERE x.product.id = :id ";
+				query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+				query.setParameter("id", backlog.getProduct().getId());
+				Long count = (Long) query.getSingleResult();
+				if (count == null){
+					count = 0l;
+				}
+				if (count > 0) {
+					backlog.setAllowShare(false);
+				}
+			} else if (backlog.getProject() != null) {
+				if (backlog.getProject().getProduct() != null) {
+					queryStr = "SELECT COUNT(x) FROM ProductTeam AS x WHERE x.product.id = :id ";
+					query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+					query.setParameter("id", backlog.getProject().getProduct().getId());
+					Long count = (Long) query.getSingleResult();
+					if (count == null){
+						count = 0l;
+					}
+					if (count > 0) {
+						backlog.setAllowShare(false);
+					}
+				} else {
+					queryStr = "SELECT COUNT(x) FROM ProjectTeam AS x WHERE x.project.id = :id ";
+					query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+					query.setParameter("id", backlog.getProject().getId());
+					Long count = (Long) query.getSingleResult();
+					if (count == null){
+						count = 0l;
+					}
+					if (count > 0) {
+						backlog.setAllowShare(false);
+					}
+				}
+			}
+		}
+		
 
 		response.addParam(GlobalConstant.ITEMS, backlogs);
 		
@@ -242,26 +277,15 @@ public class BacklogDaoImpl implements BacklogDao {
 
 	@Override
 	public void itemCount(RestRequest request, RestResponse response) throws Exception {
-		String queryStr = "SELECT COUNT(DISTINCT x) FROM Backlog as x ";
-		boolean and = false;
-		if (request.containsParam(GlobalConstant.ACTIVE)) {
-			if (!and) { queryStr += " WHERE "; }
-			queryStr += "x.active =:active ";
-			and = true;
-		}
+		String queryStr = "SELECT COUNT(DISTINCT x) FROM Backlog as x WHERE x.active = :active AND ";
+		boolean and = true;
 		
 		if (request.containsParam(PMConstant.PRODUCTID)) {
-			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
 			queryStr += "x.product.id =:productId ";
-			and = true;
 		} else if (request.containsParam(PMConstant.PROJECTID)) {
-			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
 			queryStr += "x.project.id =:projectId ";
-			and = true;
 		} else {
-			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
-			queryStr += "x.product IS NULL AND x.project IS NULL ";
-			and = true;
+			queryStr += "x.product IS NULL AND x.project IS NULL AND (x.userId = :userId OR x.id IN (SELECT dt.backlog.id FROM BacklogTeam AS dt WHERE dt.team.id IN (SELECT DISTINCT t.id FROM Team AS t LEFT JOIN t.members as m WHERE m.userId = :userId))) ";
 		}
 		
 		ArrayList<LinkedHashMap<String,String>> searchCriteria = null;
@@ -315,11 +339,16 @@ public class BacklogDaoImpl implements BacklogDao {
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
+		} else {
+			query.setParameter("active", true);
 		}
+		
 		if (request.containsParam(PMConstant.PRODUCTID)) {
 			query.setParameter("productId", request.getParamLong(PMConstant.PRODUCTID));
 		} else if (request.containsParam(PMConstant.PROJECTID)) {
 			query.setParameter("projectId", request.getParamLong(PMConstant.PROJECTID));
+		} else {
+			query.setParameter("userId", request.getParamLong(PMConstant.USERID));
 		}
 		
 		if (searchCriteria != null){

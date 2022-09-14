@@ -16,8 +16,11 @@
 
 package org.toasthub.pm.testCase;
 
+import org.toasthub.core.general.model.RestRequest;
+import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.pm.model.BaseSvc;
 
 public interface TestCaseSvc extends BaseSvc {
-
+	public void linkParentModify(RestRequest request, RestResponse response);
+	public void linkParentSave(RestRequest request, RestResponse response);
 }

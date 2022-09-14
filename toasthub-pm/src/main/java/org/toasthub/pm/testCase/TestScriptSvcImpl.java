@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.toasthub.pm.testScenario;
+package org.toasthub.pm.testCase;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,14 +30,14 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
-import org.toasthub.pm.model.TestScenario;
+import org.toasthub.pm.model.TestScript;
 
-@Service("TestScenarioSvc")
-public class TestScenarioSvcImpl implements TestScenarioSvc, ServiceProcessor {
+@Service("PMTestScriptSvc")
+public class TestScriptSvcImpl implements TestScriptSvc, ServiceProcessor {
 
 	@Autowired
-	@Qualifier("TestScenarioDao")
-	TestScenarioDao testScenarioDao;
+	@Qualifier("PMTestScriptDao")
+	TestScriptDao testScriptDao;
 	
 	@Autowired
 	UtilSvc utilSvc;
@@ -83,7 +83,7 @@ public class TestScenarioSvcImpl implements TestScenarioSvc, ServiceProcessor {
 			break;
 		case "SAVE":
 			if (!request.containsParam(PrefCacheUtil.PREFFORMKEYS)) {
-				List<String> forms =  new ArrayList<String>(Arrays.asList("PM_TESTSCENARIO_FORM"));
+				List<String> forms =  new ArrayList<String>(Arrays.asList("PM_TESTSCRIPT_FORM"));
 				request.addParam(PrefCacheUtil.PREFFORMKEYS, forms);
 			}
 			request.addParam(PrefCacheUtil.PREFGLOBAL, global);
@@ -99,7 +99,7 @@ public class TestScenarioSvcImpl implements TestScenarioSvc, ServiceProcessor {
 	@Override
 	public void items(RestRequest request, RestResponse response) {
 		try {
-			testScenarioDao.items(request, response);
+			testScriptDao.items(request, response);
 			if (response.getParam("items") == null){
 				utilSvc.addStatus(RestResponse.INFO, RestResponse.EMPTY, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_NO_ITEMS",prefCacheUtil.getLang(request)), response);
 			}
@@ -113,7 +113,7 @@ public class TestScenarioSvcImpl implements TestScenarioSvc, ServiceProcessor {
 	@Override
 	public void itemCount(RestRequest request, RestResponse response) {
 		try {
-			testScenarioDao.itemCount(request, response);
+			testScriptDao.itemCount(request, response);
 		} catch (Exception e) {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText( "GLOBAL_SERVICE", "GLOBAL_SERVICE_EXECUTION_FAIL",prefCacheUtil.getLang(request)), response);
 			e.printStackTrace();
@@ -123,7 +123,7 @@ public class TestScenarioSvcImpl implements TestScenarioSvc, ServiceProcessor {
 	@Override
 	public void delete(RestRequest request, RestResponse response) {
 		try {
-			testScenarioDao.delete(request, response);
+			testScriptDao.delete(request, response);
 			utilSvc.addStatus(RestResponse.INFO, RestResponse.SUCCESS, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_DELETE_SUCCESS",prefCacheUtil.getLang(request)), response);
 		} catch (Exception e) {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_DELETE_FAIL",prefCacheUtil.getLang(request)), response);
@@ -134,7 +134,7 @@ public class TestScenarioSvcImpl implements TestScenarioSvc, ServiceProcessor {
 	@Override
 	public void item(RestRequest request, RestResponse response) {
 		try {
-			testScenarioDao.item(request, response);
+			testScriptDao.item(request, response);
 		} catch (Exception e) {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_EXECUTION_FAIL",prefCacheUtil.getLang(request)), response);
 			e.printStackTrace();
@@ -155,21 +155,21 @@ public class TestScenarioSvcImpl implements TestScenarioSvc, ServiceProcessor {
 			Map<String,Object> inputList = (Map<String, Object>) request.getParam(GlobalConstant.INPUTFIELDS);
 			if (inputList.containsKey(GlobalConstant.ITEMID) && inputList.get(GlobalConstant.ITEMID) != null && !"".equals(inputList.get(GlobalConstant.ITEMID))) {
 				request.addParam(GlobalConstant.ITEMID, inputList.get(GlobalConstant.ITEMID));
-				testScenarioDao.item(request, response);
+				testScriptDao.item(request, response);
 				request.addParam(GlobalConstant.ITEM, response.getParam(GlobalConstant.ITEM));
 				response.getParams().remove(GlobalConstant.ITEM);
 			} else {
-				TestScenario testScenario = new TestScenario();
-				testScenario.setArchive(false);
-				testScenario.setLocked(false);
-				request.addParam(GlobalConstant.ITEM, testScenario);
+				TestScript testScript = new TestScript();
+				testScript.setArchive(false);
+				testScript.setLocked(false);
+				request.addParam(GlobalConstant.ITEM, testScript);
 			}
 			// marshall
 			utilSvc.marshallFields(request, response);
 		
 			
 			// save
-			testScenarioDao.save(request, response);
+			testScriptDao.save(request, response);
 			
 			utilSvc.addStatus(RestResponse.INFO, RestResponse.SUCCESS, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_SAVE_SUCCESS",prefCacheUtil.getLang(request)), response);
 		} catch (Exception e) {

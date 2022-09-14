@@ -50,6 +50,11 @@ public class WorkflowStep extends BaseEntity implements Serializable{
 	//Constructor
 	public WorkflowStep() {
 		super();
+		this.setSortOrder(0);
+		this.setActive(true);
+		this.setArchive(false);
+		this.setLocked(false);
+		this.setCreated(Instant.now());
 	}
 	
 	public WorkflowStep(String name){
@@ -58,11 +63,12 @@ public class WorkflowStep extends BaseEntity implements Serializable{
 		this.setLocked(false);
 		this.setCreated(Instant.now());
 		this.setName(name);
+		this.setSortOrder(0);
 	}
 	
 
 	// Methods
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "name")
 	public String getName() {
 		return name;
@@ -71,7 +77,7 @@ public class WorkflowStep extends BaseEntity implements Serializable{
 		this.name = name;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@ManyToOne(targetEntity = Workflow.class)
 	@JoinColumn(name = "workflow_id")
 	public Workflow getWorkflow() {
@@ -81,7 +87,7 @@ public class WorkflowStep extends BaseEntity implements Serializable{
 		this.workflow = workflow;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "next_step")
 	public String getNextStep() {
 		return nextStep;
@@ -91,7 +97,7 @@ public class WorkflowStep extends BaseEntity implements Serializable{
 		this.nextStep = nextStep;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "sort_order")
 	public int getSortOrder() {
 		return sortOrder;

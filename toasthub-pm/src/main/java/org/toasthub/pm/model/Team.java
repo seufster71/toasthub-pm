@@ -56,6 +56,7 @@ public class Team extends BaseEntity implements Serializable{
 	protected BacklogTeam backlogTeam;
 	protected ReleaseTeam releaseTeam;
 	protected DeployTeam deployTeam;
+	protected TestCaseTeam testCaseTeam;
 	
 	//Constructor
 	public Team() {
@@ -151,6 +152,15 @@ public class Team extends BaseEntity implements Serializable{
 	}
 	public void setDeployTeam(DeployTeam deployTeam) {
 		this.deployTeam = deployTeam;
+	}
+	
+	@JsonView({View.Member.class,View.Admin.class})
+	@Transient
+	public TestCaseTeam getTestCaseTeam() {
+		return testCaseTeam;
+	}
+	public void setTestCaseTeam(TestCaseTeam testCaseTeam) {
+		this.testCaseTeam = testCaseTeam;
 	}
 	
 }
