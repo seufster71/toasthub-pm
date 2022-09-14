@@ -68,14 +68,9 @@ public class ProductDaoImpl implements ProductDao {
 
 	@Override
 	public void items(RestRequest request, RestResponse response) throws Exception {
-		String queryStr = "SELECT DISTINCT x FROM Product as x WHERE x.userId = :userId OR x.id IN (SELECT dt.product.id FROM ProductTeam AS dt WHERE dt.team.id IN (SELECT DISTINCT t.id FROM Team AS t LEFT JOIN t.members as m WHERE m.userId = :userId))";
+		String queryStr = "SELECT DISTINCT x FROM Product as x WHERE x.active = :active AND (x.userId = :userId OR x.id IN (SELECT dt.product.id FROM ProductTeam AS dt WHERE dt.team.id IN (SELECT DISTINCT t.id FROM Team AS t LEFT JOIN t.members as m WHERE m.userId = :userId))) ";
 		
-		boolean and = false;
-		if (request.containsParam(GlobalConstant.ACTIVE)) {
-			if (!and) { queryStr += " WHERE "; }
-			queryStr += "x.active =:active ";
-			and = true;
-		}
+		boolean and = true;
 		
 		// search
 		ArrayList<LinkedHashMap<String,String>> searchCriteria = null;
@@ -155,7 +150,9 @@ public class ProductDaoImpl implements ProductDao {
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
-		} 
+		} else {
+			query.setParameter("active", true);
+		}
 		
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
@@ -187,13 +184,8 @@ public class ProductDaoImpl implements ProductDao {
 
 	@Override
 	public void itemCount(RestRequest request, RestResponse response) throws Exception {
-		String queryStr = "SELECT COUNT(DISTINCT x) FROM Product as x WHERE x.userId = :userId OR x.id IN (SELECT dt.product.id FROM ProductTeam AS dt WHERE dt.team.id IN (SELECT DISTINCT t.id FROM Team AS t LEFT JOIN t.members as m WHERE m.userId = :userId))";
-		boolean and = false;
-		if (request.containsParam(GlobalConstant.ACTIVE)) {
-			if (!and) { queryStr += " WHERE "; }
-			queryStr += "x.active =:active ";
-			and = true;
-		}
+		String queryStr = "SELECT COUNT(DISTINCT x) FROM Product as x WHERE x.active = :active AND (x.userId = :userId OR x.id IN (SELECT dt.product.id FROM ProductTeam AS dt WHERE dt.team.id IN (SELECT DISTINCT t.id FROM Team AS t LEFT JOIN t.members as m WHERE m.userId = :userId))) ";
+		boolean and = true;
 		
 		ArrayList<LinkedHashMap<String,String>> searchCriteria = null;
 		if (request.containsParam(GlobalConstant.SEARCHCRITERIA) && !request.getParam(GlobalConstant.SEARCHCRITERIA).equals("")) {
@@ -236,7 +228,9 @@ public class ProductDaoImpl implements ProductDao {
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
-		} 
+		} else {
+			query.setParameter("active", true);
+		}
 		
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {

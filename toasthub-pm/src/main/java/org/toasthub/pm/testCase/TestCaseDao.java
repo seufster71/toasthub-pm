@@ -16,8 +16,12 @@
 
 package org.toasthub.pm.testCase;
 
+import org.toasthub.core.general.model.RestRequest;
+import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.pm.model.BaseDao;
 
 public interface TestCaseDao extends BaseDao {
-	
+	void linkDeploys(RestRequest request, RestResponse response) throws Exception;
+	void linkDeploy(RestRequest request, RestResponse response) throws Exception;
+	void linkDeploySave(RestRequest request, RestResponse response) throws Exception;
 }

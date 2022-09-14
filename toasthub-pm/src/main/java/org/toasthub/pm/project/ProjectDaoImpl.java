@@ -75,23 +75,13 @@ public class ProjectDaoImpl implements ProjectDao {
 
 	@Override
 	public void items(RestRequest request, RestResponse response) throws Exception {
-		String queryStr = "SELECT DISTINCT x FROM Project AS x ";
-		
-		boolean and = false;
-		if (request.containsParam(GlobalConstant.ACTIVE)) {
-			if (!and) { queryStr += " WHERE "; }
-			queryStr += "x.active =:active ";
-			and = true;
-		}
+		String queryStr = "SELECT DISTINCT x FROM Project AS x WHERE x.active = :active AND ";
+		boolean and = true;
 		 
 		if (request.containsParam(PMConstant.PRODUCTID)) {
-			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
-			queryStr += "x.product.id =:productId ";
-			and = true;
+			queryStr += "x.product.id = :productId ";
 		} else {
-			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
-			queryStr += "x.product IS NULL ";
-			and = true;
+			queryStr += "x.product IS NULL AND (x.userId = :userId OR x.id IN (SELECT dt.project.id FROM ProjectTeam AS dt WHERE dt.team.id IN (SELECT DISTINCT t.id FROM Team AS t LEFT JOIN t.members as m WHERE m.userId = :userId))) ";
 		}
 		
 		// search
@@ -201,9 +191,14 @@ public class ProjectDaoImpl implements ProjectDao {
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
-		} 
+		} else {
+			query.setParameter("active", true);
+		}
+		
 		if (request.containsParam(PMConstant.PRODUCTID)) {
 			query.setParameter("productId", request.getParamLong(PMConstant.PRODUCTID));
+		} else {
+			query.setParameter("userId", request.getParamLong(PMConstant.USERID));
 		}
 		
 		if (searchCriteria != null){
@@ -231,12 +226,30 @@ public class ProjectDaoImpl implements ProjectDao {
 				}
 			}
 		}
+		
 		if (request.containsParam(GlobalConstant.LISTLIMIT) && (Integer) request.getParam(GlobalConstant.LISTLIMIT) != 0){
 			query.setFirstResult((Integer) request.getParam(GlobalConstant.LISTSTART));
 			query.setMaxResults((Integer) request.getParam(GlobalConstant.LISTLIMIT));
 		}
 		@SuppressWarnings("unchecked")
 		List<Project> projects = query.getResultList();
+		
+		
+		// check to see if it can be shared
+		for (Project project : projects) {
+			if (project.getProduct() != null) {
+				queryStr = "SELECT COUNT(x) FROM ProductTeam AS x WHERE x.product.id = :id ";
+				query = entityManagerDataSvc.getInstance().createQuery(queryStr);
+				query.setParameter("id", project.getProduct().getId());
+				Long count = (Long) query.getSingleResult();
+				if (count == null){
+					count = 0l;
+				}
+				if (count > 0) {
+					project.setAllowShare(false);
+				}
+			}
+		}
 
 		response.addParam(GlobalConstant.ITEMS, projects);
 		
@@ -244,22 +257,12 @@ public class ProjectDaoImpl implements ProjectDao {
 
 	@Override
 	public void itemCount(RestRequest request, RestResponse response) throws Exception {
-		String queryStr = "SELECT COUNT(DISTINCT x) FROM Project as x ";
-		boolean and = false;
-		if (request.containsParam(GlobalConstant.ACTIVE)) {
-			if (!and) { queryStr += " WHERE "; }
-			queryStr += "x.active =:active ";
-			and = true;
-		}
-		
+		String queryStr = "SELECT COUNT(DISTINCT x) FROM Project AS x WHERE x.active = :active AND ";
+		boolean and = true;
 		if (request.containsParam(PMConstant.PRODUCTID)) {
-			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
-			queryStr += "x.product.id =:productId ";
-			and = true;
+			queryStr += "x.product.id = :productId ";
 		} else {
-			if (!and) { queryStr += " WHERE "; } else { queryStr += " AND "; }
-			queryStr += "x.product IS NULL ";
-			and = true;
+			queryStr += "x.product IS NULL AND (x.userId = :userId OR x.id IN (SELECT dt.project.id FROM ProjectTeam AS dt WHERE dt.team.id IN (SELECT DISTINCT t.id FROM Team AS t LEFT JOIN t.members as m WHERE m.userId = :userId))) ";
 		}
 		
 		ArrayList<LinkedHashMap<String,String>> searchCriteria = null;
@@ -318,9 +321,14 @@ public class ProjectDaoImpl implements ProjectDao {
 		
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			query.setParameter("active", (Boolean) request.getParam(GlobalConstant.ACTIVE));
+		} else {
+			query.setParameter("active", true);
 		}
+		
 		if (request.containsParam(PMConstant.PRODUCTID)) {
 			query.setParameter("productId", request.getParamLong(PMConstant.PRODUCTID));
+		} else {
+			query.setParameter("userId", request.getParamLong(PMConstant.USERID));
 		}
 		
 		if (searchCriteria != null){

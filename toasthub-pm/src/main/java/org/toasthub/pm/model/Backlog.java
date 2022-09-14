@@ -28,6 +28,7 @@ import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.toasthub.core.general.api.View;
 import org.toasthub.core.general.model.BaseEntity;
@@ -43,11 +44,12 @@ public class Backlog extends BaseEntity implements Serializable{
 	
 	protected String name;
 	protected String description;
+	protected Long userId;
 	
-	protected Workflow workflow;
 	protected Product product;
 	protected Project project;
 	
+	protected Boolean allowShare = true;
 
 	//Constructor
 	public Backlog() {
@@ -65,7 +67,7 @@ public class Backlog extends BaseEntity implements Serializable{
 	}
 
 	// Methods
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "name")
 	public String getName() {
 		return name;
@@ -74,7 +76,7 @@ public class Backlog extends BaseEntity implements Serializable{
 		this.name = name;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@Column(name = "description")
 	public String getDescription() {
 		return description;
@@ -83,7 +85,16 @@ public class Backlog extends BaseEntity implements Serializable{
 		this.description = description;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	@Column(name = "user_id")
+	public Long getUserId() {
+		return userId;
+	}
+	public void setUserId(Long userId) {
+		this.userId = userId;
+	}
+	
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@ManyToOne(targetEntity = Product.class)
 	@JoinColumn(name = "product_id")
 	public Product getProduct() {
@@ -93,7 +104,7 @@ public class Backlog extends BaseEntity implements Serializable{
 		this.product = product;
 	}
 
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
 	@ManyToOne(targetEntity = Project.class)
 	@JoinColumn(name = "project_id")
 	public Project getProject() {
@@ -103,14 +114,12 @@ public class Backlog extends BaseEntity implements Serializable{
 		this.project = project;
 	}
 	
-	@JsonView({View.Public.class,View.Member.class,View.Admin.class,View.System.class})
-	@ManyToOne(targetEntity = Workflow.class)
-	@JoinColumn(name = "workflow_id")
-	public Workflow getWorkflow() {
-		return workflow;
+	@JsonView({View.Member.class,View.Admin.class,View.System.class})
+	@Transient
+	public Boolean getAllowShare() {
+		return allowShare;
 	}
-	public void setWorkflow(Workflow workflow) {
-		this.workflow = workflow;
+	public void setAllowShare(Boolean allowShare) {
+		this.allowShare = allowShare;
 	}
-	
 }

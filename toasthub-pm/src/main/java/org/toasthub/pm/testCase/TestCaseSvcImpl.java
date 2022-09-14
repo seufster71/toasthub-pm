@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.toasthub.core.common.UtilSvc;
 import org.toasthub.core.general.handler.ServiceProcessor;
@@ -30,13 +31,24 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
+import org.toasthub.pm.model.BacklogTeam;
+import org.toasthub.pm.model.DeployTeam;
+import org.toasthub.pm.model.PMConstant;
+import org.toasthub.pm.model.ProductTeam;
+import org.toasthub.pm.model.ProjectTeam;
+import org.toasthub.pm.model.ReleaseTeam;
+import org.toasthub.pm.model.Team;
 import org.toasthub.pm.model.TestCase;
+import org.toasthub.pm.model.TestCaseDeploy;
+import org.toasthub.pm.model.TestCaseTeam;
+import org.toasthub.security.model.MyUserPrincipal;
+import org.toasthub.security.model.User;
 
-@Service("TestCaseSvc")
+@Service("PMTestCaseSvc")
 public class TestCaseSvcImpl implements TestCaseSvc, ServiceProcessor {
 
 	@Autowired
-	@Qualifier("TestCaseDao")
+	@Qualifier("PMTestCaseDao")
 	TestCaseDao testCaseDao;
 	
 	@Autowired
@@ -48,6 +60,9 @@ public class TestCaseSvcImpl implements TestCaseSvc, ServiceProcessor {
 	
 	@Override
 	public void process(RestRequest request, RestResponse response) {
+		User user = ((MyUserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+		request.addParam(PMConstant.USERID, user.getId());
+		
 		String action = (String) request.getParams().get(GlobalConstant.ACTION);
 		List<String> global =  new ArrayList<String>(Arrays.asList("LANGUAGES"));
 		
@@ -61,6 +76,7 @@ public class TestCaseSvcImpl implements TestCaseSvc, ServiceProcessor {
 			if (count != null && count > 0){
 				this.items(request, response);
 			}
+			this.addLinkDeploy(request, response);
 			response.addParam(GlobalConstant.ITEMNAME, request.getParam(GlobalConstant.ITEMNAME));
 			break;
 		case "LIST":
@@ -71,6 +87,7 @@ public class TestCaseSvcImpl implements TestCaseSvc, ServiceProcessor {
 			if (count != null && count > 0){
 				this.items(request, response);
 			}
+			this.addLinkDeploy(request, response);
 			response.addParam(GlobalConstant.ITEMNAME, request.getParam(GlobalConstant.ITEMNAME));
 			break;
 		case "ITEM":
@@ -89,6 +106,23 @@ public class TestCaseSvcImpl implements TestCaseSvc, ServiceProcessor {
 			request.addParam(PrefCacheUtil.PREFGLOBAL, global);
 			prefCacheUtil.getPrefInfo(request,response);
 			this.save(request, response);
+			break;
+		case "LINK_PARENT_MODIFY":
+			request.addParam(PrefCacheUtil.PREFPARAMLOC, PrefCacheUtil.RESPONSE);
+			prefCacheUtil.getPrefInfo(request,response);
+			this.linkParentModify(request, response);
+			break;
+		case "LINK_PARENT_SAVE":
+			if (!request.containsParam(PrefCacheUtil.PREFFORMKEYS)) {
+				
+				List<String> forms =  new ArrayList<String>();
+				if ("DEPLOY".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+					forms.add("PM_TESTCASE_DEPLOY_FORM");
+				}
+				request.addParam(PrefCacheUtil.PREFFORMKEYS, forms);
+			}
+			prefCacheUtil.getPrefInfo(request,response);
+			this.linkParentSave(request, response);
 			break;
 		default:
 			utilSvc.addStatus(RestResponse.INFO, RestResponse.ACTIONNOTEXIST, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_ACTION_NOT_AVAIL",prefCacheUtil.getLang(request)), response);
@@ -134,7 +168,9 @@ public class TestCaseSvcImpl implements TestCaseSvc, ServiceProcessor {
 	@Override
 	public void item(RestRequest request, RestResponse response) {
 		try {
-			testCaseDao.item(request, response);
+			if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
+				testCaseDao.item(request, response);
+			}
 		} catch (Exception e) {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_EXECUTION_FAIL",prefCacheUtil.getLang(request)), response);
 			e.printStackTrace();
@@ -160,8 +196,10 @@ public class TestCaseSvcImpl implements TestCaseSvc, ServiceProcessor {
 				response.getParams().remove(GlobalConstant.ITEM);
 			} else {
 				TestCase testCase = new TestCase();
+				testCase.setActive(true);
 				testCase.setArchive(false);
 				testCase.setLocked(false);
+				testCase.setUserId(((MyUserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().getId());
 				request.addParam(GlobalConstant.ITEM, testCase);
 			}
 			// marshall
@@ -174,6 +212,84 @@ public class TestCaseSvcImpl implements TestCaseSvc, ServiceProcessor {
 			utilSvc.addStatus(RestResponse.INFO, RestResponse.SUCCESS, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_SAVE_SUCCESS",prefCacheUtil.getLang(request)), response);
 		} catch (Exception e) {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_SAVE_FAIL",prefCacheUtil.getLang(request)), response);
+			e.printStackTrace();
+		}
+	}
+	
+	private void addLinkDeploy(RestRequest request, RestResponse response) {
+		try {
+			
+			if (request.containsParam(GlobalConstant.PARENTTYPE) && !"".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+				if ("DEPLOY".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+					testCaseDao.linkDeploys(request, response);
+					// add link to items
+					List<TestCaseDeploy> testCaseDeploys = (List<TestCaseDeploy>) response.getParam("linkDeploys");
+					List<TestCase> testCases = (List<TestCase>) response.getParam(GlobalConstant.ITEMS);
+					for (TestCaseDeploy testCaseDeploy : testCaseDeploys) {
+						for (TestCase testCase : testCases) {
+							if (testCaseDeploy.getTestCaseId() == testCase.getId()) {
+								testCase.setTestCaseDeploy(testCaseDeploy);
+							}
+						}
+					}
+				}
+				
+			}
+		} catch(Exception e) {
+			
+		}
+	}
+	
+	@Override
+	public void linkParentModify(RestRequest request, RestResponse response) {
+		try {
+			testCaseDao.linkDeploy(request, response);
+		} catch (Exception e) {
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_EXECUTION_FAIL",prefCacheUtil.getLang(request)), response);
+			e.printStackTrace();
+		}
+	}
+	
+	@Override
+	public void linkParentSave(RestRequest request, RestResponse response) {
+		try {
+			// validate
+			utilSvc.validateParams(request, response);
+			
+			if ((Boolean) request.getParam(GlobalConstant.VALID) == false) {
+				utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_VALIDATION_ERR",prefCacheUtil.getLang(request)), response);
+				return;
+			}
+			
+			// get existing item
+			Map<String,Object> inputList = (Map<String, Object>) request.getParam(GlobalConstant.INPUTFIELDS);
+			if (inputList.containsKey(GlobalConstant.ITEMID) && inputList.get(GlobalConstant.ITEMID) != null && !"".equals(inputList.get(GlobalConstant.ITEMID))) {
+				request.addParam(GlobalConstant.ITEMID, inputList.get(GlobalConstant.ITEMID));
+				testCaseDao.linkDeploy(request, response);
+				request.addParam(GlobalConstant.ITEM, response.getParam(GlobalConstant.ITEM));
+				response.getParams().remove(GlobalConstant.ITEM);
+			} else {
+				// new Team Link
+				if ("DEPLOY".equals(request.getParam(GlobalConstant.PARENTTYPE))) {
+					TestCaseDeploy testCaseDeploy = new TestCaseDeploy();
+					testCaseDeploy.setActive(true);
+					testCaseDeploy.setArchive(false);
+					testCaseDeploy.setLocked(false);
+					request.addParam(GlobalConstant.ITEM, testCaseDeploy);
+				} else {
+					utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, "Missing parent type", response);
+					return;
+				}
+			}
+			// marshall
+			utilSvc.marshallFields(request, response);
+			
+			// save
+			testCaseDao.linkDeploySave(request, response);
+			
+			utilSvc.addStatus(RestResponse.INFO, RestResponse.SUCCESS, prefCacheUtil.getPrefText( "GLOBAL_SERVICE", "GLOBAL_SERVICE_SAVE_SUCCESS", prefCacheUtil.getLang(request)), response);
+		} catch (Exception e) {
+			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, prefCacheUtil.getPrefText( "GLOBAL_SERVICE", "GLOBAL_SERVICE_SAVE_FAIL", prefCacheUtil.getLang(request)), response);
 			e.printStackTrace();
 		}
 	}

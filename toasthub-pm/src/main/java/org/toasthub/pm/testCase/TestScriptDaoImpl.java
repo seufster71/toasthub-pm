@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.toasthub.pm.testScenario;
+package org.toasthub.pm.testCase;
 
 
 import java.util.ArrayList;
@@ -33,11 +33,13 @@ import org.toasthub.core.general.model.GlobalConstant;
 import org.toasthub.core.general.model.RestRequest;
 import org.toasthub.core.general.model.RestResponse;
 import org.toasthub.core.preference.model.PrefCacheUtil;
-import org.toasthub.pm.model.TestScenario;
+import org.toasthub.pm.model.PMConstant;
+import org.toasthub.pm.model.TestCase;
+import org.toasthub.pm.model.TestScript;
 
-@Repository("TestScenarioDao")
+@Repository("PMTestScriptDao")
 @Transactional("TransactionManagerData")
-public class TestScenarioDaoImpl implements TestScenarioDao {
+public class TestScriptDaoImpl implements TestScriptDao {
 	
 	@Autowired
 	protected EntityManagerDataSvc entityManagerDataSvc;
@@ -50,8 +52,8 @@ public class TestScenarioDaoImpl implements TestScenarioDao {
 	public void delete(RestRequest request, RestResponse response) throws Exception {
 		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
 			
-			TestScenario testScenario = (TestScenario) entityManagerDataSvc.getInstance().getReference(TestScenario.class, request.getParamLong(GlobalConstant.ITEMID));
-			entityManagerDataSvc.getInstance().remove(testScenario);
+			TestScript testScript = (TestScript) entityManagerDataSvc.getInstance().getReference(TestScript.class, request.getParamLong(GlobalConstant.ITEMID));
+			entityManagerDataSvc.getInstance().remove(testScript);
 			
 		} else {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.ACTIONFAILED, "Missing ID", response);
@@ -60,13 +62,19 @@ public class TestScenarioDaoImpl implements TestScenarioDao {
 
 	@Override
 	public void save(RestRequest request, RestResponse response) throws Exception {
-		TestScenario testScenario = (TestScenario) request.getParam(GlobalConstant.ITEM);
-		entityManagerDataSvc.getInstance().merge(testScenario);
+		TestScript testScript = (TestScript) request.getParam(GlobalConstant.ITEM);
+		if (request.containsParam(PMConstant.PARENTID)) {
+			TestCase testCase = (TestCase) entityManagerDataSvc.getInstance().getReference(TestCase.class,  request.getParamLong(PMConstant.PARENTID));
+			if (testScript.getTestCase() == null || testScript.getTestCase() != null && !testScript.getTestCase().getId().equals(request.getParamLong(PMConstant.PARENTID))) {
+				testScript.setTestCase(testCase);
+			}
+		}
+		entityManagerDataSvc.getInstance().merge(testScript);
 	}
 
 	@Override
 	public void items(RestRequest request, RestResponse response) throws Exception {
-		String queryStr = "SELECT DISTINCT x FROM TestScenario AS x ";
+		String queryStr = "SELECT DISTINCT x FROM TestScript AS x ";
 		
 		boolean and = false;
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
@@ -91,22 +99,12 @@ public class TestScenarioDaoImpl implements TestScenarioDao {
 			String lookupStr = "";
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_SUMMARY")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCRIPT_TABLE_NAME")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "x.summary LIKE :summaryValue"; 
+						lookupStr += "x.name LIKE :nameValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_DEFECT")){
-						if (or) { lookupStr += " OR "; }
-						lookupStr += "x.defect.summary LIKE :defectValue"; 
-						or = true;
-					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_ENHANCEMENT")){
-						if (or) { lookupStr += " OR "; }
-						lookupStr += "x.enhancement.summary LIKE :enhancementValue"; 
-						or = true;
-					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCRIPT_TABLE_STATUS")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.active LIKE :statusValue"; 
 						or = true;
@@ -138,22 +136,12 @@ public class TestScenarioDaoImpl implements TestScenarioDao {
 			
 			for (LinkedHashMap<String,String> item : orderCriteria) {
 				if (item.containsKey(GlobalConstant.ORDERCOLUMN) && item.containsKey(GlobalConstant.ORDERDIR)) {
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_TESTSCENARIO_TABLE_SUMMARY")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_TESTSCRIPT_TABLE_NAME")){
 						if (comma) { orderItems.append(","); }
-						orderItems.append("x.summary ").append(item.get(GlobalConstant.ORDERDIR));
+						orderItems.append("x.name ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
 					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_TESTSCENARIO_TABLE_DEFECT")){
-						if (comma) { orderItems.append(","); }
-						orderItems.append("x.defect.summary ").append(item.get(GlobalConstant.ORDERDIR));
-						comma = true;
-					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_TESTSCENARIO_TABLE_ENHANCEMENT")){
-						if (comma) { orderItems.append(","); }
-						orderItems.append("x.enhancement.summary ").append(item.get(GlobalConstant.ORDERDIR));
-						comma = true;
-					}
-					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_TESTSCENARIO_TABLE_STATUS")){
+					if (item.get(GlobalConstant.ORDERCOLUMN).equals("PM_TESTSCRIPT_TABLE_STATUS")){
 						if (comma) { orderItems.append(","); }
 						orderItems.append("x.active ").append(item.get(GlobalConstant.ORDERDIR));
 						comma = true;
@@ -177,16 +165,10 @@ public class TestScenarioDaoImpl implements TestScenarioDao {
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {  
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_SUMMARY")){
-						query.setParameter("summaryValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCRIPT_TABLE_SUMMARY")){
+						query.setParameter("nameValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_DEFECT")){
-						query.setParameter("defectValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
-					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_ENHANCEMENT")){
-						query.setParameter("enhancementValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
-					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCRIPT_TABLE_STATUS")){
 						if ("active".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
 							query.setParameter("statusValue", true);
 						} else if ("disabled".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
@@ -201,15 +183,15 @@ public class TestScenarioDaoImpl implements TestScenarioDao {
 			query.setMaxResults((Integer) request.getParam(GlobalConstant.LISTLIMIT));
 		}
 		@SuppressWarnings("unchecked")
-		List<TestScenario> testScenarios = query.getResultList();
+		List<TestScript> testSceripts = query.getResultList();
 
-		response.addParam(GlobalConstant.ITEMS, testScenarios);
+		response.addParam(GlobalConstant.ITEMS, testSceripts);
 		
 	}
 
 	@Override
 	public void itemCount(RestRequest request, RestResponse response) throws Exception {
-		String queryStr = "SELECT COUNT(DISTINCT x) FROM TestScenario as x ";
+		String queryStr = "SELECT COUNT(DISTINCT x) FROM TestScript as x ";
 		boolean and = false;
 		if (request.containsParam(GlobalConstant.ACTIVE)) {
 			if (!and) { queryStr += " WHERE "; }
@@ -232,22 +214,12 @@ public class TestScenarioDaoImpl implements TestScenarioDao {
 			String lookupStr = "";
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_SUMMARY")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCRIPT_TABLE_NAME")){
 						if (or) { lookupStr += " OR "; }
-						lookupStr += "x.summary LIKE :summaryValue"; 
+						lookupStr += "x.name LIKE :nameValue"; 
 						or = true;
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_DEFECT")){
-						if (or) { lookupStr += " OR "; }
-						lookupStr += "x.defect.summary LIKE :defectValue"; 
-						or = true;
-					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_ENHANCEMENT")){
-						if (or) { lookupStr += " OR "; }
-						lookupStr += "x.enhancement.summary LIKE :enhancementValue"; 
-						or = true;
-					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCRIPT_TABLE_STATUS")){
 						if (or) { lookupStr += " OR "; }
 						lookupStr += "x.active LIKE :statusValue"; 
 						or = true;
@@ -273,16 +245,10 @@ public class TestScenarioDaoImpl implements TestScenarioDao {
 		if (searchCriteria != null){
 			for (LinkedHashMap<String,String> item : searchCriteria) {
 				if (item.containsKey(GlobalConstant.SEARCHVALUE) && !"".equals(item.get(GlobalConstant.SEARCHVALUE)) && item.containsKey(GlobalConstant.SEARCHCOLUMN)) {  
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_SUMMARY")){
-						query.setParameter("summaryValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCRIPT_TABLE_NAME")){
+						query.setParameter("nameValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
 					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_DEFECT")){
-						query.setParameter("defectValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
-					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_ENHANCEMENT")){
-						query.setParameter("enhancementValue", "%"+((String)item.get(GlobalConstant.SEARCHVALUE)).toLowerCase()+"%");
-					}
-					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCENARIO_TABLE_STATUS")){
+					if (item.get(GlobalConstant.SEARCHCOLUMN).equals("PM_TESTSCRIPT_TABLE_STATUS")){
 						if ("active".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
 							query.setParameter("statusValue", true);
 						} else if ("disabled".equalsIgnoreCase((String)item.get(GlobalConstant.SEARCHVALUE))) {
@@ -304,13 +270,13 @@ public class TestScenarioDaoImpl implements TestScenarioDao {
 	@Override
 	public void item(RestRequest request, RestResponse response) throws Exception {
 		if (request.containsParam(GlobalConstant.ITEMID) && !"".equals(request.getParam(GlobalConstant.ITEMID))) {
-			String queryStr = "SELECT x FROM TestScenario AS x WHERE x.id =:id";
+			String queryStr = "SELECT x FROM TestScript AS x WHERE x.id =:id";
 			Query query = entityManagerDataSvc.getInstance().createQuery(queryStr);
 		
 			query.setParameter("id", request.getParamLong(GlobalConstant.ITEMID));
-			TestScenario testScenario = (TestScenario) query.getSingleResult();
+			TestScript testScript = (TestScript) query.getSingleResult();
 			
-			response.addParam(GlobalConstant.ITEM, testScenario);
+			response.addParam(GlobalConstant.ITEM, testScript);
 		} else {
 			utilSvc.addStatus(RestResponse.ERROR, RestResponse.EXECUTIONFAILED, prefCacheUtil.getPrefText("GLOBAL_SERVICE", "GLOBAL_SERVICE_MISSING_ID",prefCacheUtil.getLang(request)), response);
 		}
