@@ -59,14 +59,14 @@ public class Member extends BaseEntity implements Serializable{
 	public Member(){}
 	
 	public Member(Team team){
-		this.team = team;
+		this.setTeam(team);
 	}
 	
 	public Member(Long id, boolean active, Instant startDate, Instant endDate) {
-		this.id = id;
-		this.active = active;
-		this.startDate = startDate;
-		this.endDate = endDate;
+		this.setId(id);
+		this.setActive(active);
+		this.setStartDate(startDate);
+		this.setEndDate(endDate);
 	}
 	
 	public Member(boolean active, boolean archive, boolean locked, String type, Team team, Long userId, String name, String username, Instant startDate, Instant endDate) {
